@@ -1,0 +1,122 @@
+rules_version = '2';
+
+// Security rules for LODBOD Shipper.
+//
+// Every shipper signs in with Firebase Authentication and can only read and
+// write their own data. The three-request limit is enforced in a client
+// transaction and backstopped here (the per-user counter can never exceed 3);
+// see README → "Production enforcement" for moving writes server-side.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function ownsNew() {
+      return signedIn() && request.resource.data.shipperId == request.auth.uid;
+    }
+
+    function ownsExisting() {
+      return signedIn() && resource.data.shipperId == request.auth.uid;
+    }
+
+    function isShipmentStatus(s) {
+      return s in ['awaitingBids', 'confirmed', 'scheduled', 'inTransit',
+                   'delivered', 'cancelled', 'expired'];
+    }
+
+    function isBidStatus(s) {
+      return s in ['pending', 'accepted', 'declined'];
+    }
+
+    // Shipper profile. Role and email can't be changed by the client, and the
+    // request-limit counter stays within 0..3.
+    match /users/{uid} {
+      allow read: if isUser(uid);
+      allow create: if isUser(uid)
+        && request.resource.data.role == 'shipper'
+        && request.resource.data.activeRequestCount == 0;
+      allow update: if isUser(uid)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.activeRequestCount is int
+        && request.resource.data.activeRequestCount >= 0
+        && request.resource.data.activeRequestCount <= 3;
+      allow delete: if false;
+
+      match /drafts/{draftId} {
+        allow read, write: if isUser(uid);
+      }
+    }
+
+    // Phone sign-in lookup. A single number can be looked up (needed before
+    // sign-in); the index can't be listed or edited by anyone else.
+    match /phoneIndex/{phone} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /shipments/{shipmentId} {
+      // `resource == null` lets a transaction check that a new id is free.
+      allow get: if signedIn() && (resource == null || resource.data.shipperId == request.auth.uid);
+      allow list: if ownsExisting();
+      allow create: if ownsNew()
+        && request.resource.data.reference.matches('LOD-[0-9]+')
+        && isShipmentStatus(request.resource.data.status)
+        && request.resource.data.pickup is string
+        && request.resource.data.destination is string
+        && request.resource.data.pickup.lower() != request.resource.data.destination.lower()
+        && request.resource.data.weight is number
+        && request.resource.data.weight > 0;
+      // Owner, reference and route are immutable.
+      allow update: if ownsExisting()
+        && isShipmentStatus(request.resource.data.status)
+        && request.resource.data.shipperId == resource.data.shipperId
+        && request.resource.data.reference == resource.data.reference
+        && request.resource.data.pickup == resource.data.pickup
+        && request.resource.data.destination == resource.data.destination;
+      allow delete: if ownsExisting(); // "Load sample shipments" replaces data
+    }
+
+    // In production bids are written by carriers through the backend; in
+    // this build the shipper's app simulates them, so owners may write them.
+    match /bids/{bidId} {
+      allow get: if signedIn() && (resource == null || resource.data.shipperId == request.auth.uid);
+      allow list: if ownsExisting();
+      allow create, update: if ownsNew()
+        && isBidStatus(request.resource.data.status)
+        && request.resource.data.shipmentId is string
+        && request.resource.data.fare is int
+        && request.resource.data.fare > 0;
+      allow delete: if ownsExisting();
+    }
+
+    // Reference sequence: may only move forward, so references stay unique.
+    match /meta/counters {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.resource.data.nextShipmentNumber is int
+        && (resource == null
+            || request.resource.data.nextShipmentNumber > resource.data.nextShipmentNumber);
+    }
+
+    // Help & support messages: write-only for the sender.
+    match /feedback/{id} {
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 1000;
+      allow read, update, delete: if false;
+    }
+  }
+}

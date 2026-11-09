@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "38894148510",
+    "project_id": "lodbod-ravi",
+    "storage_bucket": "lodbod-ravi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38894148510:android:ab96ed83ab752c4146d48f",
+        "android_client_info": {
+          "package_name": "com.example.lodbod"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWdlZ9diH1o1qFJrBX_EJaFBsUX9r8Os4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
