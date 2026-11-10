@@ -157,9 +157,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
           children: [
             StepHeader(
               current: state.step.index,
-              labels: [
-                for (final s in DraftStep.values) s.shortTitle,
-                'Review',
+              titles: [
+                for (final s in DraftStep.values) s.title,
+                'Review & post',
               ],
               onTapStep: (i) => controller.goTo(DraftStep.values[i]),
             ),
@@ -222,37 +222,9 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                     ],
                     AppCard(
                       padding: const EdgeInsets.all(Gap.lg),
-                      borderColor: AppColors.primaryBorder,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                alignment: Alignment.center,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.primary,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${state.step.index + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12.5,
-                                  ),
-                                ),
-                              ),
-                              Space.h10,
-                              Text(
-                                state.step.title,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
-                          Space.v16,
                           switch (state.step) {
                             DraftStep.route => const _RouteStep(),
                             DraftStep.cargo => const _CargoStep(),
@@ -268,10 +240,6 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
           ],
         ),
         bottomNavigationBar: BottomActionBar(
-          caption: Text(
-            'Step ${state.step.index + 1} of ${DraftStep.values.length + 1} · ${isLast ? 'review comes next' : 'fill ${state.step.shortTitle.toLowerCase()} to continue'}',
-            style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
-          ),
           child: PrimaryButton(
             label: isLast
                 ? 'Review request'
@@ -317,16 +285,24 @@ class _DoneStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       onTap: onEdit,
-      padding: const EdgeInsets.symmetric(horizontal: Gap.md, vertical: 10),
+      padding: const EdgeInsets.fromLTRB(Gap.lg, 12, Gap.sm, 12),
       semanticLabel: '${step.title}: $_summary. Edit',
       child: Row(
         children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            color: AppColors.success,
-            size: 20,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              color: AppColors.successSoft,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: AppColors.success,
+              size: 18,
+            ),
           ),
-          Space.h10,
+          Space.h12,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,8 +310,8 @@ class _DoneStep extends StatelessWidget {
                 Text(
                   step.title,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.5,
                   ),
                 ),
                 Text(
@@ -343,14 +319,14 @@ class _DoneStep extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13.5,
                     color: AppColors.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+          TextButton(onPressed: onEdit, child: const Text('Edit')),
         ],
       ),
     );

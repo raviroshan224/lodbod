@@ -100,9 +100,9 @@ class ReviewShipmentScreen extends ConsumerWidget {
           children: [
             StepHeader(
               current: DraftStep.values.length,
-              labels: [
-                for (final s in DraftStep.values) s.shortTitle,
-                'Review',
+              titles: [
+                for (final s in DraftStep.values) s.title,
+                'Review & post',
               ],
             ),
             Expanded(
@@ -219,7 +219,11 @@ class ReviewShipmentScreen extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: state.submitting ? null : saveDraft,
-                  child: const Text('Save draft'),
+                  child: const Text(
+                    'Save draft',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
               Space.h12,

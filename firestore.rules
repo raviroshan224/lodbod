@@ -101,6 +101,29 @@ service cloud.firestore {
       allow delete: if ownsExisting();
     }
 
+    // Live position of a shipment, one document per shipment. In production
+    // the carrier's driver app reports through the backend; in this build
+    // the shipper's app simulates the driver, so the shipment's owner may
+    // write it. `resource == null` lets a transaction read a missing report.
+    match /tracking/{shipmentId} {
+      allow get: if signedIn() && (resource == null || resource.data.shipperId == request.auth.uid);
+      allow list: if false;
+      allow create, update: if ownsNew()
+        && get(/databases/$(database)/documents/shipments/$(shipmentId)).data.shipperId == request.auth.uid
+        && request.resource.data.progress is number
+        && request.resource.data.progress >= 0
+        && request.resource.data.progress <= 1
+        && request.resource.data.speedKmh is number
+        && request.resource.data.speedKmh >= 0
+        && request.resource.data.speedFactor is int
+        && request.resource.data.speedFactor >= 1
+        && request.resource.data.speedFactor <= 60
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.etaAt is timestamp
+        && request.resource.data.tripStartedAt is timestamp;
+      allow delete: if ownsExisting();
+    }
+
     // Reference sequence: may only move forward, so references stay unique.
     match /meta/counters {
       allow read: if signedIn();

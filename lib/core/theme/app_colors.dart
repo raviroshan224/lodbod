@@ -3,42 +3,51 @@ import 'package:material_ui/material_ui.dart';
 /// LODBOD brand palette. Orange is the action colour; surfaces stay white on
 /// a light neutral background so content, not chrome, carries the hierarchy.
 abstract final class AppColors {
-  /// Brand orange. White bold text on it meets WCAG AA (≈4.5:1).
+  /// Brand orange (kept exactly). White bold text on it meets WCAG AA.
   static const primary = Color(0xFFD9470F);
   static const primaryDark = Color(0xFFB83A09);
-  static const primarySoft = Color(0xFFFFF1EA);
-  static const primaryBorder = Color(0xFFF9D2C0);
+
+  /// Material 3 tonal companions generated from the brand orange.
+  static const primaryContainer = Color(0xFFFFDBD0);
+  static const onPrimaryContainer = Color(0xFF723521);
+  static const primarySoft = Color(0xFFFFEDE7);
+  static const primaryBorder = Color(0xFFF5C4B3);
   static const onPrimarySoft = Color(0xFF8F2C05);
 
-  static const background = Color(0xFFF5F5F7);
+  /// Warm neutral surfaces (M3 surface containers from the same seed):
+  /// screens sit on [background], content on white [surface].
+  static const background = Color(0xFFF8F2EF);
   static const surface = Colors.white;
-  static const surfaceMuted = Color(0xFFF9F9FB);
-  static const border = Color(0xFFE9E9EE);
-  static const divider = Color(0xFFF0F0F3);
+  static const surfaceMuted = Color(0xFFFBF7F5);
+  static const surfaceContainer = Color(0xFFF3EBE7);
+  static const surfaceContainerHigh = Color(0xFFECE2DD);
+  static const border = Color(0xFFE6DAD5);
+  static const divider = Color(0xFFF1E9E5);
 
-  static const textPrimary = Color(0xFF121216);
-  static const textSecondary = Color(0xFF5D5D69);
-  static const textMuted = Color(0xFF8C8C98);
+  static const textPrimary = Color(0xFF231917);
+  static const textSecondary = Color(0xFF53433F);
+  static const textMuted = Color(0xFF85736E);
 
-  static const error = Color(0xFFC62828);
-  static const errorSoft = Color(0xFFFDEDED);
-  static const success = Color(0xFF15803D);
-  static const successSoft = Color(0xFFE8F6ED);
-  static const info = Color(0xFF1D4ED8);
-  static const infoSoft = Color(0xFFEAF0FE);
-  static const warning = Color(0xFF9A5B00);
-  static const warningSoft = Color(0xFFFFF5DD);
-  static const violet = Color(0xFF6D28D9);
-  static const violetSoft = Color(0xFFF1ECFD);
-  static const teal = Color(0xFF0F766E);
-  static const tealSoft = Color(0xFFE2F5F2);
+  static const error = Color(0xFFBA1A1A);
+  static const errorSoft = Color(0xFFFFEDEA);
+  static const success = Color(0xFF146C2E);
+  static const successSoft = Color(0xFFE3F4E6);
+  static const info = Color(0xFF1B5FC2);
+  static const infoSoft = Color(0xFFE6EEFC);
+  static const warning = Color(0xFF8A5100);
+  static const warningSoft = Color(0xFFFFF0D9);
+  static const violet = Color(0xFF6A3FC4);
+  static const violetSoft = Color(0xFFF0EAFC);
+  static const teal = Color(0xFF006A62);
+  static const tealSoft = Color(0xFFDDF3EF);
 
-  static const skeleton = Color(0xFFECECF0);
-  static const skeletonHighlight = Color(0xFFF7F7F9);
+  static const skeleton = Color(0xFFEFE6E2);
+  static const skeletonHighlight = Color(0xFFF8F2EF);
 
-  /// Very soft elevation used on cards and floating controls.
+  /// Material 3 cards are flat (tonal contrast, no shadow); this is only
+  /// for elements floating over a map or image.
   static const shadow = [
-    BoxShadow(color: Color(0x0A101828), blurRadius: 12, offset: Offset(0, 4)),
-    BoxShadow(color: Color(0x05101828), blurRadius: 2, offset: Offset(0, 1)),
+    BoxShadow(color: Color(0x14231917), blurRadius: 16, offset: Offset(0, 6)),
+    BoxShadow(color: Color(0x0A231917), blurRadius: 3, offset: Offset(0, 1)),
   ];
 }

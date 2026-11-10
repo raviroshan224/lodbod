@@ -66,11 +66,9 @@ class BottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
-      ),
+    // No fill: blends with the page it sits on (tinted screens, white auth).
+    return Material(
+      type: MaterialType.transparency,
       child: SafeArea(
         top: false,
         child: Padding(
@@ -107,6 +105,8 @@ Future<bool> confirmAction(
 }) async {
   final accent = destructive ? AppColors.error : AppColors.primary;
   final result = await showModalBottomSheet<bool>(
+    // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (context) => SafeArea(
@@ -117,27 +117,38 @@ Future<bool> confirmAction(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (icon != null) ...[
-              Align(
-                alignment: Alignment.centerLeft,
+              Center(
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
+                    color: destructive
+                        ? AppColors.errorSoft
+                        : AppColors.primaryContainer,
+                    shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: accent),
+                  child: Icon(
+                    icon,
+                    color: destructive
+                        ? AppColors.error
+                        : AppColors.onPrimaryContainer,
+                  ),
                 ),
               ),
               Space.v16,
             ],
-            Text(title, style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             Space.v8,
             Text(
               message,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textSecondary,
-                fontSize: 14.5,
+                fontSize: 15,
                 height: 1.45,
               ),
             ),

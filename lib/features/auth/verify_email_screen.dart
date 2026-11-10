@@ -107,7 +107,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
 
     return AuthScaffold(
       title: 'Verify your email',
-      subtitle: 'Step 2 of 2 · Almost done',
+      subtitle: 'One last step before you start posting loads.',
       progress: 1,
       bottom: BottomActionBar(
         child: Column(

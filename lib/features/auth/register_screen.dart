@@ -89,14 +89,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     return AuthScaffold(
       showBack: true,
-      title: 'Create account',
-      subtitle: 'Step 1 of 2 · Shipper details',
+      title: 'Create your account',
+      subtitle: 'Post loads and compare carrier bids in minutes.',
       progress: 0.5,
-      bottom: BottomActionBar(
-        child: PrimaryButton(
-          label: 'Create account',
-          loading: _submitting,
-          onPressed: _submit,
+      bottom: AuthActionRow(
+        secondary: TextButton(
+          onPressed: _submitting ? null : () => context.go(Routes.login),
+          child: const Text('Log in instead'),
+        ),
+        primary: SizedBox(
+          width: 190,
+          child: PrimaryButton(
+            label: 'Create account',
+            loading: _submitting,
+            onPressed: _submit,
+          ),
         ),
       ),
       children: [
@@ -234,21 +241,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         if (_submittedOnce && !_accepted)
           const FieldErrorText('Please accept the terms to create an account'),
         if (_error != null) ...[Space.v16, InlineBanner(message: _error!)],
-        Space.v16,
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            const Text(
-              'Already have an account?',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            TextButton(
-              onPressed: _submitting ? null : () => context.go(Routes.login),
-              child: const Text('Log in'),
-            ),
-          ],
-        ),
       ],
     );
   }

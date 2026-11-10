@@ -1,4 +1,5 @@
 import '../../domain/shipment_draft.dart';
+import '../../domain/tracking.dart';
 import '../models/bid.dart';
 import '../models/shipment.dart';
 import '../models/user_profile.dart';
@@ -124,4 +125,16 @@ abstract interface class BidRepository {
 
   /// Adds simulated carrier bids to a shipment with no bids yet.
   Future<int> simulateIncomingBids(String shipmentId);
+}
+
+abstract interface class TrackingRepository {
+  /// The latest position report for a shipment, updated live on every
+  /// device; null until the first report.
+  Stream<LivePosition?> watchPosition(String shipmentId);
+
+  /// Reports where an in-transit [shipment] is now, from the simulated
+  /// driver (in production the carrier's driver app reports). Skipped when
+  /// another device reported moments ago. [speedFactor] turns fast-forward
+  /// on (above 1) or off (1).
+  Future<void> reportSimulatedPosition(Shipment shipment, {int? speedFactor});
 }

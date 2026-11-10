@@ -14,6 +14,7 @@ import '../../data/models/shipment.dart';
 import '../../domain/bid_rules.dart';
 import '../../routing/routes.dart';
 import '../shipments/shipments_providers.dart';
+import 'accept_bid.dart';
 import 'widgets/bid_card.dart';
 
 /// Neutral sort orders. The default is arrival order so no offer is
@@ -55,6 +56,24 @@ class BidsScreen extends ConsumerStatefulWidget {
 
 class _BidsScreenState extends ConsumerState<BidsScreen> {
   BidSort _sort = BidSort.received;
+
+  /// Bid whose accept is running (disables the other cards meanwhile).
+  String? _accepting;
+
+  Future<void> _accept(Shipment s, Bid bid, int otherBids) async {
+    setState(() => _accepting = bid.id);
+    try {
+      await confirmAndAcceptBid(
+        context,
+        ref,
+        shipment: s,
+        bid: bid,
+        otherBids: otherBids,
+      );
+    } finally {
+      if (mounted) setState(() => _accepting = null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +124,8 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
 
   Widget _content(Shipment s, List<Bid> bids) {
     final sorted = _sort.apply(bids);
+    final booking =
+        ref.watch(shipmentActionsProvider(s.id)) == ShipmentAction.acceptBid;
     final accepted = bids.where((b) => b.id == s.acceptedBidId).firstOrNull;
 
     return ListView(
@@ -196,8 +217,17 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
               pickupAt: s.pickupAt,
               budget: s.expectedFare,
               onTap: () => context.push(Routes.bid(s.id, bid.id)),
+              // Accept straight from the list; the same confirmation sheet
+              // as the offer details screen.
+              accepting: booking && _accepting == bid.id,
+              onAccept:
+                  s.status == ShipmentStatus.awaitingBids &&
+                      effectiveBidStatus(bid, s) == BidStatus.pending &&
+                      _accepting == null
+                  ? () => _accept(s, bid, bids.length - 1)
+                  : null,
             ),
-            Space.v8,
+            Space.v12,
           ],
         ],
       ],

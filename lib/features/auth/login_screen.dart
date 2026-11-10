@@ -83,19 +83,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final message = _error ?? notice;
 
     return AuthScaffold(
+      bottom: AuthActionRow(
+        // `go`, not `push`: the router must see /register as the current
+        // location to continue to email verification after sign-up.
+        secondary: TextButton(
+          onPressed: _submitting ? null : () => context.go(Routes.register),
+          child: const Text('Create account'),
+        ),
+        primary: SizedBox(
+          width: 136,
+          child: PrimaryButton(
+            label: 'Log in',
+            loading: _submitting,
+            onPressed: _submit,
+          ),
+        ),
+        footer: const LegalFootnote(),
+      ),
       children: [
         const Align(
           alignment: Alignment.centerLeft,
-          child: BrandMark(size: 48),
+          child: BrandMark(size: 56),
         ),
         Space.v24,
-        Text('Welcome back', style: Theme.of(context).textTheme.headlineMedium),
-        Space.v6,
+        Text('Welcome back', style: Theme.of(context).textTheme.headlineLarge),
+        Space.v8,
         const Text(
           'Log in to post loads, compare bids and track your shipments.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 15.5,
+            height: 1.4,
+          ),
         ),
-        Space.v24,
+        Space.v32,
         Form(
           key: _formKey,
           autovalidateMode: _submittedOnce
@@ -116,7 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ? null
                       : (m) => setState(() => _method = m),
                 ),
-                Space.v20,
+                Space.v24,
                 FieldLabel(isPhone ? 'Phone number' : 'Email address'),
                 if (isPhone)
                   TextFormField(
@@ -163,12 +184,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       (v == null || v.isEmpty) ? 'Password is required' : null,
                   onSubmitted: (_) => _submit(),
                 ),
+                Space.v4,
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: Alignment.centerLeft,
                   child: TextButton(
                     onPressed: _submitting
                         ? null
                         : () => context.push(Routes.forgotPassword),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
                     child: const Text('Forgot password?'),
                   ),
                 ),
@@ -181,39 +206,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: message == null
               ? const SizedBox(width: double.infinity)
               : Padding(
-                  padding: const EdgeInsets.only(top: Gap.lg),
+                  padding: const EdgeInsets.only(top: Gap.md),
                   child: InlineBanner(message: message),
                 ),
         ),
-        Space.v12,
-        PrimaryButton(
-          label: 'Log in',
-          loading: _submitting,
-          onPressed: _submit,
-        ),
-        Space.v20,
-        const Row(
-          children: [
-            Expanded(child: Divider()),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: Gap.md),
-              child: Text(
-                'or',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-              ),
-            ),
-            Expanded(child: Divider()),
-          ],
-        ),
-        Space.v20,
-        OutlinedButton(
-          // `go`, not `push`: the router must see /register as the current
-          // location to continue to email verification after sign-up.
-          onPressed: _submitting ? null : () => context.go(Routes.register),
-          child: const Text('Create a shipper account'),
-        ),
-        Space.v32,
-        const LegalFootnote(),
       ],
     );
   }

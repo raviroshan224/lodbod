@@ -8,6 +8,7 @@ import '../../../data/models/bid.dart';
 
 /// One carrier offer. Every bid shows the same fields in the same places so
 /// offers can be compared at a glance; no bid is singled out as "best".
+/// While the offer is open the card has its own Accept and Details actions.
 class BidCard extends StatelessWidget {
   const BidCard({
     super.key,
@@ -16,6 +17,8 @@ class BidCard extends StatelessWidget {
     required this.pickupAt,
     required this.onTap,
     this.budget,
+    this.onAccept,
+    this.accepting = false,
   });
 
   final Bid bid;
@@ -25,6 +28,13 @@ class BidCard extends StatelessWidget {
 
   /// The shipper's own budget, if they set one.
   final int? budget;
+
+  /// Shown as an Accept button while the offer can be accepted; null when
+  /// it can't (or another action is already running).
+  final VoidCallback? onAccept;
+
+  /// This card's accept is in progress.
+  final bool accepting;
 
   /// Neutral difference from the budget. Deliberately not coloured or
   /// ranked: a cheaper offer is not automatically the better one.
@@ -36,24 +46,26 @@ class BidCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pending = displayStatus == BidStatus.pending;
     final accepted = displayStatus == BidStatus.accepted;
     final declined = displayStatus == BidStatus.declined;
+    final showActions = pending && (onAccept != null || accepting);
     return Opacity(
       opacity: declined ? 0.6 : 1,
       child: AppCard(
         onTap: onTap,
-        borderColor: accepted ? AppColors.success : AppColors.border,
-        padding: const EdgeInsets.fromLTRB(Gap.lg, 14, Gap.lg, 12),
+        borderColor: accepted ? AppColors.success : null,
+        padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.md),
         semanticLabel:
             '${bid.carrierName}, ${Fmt.npr(bid.fare)}, ${Fmt.days(bid.estimatedDeliveryDays)}, rated ${bid.carrierRating}',
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 InitialsAvatar(
                   Fmt.initials(bid.carrierName),
-                  size: 40,
+                  size: 44,
                   soft: true,
                 ),
                 Space.h12,
@@ -64,8 +76,8 @@ class BidCard extends StatelessWidget {
                       Text(
                         bid.carrierName,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -77,82 +89,129 @@ class BidCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (displayStatus != BidStatus.pending)
-                  BidStatusBadge(displayStatus)
-                else
+                Space.h8,
+                if (pending)
                   Text(
                     Fmt.npr(bid.fare),
                     style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
                     ),
-                  ),
+                  )
+                else
+                  BidStatusBadge(displayStatus),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Divider(),
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // The fare sits top-right while the offer is open; once the
-                // status badge takes that spot, show it here instead.
-                if (displayStatus != BidStatus.pending)
-                  Expanded(
-                    child: _Metric(label: 'Fare', value: Fmt.npr(bid.fare)),
-                  )
-                else if (budget != null)
+            Space.v16,
+            // Facts on a tonal strip so they read as one comparable unit.
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // The fare sits top-right while the offer is open; once
+                  // the status badge takes that spot, show it here instead.
+                  if (!pending)
+                    Expanded(
+                      child: _Metric(label: 'Fare', value: Fmt.npr(bid.fare)),
+                    )
+                  else if (budget != null)
+                    Expanded(
+                      child: _Metric(
+                        label: 'Budget',
+                        value: budgetDelta(bid.fare, budget!),
+                      ),
+                    ),
                   Expanded(
                     child: _Metric(
-                      label: 'Budget',
-                      value: budgetDelta(bid.fare, budget!),
+                      label: 'Delivery',
+                      value: Fmt.days(bid.estimatedDeliveryDays),
+                      caption:
+                          'by ${Fmt.dayMonth(bid.estimatedDeliveryFrom(pickupAt))}',
                     ),
                   ),
-                Expanded(
-                  child: _Metric(
-                    label: 'Delivery',
-                    value: Fmt.days(bid.estimatedDeliveryDays),
-                    caption:
-                        'by ${Fmt.dayMonth(bid.estimatedDeliveryFrom(pickupAt))}',
+                  Expanded(
+                    child: _Metric(
+                      label: 'Vehicle',
+                      value: bid.vehicleType.label,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _Metric(
-                    label: 'Vehicle',
-                    value: bid.vehicleType.label,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Space.v8,
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
+            Space.v12,
+            if (showActions) ...[
+              Text(
+                'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12.5,
+                ),
+              ),
+              Space.v12,
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: accepting ? null : onTap,
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(44),
+                      ),
+                      child: const Text('Details'),
                     ),
                   ),
-                ),
-                const Text(
-                  'Details',
-                  style: TextStyle(
+                  Space.h8,
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: accepting ? null : onAccept,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(44),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      icon: accepting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.check_rounded, size: 20),
+                      label: const Text('Accept'),
+                    ),
+                  ),
+                ],
+              ),
+            ] else
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'Details',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    size: 20,
                   ),
-                ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),

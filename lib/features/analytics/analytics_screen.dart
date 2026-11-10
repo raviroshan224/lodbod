@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -11,7 +10,7 @@ import '../../core/widgets/state_views.dart';
 import '../../core/widgets/visuals.dart';
 import '../../data/models/shipment.dart';
 import '../../domain/shipment_analytics.dart';
-import '../../routing/routes.dart';
+import '../create_shipment/open_post_load.dart';
 import '../shipments/shipments_providers.dart';
 
 enum AnalyticsPeriod {
@@ -92,7 +91,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                 : 'Try a longer period to see your activity.',
             action: all.isEmpty
                 ? FilledButton(
-                    onPressed: () => context.push(Routes.postLoad),
+                    onPressed: () => openPostLoad(context, ref),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(170, 48),
                     ),
@@ -130,30 +129,36 @@ class _Content extends StatelessWidget {
       children: [
         AppCard(
           padding: const EdgeInsets.all(Gap.lg),
-          color: AppColors.textPrimary,
-          borderColor: AppColors.textPrimary,
+          color: AppColors.primaryContainer,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Booked spend · ${period.label.toLowerCase()}',
-                style: const TextStyle(color: Color(0xFFB9B9C4), fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.onPrimaryContainer,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Space.v4,
               Text(
                 Fmt.npr(a.committedSpend),
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
+                  color: AppColors.textPrimary,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1,
                 ),
               ),
               Space.v4,
               Text(
                 '${a.bookedCount} booked ${a.bookedCount == 1 ? 'load' : 'loads'}'
                 '${a.averageFare == null ? '' : ' · avg ${Fmt.npr(a.averageFare!)} per load'}',
-                style: const TextStyle(color: Color(0xFFDADAE2), fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.onPrimaryContainer,
+                  fontSize: 14,
+                ),
               ),
             ],
           ),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../data/models/bid.dart';
@@ -72,8 +74,9 @@ class Pill extends StatelessWidget {
   }
 }
 
-/// White rounded surface with a hairline border and soft shadow. Tappable
-/// when [onTap] is given.
+/// Flat white surface with large rounded corners (Material 3 card on the
+/// tinted background). Tappable when [onTap] is given; [borderColor] adds an
+/// accent outline (e.g. the accepted bid).
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -81,7 +84,7 @@ class AppCard extends StatelessWidget {
     this.onTap,
     this.padding = const EdgeInsets.all(Gap.lg),
     this.color = AppColors.surface,
-    this.borderColor = AppColors.border,
+    this.borderColor,
     this.semanticLabel,
   });
 
@@ -89,7 +92,7 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
   final Color color;
-  final Color borderColor;
+  final Color? borderColor;
   final String? semanticLabel;
 
   @override
@@ -98,19 +101,16 @@ class AppCard extends StatelessWidget {
     if (onTap != null) {
       content = InkWell(onTap: onTap, child: content);
     }
-    final card = Container(
-      decoration: BoxDecoration(
-        color: color,
+    final card = Material(
+      color: color,
+      shape: RoundedRectangleBorder(
         borderRadius: Radii.card,
-        border: Border.all(color: borderColor),
-        boxShadow: AppColors.shadow,
+        side: borderColor == null
+            ? BorderSide.none
+            : BorderSide(color: borderColor!, width: 1.5),
       ),
-      child: Material(
-        type: MaterialType.transparency,
-        borderRadius: Radii.card,
-        clipBehavior: Clip.antiAlias,
-        child: content,
-      ),
+      clipBehavior: Clip.antiAlias,
+      child: content,
     );
     if (semanticLabel == null) return card;
     return Semantics(button: onTap != null, label: semanticLabel, child: card);
@@ -177,9 +177,9 @@ class SectionHeader extends StatelessWidget {
             child: Text(
               title,
               style: const TextStyle(
-                fontSize: 15.5,
+                fontSize: 17,
                 fontWeight: FontWeight.w700,
-                letterSpacing: -0.1,
+                letterSpacing: -0.2,
               ),
             ),
           ),
@@ -463,7 +463,7 @@ class IconTile extends StatelessWidget {
   }
 }
 
-/// White circular icon button with a hairline border (back, bell, filter).
+/// Tonal circular icon button (bell, sort), with an optional count badge.
 class CircleIconButton extends StatelessWidget {
   const CircleIconButton({
     super.key,
@@ -492,10 +492,8 @@ class CircleIconButton extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Material(
-              color: AppColors.surface,
-              shape: const CircleBorder(
-                side: BorderSide(color: AppColors.border),
-              ),
+              color: AppColors.surfaceContainer,
+              shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: onPressed,
@@ -542,7 +540,8 @@ class CircleIconButton extends StatelessWidget {
   }
 }
 
-/// LODBOD app mark: orange tile with a truck, plus optional wordmark.
+/// LODBOD app mark: orange tile with the "lb" monogram, plus optional
+/// wordmark.
 class BrandMark extends StatelessWidget {
   const BrandMark({super.key, this.size = 48, this.showWordmark = false});
   final double size;
@@ -564,11 +563,7 @@ class BrandMark extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        Icons.local_shipping_rounded,
-        color: Colors.white,
-        size: size * 0.52,
-      ),
+      child: const BrandGlyph(),
     );
     if (!showWordmark) return tile;
     return Column(
@@ -576,20 +571,27 @@ class BrandMark extends StatelessWidget {
       children: [
         tile,
         Space.v16,
-        const Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: 'LOD'),
-              TextSpan(
-                text: 'BOD',
-                style: TextStyle(color: AppColors.primary),
-              ),
-            ],
-          ),
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 3,
+        // Lowercase italic like the lodbod.com wordmark. Inter ships upright
+        // only here, so the slant is a skew rather than a faux-italic face.
+        Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.skewX(-BrandGlyph.slant),
+          child: const Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: 'lod'),
+                TextSpan(
+                  text: 'bod',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ],
+            ),
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.8,
+              height: 1,
+            ),
           ),
         ),
         Space.v4,
@@ -605,4 +607,139 @@ class BrandMark extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The "lb" monogram on its own, filling a square of whatever size it is
+/// given. Drawn after the lodbod.com mark: a forward-leaning "l" broken by
+/// speed stripes, and a "b" whose shoulder is cut at an angle like a truck
+/// cab's windscreen.
+class BrandGlyph extends StatelessWidget {
+  const BrandGlyph({super.key, this.color = Colors.white});
+  final Color color;
+
+  /// Forward lean shared by the monogram and the wordmark (about 9.6°).
+  static final slant = math.atan(_BrandGlyphPainter.lean);
+
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox.expand(child: CustomPaint(painter: _BrandGlyphPainter(color)));
+}
+
+class _BrandGlyphPainter extends CustomPainter {
+  _BrandGlyphPainter(this.color);
+  final Color color;
+
+  /// Horizontal shift per unit of height, pivoting on the vertical centre.
+  static const lean = 0.17;
+
+  // Geometry on a 100×100 grid, drawn upright and then leaned. Vertical
+  // strokes are heavier than horizontal ones, as in the source mark.
+  static const _top = 19.0, _base = 81.0;
+  static const _stemL = 30.0, _stemR = 44.0; // "l" stem
+  static const _legL = 59.0, _legR = 73.0; // "b" right-hand leg
+  static const _shoulder = 36.5; // top of the "b" bowl
+  static const _bar = 9.5; // horizontal stroke weight
+  static const _gap = 3.0; // slit between the two letters
+  static const _cab = 11.0; // windscreen chamfer on the "b"
+
+  /// Speed stripes cut across the stem: (top, bottom) of each solid slice.
+  static const _slices = [
+    (_top, 30.8),
+    (34.6, 38.7),
+    (42.5, 46.6),
+    (50.4, 54.5),
+  ];
+
+  /// Closed outlines as (x, y, corner radius) points, clockwise.
+  static final List<List<(double, double, double)>> _outlines = [
+    for (final (i, (y0, y1)) in _slices.indexed)
+      [
+        (_stemL, y0, i == 0 ? 2.0 : 0.6),
+        (_stemR, y0, i == 0 ? 2.0 : 0.6),
+        (_stemR, y1, 0.6),
+        (_stemL, y1, 0.6),
+      ],
+    // Lower stem and foot of the "l".
+    [
+      (_stemL, 58.3, 0.6),
+      (_stemR, 58.3, 0.6),
+      (_stemR, _base - _bar, 1.5),
+      (_legL - _gap, _base - _bar, 0.6),
+      (_legL - _gap, _base, 0.6),
+      (_stemL, _base, 9),
+    ],
+    // Shoulder and leg of the "b", with the cab-shaped corner.
+    [
+      (_stemR + _gap, _shoulder, 0.6),
+      (_legR - _cab, _shoulder, 3),
+      (_legR, _shoulder + _cab, 3),
+      (_legR, _base, 6),
+      (_legL, _base, 0.6),
+      (_legL, _shoulder + _bar + 4, 1),
+      (_legL - 4, _shoulder + _bar, 1),
+      (_stemR + _gap, _shoulder + _bar, 0.6),
+    ],
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = math.min(size.width, size.height) / 100;
+    final origin = Offset(
+      (size.width - 100 * scale) / 2,
+      (size.height - 100 * scale) / 2,
+    );
+    // Lean and scale. Affine, so the corner curves stay exact.
+    Offset map(Offset p) =>
+        origin + Offset(p.dx + lean * (50 - p.dy), p.dy) * scale;
+
+    final path = Path();
+    for (final outline in _outlines) {
+      _addRounded(path, outline, map);
+    }
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  /// Adds a closed polygon whose corners are rounded with circular arcs
+  /// (as cubics), each clamped so it never takes more than half an edge.
+  static void _addRounded(
+    Path path,
+    List<(double, double, double)> points,
+    Offset Function(Offset) map,
+  ) {
+    final n = points.length;
+    final corners = <(Offset, Offset, Offset, Offset)>[];
+    for (var i = 0; i < n; i++) {
+      final (x, y, r) = points[i];
+      final (px, py, _) = points[(i - 1 + n) % n];
+      final (nx, ny, _) = points[(i + 1) % n];
+      final v = Offset(x, y);
+      final inEdge = v - Offset(px, py);
+      final outEdge = Offset(nx, ny) - v;
+      final dIn = inEdge / inEdge.distance;
+      final dOut = outEdge / outEdge.distance;
+      final turn = math.acos(
+        (dIn.dx * dOut.dx + dIn.dy * dOut.dy).clamp(-1.0, 1.0),
+      );
+      final reach = math.min(
+        r * math.tan(turn / 2),
+        math.min(inEdge.distance, outEdge.distance) / 2,
+      );
+      final radius = turn == 0 ? 0.0 : reach / math.tan(turn / 2);
+      final handle = 4 / 3 * math.tan(turn / 4) * radius;
+      final a = v - dIn * reach, e = v + dOut * reach;
+      corners.add((a, a + dIn * handle, e - dOut * handle, e));
+    }
+    final start = map(corners.last.$4);
+    path.moveTo(start.dx, start.dy);
+    for (final (a, c1, c2, e) in corners) {
+      final pa = map(a), p1 = map(c1), p2 = map(c2), pe = map(e);
+      path
+        ..lineTo(pa.dx, pa.dy)
+        ..cubicTo(p1.dx, p1.dy, p2.dx, p2.dy, pe.dx, pe.dy);
+    }
+    path.close();
+  }
+
+  @override
+  bool shouldRepaint(_BrandGlyphPainter old) => old.color != color;
 }

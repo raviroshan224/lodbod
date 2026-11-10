@@ -18,12 +18,14 @@ abstract final class Radii {
   static const double md = 12;
   static const double lg = 16;
   static const double xl = 24;
+  static const double xxl = 28;
 
-  static final card = BorderRadius.circular(lg);
-  static final input = BorderRadius.circular(md);
-  static final button = BorderRadius.circular(14);
+  /// Material 3 Expressive shapes: large rounded cards, pill buttons.
+  static final card = BorderRadius.circular(xl);
+  static final input = BorderRadius.circular(lg);
+  static final button = BorderRadius.circular(999);
   static final chip = BorderRadius.circular(999);
-  static const sheet = BorderRadius.vertical(top: Radius.circular(xl));
+  static const sheet = BorderRadius.vertical(top: Radius.circular(xxl));
 }
 
 /// Shorthand spacers.

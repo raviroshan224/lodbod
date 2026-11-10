@@ -1,5 +1,10 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +24,25 @@ Future<void> loadInterFont() async {
   }
   await inter.load();
 }
+
+/// Loads the Material icon font from the Flutter SDK so rendered screens
+/// show real icons (the test default draws boxes).
+Future<void> loadIconFont() async {
+  final sdk = File(Platform.resolvedExecutable)
+      .parent
+      .parent
+      .parent
+      .parent
+      .path;
+  final file = File('$sdk/artifacts/material_fonts/MaterialIcons-Regular.otf');
+  if (!file.existsSync()) return;
+  final bytes = file.readAsBytesSync();
+  final loader = FontLoader('MaterialIcons')
+    ..addFont(Future.value(ByteData.view(bytes.buffer)));
+  await loader.load();
+}
+
+final appBoundaryKey = GlobalKey();
 
 /// The whole app (router, shell, every provider) over in-memory fakes.
 class AppHarness {
@@ -44,6 +68,20 @@ class AppHarness {
   Future<void> go(String location) async {
     router.go(location);
     await settle();
+  }
+
+  /// Saves what's on screen as a PNG (for design review).
+  Future<void> capture(String path) async {
+    final boundary = tester.renderObject<RenderRepaintBoundary>(
+      find.byKey(appBoundaryKey),
+    );
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 2);
+      final png = await image.toByteData(format: ui.ImageByteFormat.png);
+      File(path)
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(png!.buffer.asUint8List());
+    });
   }
 
   Future<void> tapText(String text) async {
@@ -82,7 +120,13 @@ Future<AppHarness> pumpApp(
   addTearDown(container.dispose);
 
   await tester.pumpWidget(
-    UncontrolledProviderScope(container: container, child: const LodbodApp()),
+    RepaintBoundary(
+      key: appBoundaryKey,
+      child: UncontrolledProviderScope(
+        container: container,
+        child: const LodbodApp(),
+      ),
+    ),
   );
   final app = AppHarness(tester, container, auth, uid);
   await app.settle();

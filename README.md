@@ -12,8 +12,8 @@ and every screen updates live.
 | State management | Riverpod 3 (`flutter_riverpod` 3.5, no code generation) |
 | Navigation | go_router 18: session-driven redirects, stateful tab shell |
 | Backend | Firebase Auth (email + password) and Cloud Firestore, project `lodbod-ravi` |
-| Design | Custom design system on Material 3, Inter typeface, LODBOD orange |
-| Tests | 118: business rules, Firestore repositories, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
+| Design | Material 3 Expressive (Google's 2025–26 design language): tonal palette generated from LODBOD orange, large rounded shapes, pill buttons, M3 navigation bar and segmented buttons, Android 16-style grouped lists; Inter typeface |
+| Tests | 143: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
 
 Technical note (data flow, repositories, trade-offs, production notes):
 [docs/TECHNICAL_NOTE.md](docs/TECHNICAL_NOTE.md). Screenshots are
@@ -63,7 +63,7 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | Area | What's there |
 |---|---|
 | **Splash & session** | Brand splash while the saved session is restored; you stay signed in across restarts until you sign out. |
-| **Log in** | Phone or email + password, field validation, show/hide password, loading state, clear errors, *Forgot password?* |
+| **Log in** | Google-style sign-in: large headline, Phone / Email segmented button, validation, show/hide password, loading state, clear errors, *Forgot password?*, and *Create account* / *Log in* actions pinned above the keyboard. |
 | **Create account** | Two steps: shipper details (name, phone, email, optional company, password with strength meter, terms consent), then **verify email** (real verification email, resend with cooldown, "skip for now"). Duplicate phone or email is caught; an interrupted sign-up can be finished from *Finish setting up*. |
 | **Forgot password** | Email or phone → Firebase password-reset email. The response is the same whether or not the account exists. |
 | **Role check** | Only `shipper` accounts can use the app. Other roles are signed out with an explanation, and clients can't change their own role. |
@@ -72,9 +72,9 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | **In-app alerts** | Toasts for new bids and delivery updates while the app is open, each with a *View* action; switch them on or off in Account. |
 | **Shipments** | Search (reference, route words, cargo), status chips with counts, sort sheet (newest, pickup date, status), compact cards, empty states, pull to refresh. |
 | **Shipment details** | Status, route with pickup and ETA, 5-step progress, a context card (finding carriers, *N carriers have bid*, carrier with call button, cancelled), details, pickup contact with call, activity log. The main action changes with status: *Compare bids*, *Track shipment*, *Post a similar load*. The ⋮ menu has copy reference, cancel, and labelled carrier simulations. |
-| **Tracking** | Stylised route map with checkpoints and an animated truck, ETA, km remaining, carrier card with call, stop list. Clearly labelled *Simulated tracking*. |
-| **Bids** | Load summary, sort chips, comparable offer cards (fare, delivery date, vehicle and a neutral *under / over your budget*), offer details (fare against your budget, delivery date, vehicle, note), accept through a confirmation sheet; the shipment and all bids update in one transaction. |
-| **Post Load** | Mockup-style flow with step chips, recent-city shortcuts, city suggestions, swap, date and time chips with pickers (times that have already passed today are disabled), summaries of completed steps with *Edit*, a review screen and a confirmation screen. **Save draft** stores the form on your account and it comes back next time, on any device. Closing never loses input. *Post a similar load* prefills from an earlier shipment. |
+| **Tracking** | Live over Firestore: a simulated driver reports the truck's position every 5 seconds and every device watching follows it (*Live · simulated driver · updated 3s ago*), with speed, live ETA, km remaining, *Arrived* at the destination and a *Simulate: fast-forward ×60* switch for demos. Stylised route map with checkpoints, carrier card with call, stop list. Without reports it falls back to a schedule estimate labelled *Simulated tracking*. |
+| **Bids** | Load summary, sort chips, comparable offer cards (fare, delivery date, vehicle and a neutral *under / over your budget*). **Accept straight from a card** or open *Details* first; both use the same confirmation sheet, and the shipment and all bids update in one transaction. No offer is labelled "best". |
+| **Post Load** | Four-step flow with a Material 3 step header (*Step 2 of 4 · Cargo details* and a segmented progress bar; tap a finished segment to go back), recent-city shortcuts, city suggestions, swap, date and time chips with pickers (times that have already passed today are disabled), summaries of completed steps with *Edit*, a review screen and a confirmation screen. **Save draft** stores the form on your account and it comes back next time, on any device. Closing never loses input. *Post a similar load* prefills from an earlier shipment. |
 | **Three-request limit** | Enforced in the Firestore create transaction and in the security rules. The prescribed message appears in a sheet on refusal, and the form data is preserved. Usage appears on Home, Post Load, Review, Analytics and Account. |
 | **Analytics** | Period switch (30 days / 90 days / all time), booked spend, loads posted / open / delivered (tonnes), bids, top routes, status breakdown. |
 | **Account** | Profile & company (edit; phone change re-indexes sign-in), email verification status, request usage, alert switches, help center (FAQ), send feedback (stored in Firestore), Terms and Privacy pages, sample data, sign out (keeps your draft). |
@@ -107,6 +107,8 @@ and the matching `lib/firebase_options.dart`).
 2. **Firestore Database → Create database** (if it doesn't exist).
 3. **Firestore → Rules:** paste [`firestore.rules`](firestore.rules) →
    **Publish**, or run `firebase deploy --only firestore:rules --project lodbod-ravi`.
+   Publish again whenever the file changes (live tracking added the
+   `tracking` collection; until then tracking shows the schedule estimate).
 
 No composite indexes are needed.
 
@@ -129,7 +131,7 @@ flutter run --dart-define=USE_FIREBASE_EMULATORS=true   # Android emulator → 1
 
 ```bash
 flutter analyze                 # no issues
-flutter test                    # 118 tests
+flutter test                    # 143 tests
 flutter build apk --release     # build/app/outputs/flutter-apk/app-release.apk
 ```
 
@@ -187,6 +189,9 @@ shipments/{id}               reference "LOD-1005", shipperId, route, cargo, weig
                              contact, notes, timeline[], createdAt, updatedAt
 bids/{id}                    shipmentId, shipperId, carrier, rating, trips, fare,
                              delivery days, vehicle, carrier phone/plate, status, note
+tracking/{shipmentId}        latest position report: shipperId, progress (0..1),
+                             speedKmh, speedFactor, etaAt, updatedAt,
+                             tripStartedAt, source ("simulated")
 meta/counters                nextShipmentNumber (unique references)
 feedback/{id}                uid, topic, message, createdAt (write-only)
 ```
@@ -234,7 +239,7 @@ production:
   data therefore starts at **3 of 3**, and the app makes the way out clear.
 - **Sample dates are relative to when they're loaded** (LOD-1001 is always
   mid-route, LOD-1004 always a few days ahead). If the sample data is more
-  than 12 hours old and still untouched, it refreshes with current dates at
+  than 3 hours old and still untouched, it refreshes with current dates at
   sign-in. Once you accept a bid, post a load or change a status, it's left
   alone.
 - **Expiry:** a request still awaiting bids after its pickup time becomes
@@ -246,8 +251,15 @@ production:
     while the app is open and is idempotent.
   - Carrier status updates are available from the shipment's ⋮ menu,
     labelled *Simulate*.
-  - Tracking is interpolated from the schedule, labelled *Simulated
-    tracking*, and implies no GPS.
+  - Tracking is live over Firestore, but the driver is simulated: while a
+    tracking screen is open, the app reports the truck's position to
+    `tracking/{shipmentId}` every 5 seconds (one transaction, skipped if
+    another device reported moments ago, so watchers never double up). The
+    truck drives at a realistic speed, or ×60 with fast-forward, and stops
+    at the destination; delivery is still confirmed from the ⋮ menu. With
+    no fresh reports, the position is estimated from the schedule. In
+    production the carrier's driver app would send real GPS positions to
+    the same document through the backend.
 - All carriers, phone numbers, fares and ratings are fictional.
 
 ## Known limitations

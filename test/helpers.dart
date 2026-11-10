@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:lodbod/data/models/user_profile.dart';
 import 'package:lodbod/data/providers.dart';
 import 'package:lodbod/features/auth/session.dart';
+import 'package:lodbod/features/shipments/live_tracking.dart';
 
 import 'fakes.dart';
 
@@ -26,6 +27,8 @@ List<Override> testOverrides(
   firestoreProvider.overrideWithValue(db),
   authRepositoryProvider.overrideWithValue(auth),
   clockProvider.overrideWithValue(() => testNow),
+  // No background position reports; tests write reports themselves.
+  simulatedDriverEnabledProvider.overrideWithValue(false),
 ];
 
 ProviderContainer makeContainer(

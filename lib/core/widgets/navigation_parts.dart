@@ -4,10 +4,9 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import 'common.dart';
 
-/// App bar for pushed screens: circular back button, title and optional
-/// subtitle and actions.
+/// Material 3 top app bar for pushed screens: back (or close) icon, title
+/// with an optional subtitle, and actions.
 class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   const DetailAppBar({
     super.key,
@@ -31,16 +30,12 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       toolbarHeight: 64,
-      leadingWidth: 64,
-      leading: Center(
-        child: CircleIconButton(
-          icon: closeIcon ? Icons.close_rounded : Icons.arrow_back_rounded,
-          tooltip: closeIcon ? 'Close' : 'Back',
-          size: 40,
-          onPressed:
-              onBack ??
-              () => context.canPop() ? context.pop() : context.go('/home'),
-        ),
+      leading: IconButton(
+        icon: Icon(closeIcon ? Icons.close_rounded : Icons.arrow_back_rounded),
+        tooltip: closeIcon ? 'Close' : 'Back',
+        onPressed:
+            onBack ??
+            () => context.canPop() ? context.pop() : context.go('/home'),
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,19 +48,20 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 12.5,
+                fontSize: 13.5,
                 color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0,
               ),
             ),
         ],
       ),
-      actions: [...actions, Space.h8],
+      actions: [...actions, Space.h4],
     );
   }
 }
 
-/// Large title header for top-level tabs.
+/// Large title for top-level tabs (Material 3 large top app bar style).
 class TabHeader extends StatelessWidget {
   const TabHeader({
     super.key,
@@ -83,24 +79,31 @@ class TabHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final side = inset ? Gap.page : 0.0;
     return Padding(
-      padding: EdgeInsets.fromLTRB(side, Gap.md, side, Gap.md),
+      padding: EdgeInsets.fromLTRB(
+        inset ? Gap.page + 4 : 4,
+        Gap.lg,
+        inset ? Gap.page : 0,
+        Gap.md,
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: Theme.of(context).textTheme.headlineMedium),
-                if (subtitle != null)
+                Text(title, style: Theme.of(context).textTheme.headlineLarge),
+                if (subtitle != null) ...[
+                  Space.v2,
                   Text(
                     subtitle!,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 13,
+                      fontSize: 14,
                     ),
                   ),
+                ],
               ],
             ),
           ),
@@ -111,7 +114,8 @@ class TabHeader extends StatelessWidget {
   }
 }
 
-/// Pill-shaped segmented control (Phone | Email, periods, sort orders).
+/// Material 3 segmented button (Phone | Email, periods): connected pill
+/// segments, the selected one tonal with a check mark.
 class PillTabs<T> extends StatelessWidget {
   const PillTabs({
     super.key,
@@ -128,81 +132,82 @@ class PillTabs<T> extends StatelessWidget {
   final IconData? Function(T)? iconOf;
   final ValueChanged<T>? onChanged;
 
+  static const _outline = Color(0xFFD8C2BC);
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      height: 48,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: Radii.button,
-        border: Border.all(color: AppColors.border),
+        borderRadius: Radii.chip,
+        border: Border.all(color: _outline),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final v in values)
-            Expanded(
-              child: Semantics(
-                selected: v == selected,
-                button: true,
-                label: labelOf(v),
-                excludeSemantics: true,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: onChanged == null
-                      ? null
-                      : () {
-                          if (v != selected) HapticFeedback.selectionClick();
-                          onChanged!(v);
-                        },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOut,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: v == selected
-                          ? AppColors.primary
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (iconOf?.call(v) != null) ...[
-                          Icon(
-                            iconOf!(v),
-                            size: 17,
-                            color: v == selected
-                                ? Colors.white
-                                : AppColors.textSecondary,
-                          ),
-                          Space.h6,
-                        ],
-                        Flexible(
-                          child: Text(
-                            labelOf(v),
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w700,
-                              color: v == selected
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ],
+          for (var i = 0; i < values.length; i++) ...[
+            if (i > 0) const VerticalDivider(width: 1, color: _outline),
+            Expanded(child: _segment(values[i])),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _segment(T v) {
+    final isSelected = v == selected;
+    final icon = isSelected ? Icons.check_rounded : iconOf?.call(v);
+    final fg = isSelected
+        ? AppColors.onPrimaryContainer
+        : AppColors.textSecondary;
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      label: labelOf(v),
+      excludeSemantics: true,
+      child: Material(
+        color: isSelected ? AppColors.primaryContainer : Colors.transparent,
+        child: InkWell(
+          onTap: onChanged == null
+              ? null
+              : () {
+                  if (!isSelected) HapticFeedback.selectionClick();
+                  onChanged!(v);
+                },
+          // Narrow segments (e.g. a "Tonnes | kg" toggle) drop the icon so
+          // the label always fits.
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null && constraints.maxWidth >= 96) ...[
+                  Icon(icon, size: 18, color: fg),
+                  Space.h6,
+                ],
+                Flexible(
+                  child: Text(
+                    labelOf(v),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: fg,
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-        ],
+          ),
+        ),
       ),
     );
   }
 }
 
-/// Selectable chip used for filters, dates, times and categories.
+/// Selectable chip used for filters, dates, times and categories. Selected
+/// is tonal (Material 3 filter chip), so it never competes with buttons.
 class ChoicePill extends StatelessWidget {
   const ChoicePill({
     super.key,
@@ -227,10 +232,13 @@ class ChoicePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fg = selected
-        ? Colors.white
+        ? AppColors.onPrimaryContainer
         : enabled
         ? AppColors.textPrimary
         : AppColors.textMuted;
+    // A check replaces the icon on selected chips (none on tiles with a
+    // caption, where the fill already shows the choice).
+    final leading = selected && caption == null ? Icons.check_rounded : icon;
     return Semantics(
       selected: selected,
       enabled: enabled,
@@ -239,14 +247,18 @@ class ChoicePill extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         color: selected
-            ? AppColors.primary
+            ? AppColors.primaryContainer
             : enabled
             ? AppColors.surface
-            : AppColors.surfaceMuted,
+            : AppColors.surfaceContainer,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(caption == null ? 999 : 12),
+          borderRadius: BorderRadius.circular(caption == null ? 999 : 16),
           side: BorderSide(
-            color: selected ? AppColors.primary : AppColors.border,
+            color: selected
+                ? AppColors.primaryContainer
+                : enabled
+                ? const Color(0xFFD8C2BC)
+                : Colors.transparent,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -260,7 +272,7 @@ class ChoicePill extends StatelessWidget {
           // Centre within whatever height the parent gives (tight in
           // horizontal lists, loose in wraps) so text never overflows.
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 36),
+            constraints: const BoxConstraints(minHeight: 40),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               child: Center(
@@ -276,20 +288,14 @@ class ChoicePill extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (icon != null) ...[
-                            Icon(
-                              icon,
-                              size: 16,
-                              color: selected
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
-                            ),
+                          if (leading != null) ...[
+                            Icon(leading, size: 17, color: fg),
                             Space.h6,
                           ],
                           Text(
                             label,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: fg,
                             ),
@@ -300,9 +306,9 @@ class ChoicePill extends StatelessWidget {
                         Text(
                           caption!,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             color: selected
-                                ? Colors.white.withValues(alpha: 0.85)
+                                ? AppColors.onPrimaryContainer
                                 : AppColors.textMuted,
                           ),
                         ),
@@ -318,7 +324,8 @@ class ChoicePill extends StatelessWidget {
   }
 }
 
-/// iOS-style grouped list for settings-like screens.
+/// Android 16 style segmented list: each row is its own rounded tile with
+/// a small gap; the group's outer corners are large, inner ones small.
 class ListGroup extends StatelessWidget {
   const ListGroup({super.key, this.title, required this.children});
   final String? title;
@@ -326,33 +333,37 @@ class ListGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const outer = Radius.circular(Radii.xl);
+    const inner = Radius.circular(6);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, Gap.lg, 4, Gap.sm),
+            padding: const EdgeInsets.fromLTRB(16, Gap.xl, 16, Gap.sm),
             child: Text(
-              title!.toUpperCase(),
+              title!,
               style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-                color: AppColors.textMuted,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
               ),
             ),
           ),
-        AppCard(
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: [
-              for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) const Divider(indent: 56),
-                children[i],
-              ],
-            ],
+        for (var i = 0; i < children.length; i++) ...[
+          if (i > 0) const SizedBox(height: 2),
+          Material(
+            color: AppColors.surface,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: i == 0 ? outer : inner,
+                bottom: i == children.length - 1 ? outer : inner,
+              ),
+            ),
+            child: children[i],
           ),
-        ),
+        ],
       ],
     );
   }
@@ -383,11 +394,21 @@ class ListRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Gap.lg, vertical: 13),
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 14, Gap.md, 14),
         child: Row(
           children: [
-            Icon(icon, size: 21, color: iconColor),
-            const SizedBox(width: 19),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor == AppColors.primary
+                    ? AppColors.primarySoft
+                    : iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 21, color: iconColor),
+            ),
+            Space.h16,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,8 +416,8 @@ class ListRow extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                       color: titleColor,
                     ),
                   ),
@@ -405,7 +426,7 @@ class ListRow extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 13.5,
                         color: AppColors.textSecondary,
                       ),
                     ),

@@ -164,7 +164,7 @@ class FirestoreAccountRepository implements AccountRepository {
   });
 
   /// Sample data older than this is refreshed on sign-in if untouched.
-  static const sampleDataShelfLife = Duration(hours: 12);
+  static const sampleDataShelfLife = Duration(hours: 3);
 
   @override
   Future<bool> refreshStaleSampleData(String uid) => guarded(() async {

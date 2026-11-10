@@ -8,14 +8,18 @@ import '../../data/models/shipment.dart';
 import '../../domain/request_limit.dart';
 import '../../routing/routes.dart';
 
-/// Explains the three-request rule. When [blocked] (a submission was just
-/// refused) it leads with the prescribed message.
+/// Explains the three-request rule. When [blocked] it leads with the
+/// prescribed message: [detailsSaved] says whether a filled-in load was kept
+/// (a submission was refused) or Post Load was stopped before the form.
 Future<void> showRequestLimitSheet(
   BuildContext context,
   RequestLimitUsage usage, {
   bool blocked = false,
+  bool detailsSaved = true,
 }) {
   return showModalBottomSheet<void>(
+    // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (sheetContext) => SafeArea(
@@ -51,9 +55,11 @@ Future<void> showRequestLimitSheet(
             ),
             if (blocked) ...[
               Space.v8,
-              const Text(
-                'Your details are saved. You can submit as soon as a request is delivered, cancelled or expires.',
-                style: TextStyle(
+              Text(
+                detailsSaved
+                    ? 'Your details are saved. You can submit as soon as a request is delivered, cancelled or expires.'
+                    : 'You can post a new load as soon as a request is delivered, cancelled or expires.',
+                style: const TextStyle(
                   fontSize: 13.5,
                   height: 1.45,
                   color: AppColors.textSecondary,

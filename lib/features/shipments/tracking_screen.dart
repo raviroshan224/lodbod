@@ -1,21 +1,29 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/errors/app_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/launch.dart';
 import '../../core/widgets/common.dart';
+import '../../core/widgets/feedback.dart';
 import '../../core/widgets/state_views.dart';
 import '../../data/models/shipment.dart';
+import '../../data/providers.dart';
+import '../../domain/simulated_driver.dart';
 import '../../domain/tracking.dart';
+import 'live_tracking.dart';
 import 'shipments_providers.dart';
 
-/// Route view for a booked shipment. There is no GPS feed in this build, so
-/// position is simulated from the schedule and labelled as such.
+/// Route view for a booked shipment. While it's open, a simulated driver
+/// reports the truck's position to Firestore and the view follows those
+/// reports live (as does any other device watching). Without reports it
+/// falls back to an estimate from the schedule. Both are labelled simulated.
 class TrackingScreen extends ConsumerWidget {
   const TrackingScreen({super.key, required this.shipmentId});
   final String shipmentId;
@@ -43,14 +51,18 @@ class TrackingScreen extends ConsumerWidget {
   }
 }
 
-class _Tracking extends StatelessWidget {
+class _Tracking extends ConsumerWidget {
   const _Tracking({required this.shipment});
   final Shipment shipment;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = shipment;
-    final t = trackingFor(s, now: DateTime.now());
+    if (s.status == ShipmentStatus.inTransit) {
+      ref.watch(simulatedDriverProvider(s.id));
+    }
+    final feed = ref.watch(livePositionProvider(s.id));
+    final t = trackingFor(s, now: DateTime.now(), live: feed.value);
     final mapHeight = MediaQuery.sizeOf(context).height * 0.46;
 
     return Stack(
@@ -62,8 +74,9 @@ class _Tracking extends StatelessWidget {
           height: mapHeight + 24,
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: t.progress),
-            duration: const Duration(milliseconds: 1400),
-            curve: Curves.easeOutCubic,
+            // Live: glide to each report over the gap between reports.
+            duration: _moveDuration(t),
+            curve: _moveCurve(t),
             builder: (_, p, _) =>
                 _RouteMap(shipment: s, tracking: t, animatedProgress: p),
           ),
@@ -120,36 +133,11 @@ class _Tracking extends StatelessWidget {
                   ],
                 ),
                 Space.v8,
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningSoft,
-                    borderRadius: Radii.chip,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.science_outlined,
-                        size: 14,
-                        color: AppColors.warning,
-                      ),
-                      SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          'Simulated tracking · sample route',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.warning,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                _TrackingBadge(
+                  live: t.live,
+                  // Offline, or the project's rules don't allow tracking.
+                  unavailable:
+                      s.status == ShipmentStatus.inTransit && feed.hasError,
                 ),
               ],
             ),
@@ -167,6 +155,119 @@ class _Tracking extends StatelessWidget {
   }
 }
 
+Duration _moveDuration(TrackingInfo t) => t.live == null
+    ? const Duration(milliseconds: 1400)
+    : SimulatedDriver.reportInterval;
+
+Curve _moveCurve(TrackingInfo t) =>
+    t.live == null ? Curves.easeOutCubic : Curves.linear;
+
+/// "Live" while position reports arrive, with their age; otherwise says the
+/// position is estimated, and why when live updates can't be read. Both say
+/// the source is simulated.
+class _TrackingBadge extends StatefulWidget {
+  const _TrackingBadge({required this.live, this.unavailable = false});
+  final LivePosition? live;
+  final bool unavailable;
+
+  @override
+  State<_TrackingBadge> createState() => _TrackingBadgeState();
+}
+
+class _TrackingBadgeState extends State<_TrackingBadge> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncTicker();
+  }
+
+  @override
+  void didUpdateWidget(_TrackingBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncTicker();
+  }
+
+  /// Ticks once a second while live, so "updated 3s ago" stays current.
+  void _syncTicker() {
+    if (widget.live == null) {
+      _ticker?.cancel();
+      _ticker = null;
+    } else {
+      _ticker ??= Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => setState(() {}),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final live = widget.live;
+    final String text;
+    final Color color;
+    final Color background;
+    final Widget leading;
+    if (live == null) {
+      text = widget.unavailable
+          ? 'Estimated from schedule · live updates unavailable'
+          : 'Simulated tracking · sample route';
+      color = AppColors.warning;
+      background = AppColors.warningSoft;
+      leading = const Icon(
+        Icons.science_outlined,
+        size: 14,
+        color: AppColors.warning,
+      );
+    } else {
+      final seconds = DateTime.now().difference(live.reportedAt).inSeconds;
+      final age = seconds < 2 ? 'just now' : '${seconds}s ago';
+      text = [
+        'Live · simulated driver · $age',
+        if (live.speedFactor > 1) '×${live.speedFactor}',
+      ].join(' · ');
+      color = AppColors.success;
+      background = AppColors.successSoft;
+      leading = Container(
+        width: 8,
+        height: 8,
+        decoration: const BoxDecoration(
+          color: AppColors.success,
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: background, borderRadius: Radii.chip),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          leading,
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Panel extends StatelessWidget {
   const _Panel({required this.shipment, required this.tracking});
   final Shipment shipment;
@@ -177,14 +278,24 @@ class _Panel extends StatelessWidget {
     final s = shipment;
     final t = tracking;
     final eta = t.eta;
+    final live = t.live;
+    final speed = live == null
+        ? ''
+        : live.speedKmh < 1
+        ? ' · Stopped'
+        : ' · ${live.speedKmh.round()} km/h';
     final (headline, sub) = switch (s.status) {
+      ShipmentStatus.inTransit when t.arrived => (
+        'Arrived',
+        'At ${s.destination} · waiting for the carrier to confirm delivery',
+      ),
       ShipmentStatus.inTransit when t.isLate => (
         'Running late',
         'Expected ${Fmt.weekdayDayMonth(eta!)}, ${Fmt.time(eta)} · ${t.remainingKm} km remaining',
       ),
       ShipmentStatus.inTransit => (
         eta == null ? 'On the way' : 'ETA ${Fmt.time(eta)}',
-        '${eta == null ? '' : '${Fmt.weekdayDayMonth(eta)} · '}${t.remainingKm} km remaining',
+        '${eta == null ? '' : '${Fmt.weekdayDayMonth(eta)} · '}${t.remainingKm} km remaining$speed',
       ),
       ShipmentStatus.delivered => (
         'Delivered',
@@ -247,8 +358,8 @@ class _Panel extends StatelessWidget {
             borderRadius: Radii.chip,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: t.progress),
-              duration: const Duration(milliseconds: 1400),
-              curve: Curves.easeOutCubic,
+              duration: _moveDuration(t),
+              curve: _moveCurve(t),
               builder: (_, v, _) =>
                   LinearProgressIndicator(value: v, minHeight: 6),
             ),
@@ -284,6 +395,10 @@ class _Panel extends StatelessWidget {
               ),
             ],
           ),
+          if (s.status == ShipmentStatus.inTransit && !t.arrived) ...[
+            Space.v8,
+            _FastForward(shipment: s, on: (live?.speedFactor ?? 1) > 1),
+          ],
           Space.v20,
           AppCard(
             padding: const EdgeInsets.all(Gap.md),
@@ -349,6 +464,8 @@ class _Panel extends StatelessWidget {
             name: s.destination,
             caption: s.status == ShipmentStatus.delivered
                 ? 'Delivered'
+                : t.arrived
+                ? 'Arrived'
                 : eta == null
                 ? 'Drop-off'
                 : 'Estimated ${Fmt.dateTime(eta)}',
@@ -357,6 +474,50 @@ class _Panel extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Demo control for the simulated driver: speeds the truck up so a trip can
+/// be watched in a couple of minutes. Every device watching sees it.
+class _FastForward extends ConsumerWidget {
+  const _FastForward({required this.shipment, required this.on});
+  final Shipment shipment;
+  final bool on;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> toggle(bool value) async {
+      try {
+        await ref
+            .read(trackingRepositoryProvider)
+            .reportSimulatedPosition(
+              shipment,
+              speedFactor: value ? SimulatedDriver.fastForward : 1,
+            );
+      } catch (e) {
+        if (context.mounted) {
+          showMessage(context, mapError(e).message, isError: true);
+        }
+      }
+    }
+
+    return Row(
+      children: [
+        const Icon(
+          Icons.fast_forward_rounded,
+          size: 18,
+          color: AppColors.textSecondary,
+        ),
+        const SizedBox(width: 8),
+        const Expanded(
+          child: Text(
+            'Simulate: fast-forward ×${SimulatedDriver.fastForward}',
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+          ),
+        ),
+        Switch.adaptive(value: on, onChanged: toggle),
+      ],
     );
   }
 }

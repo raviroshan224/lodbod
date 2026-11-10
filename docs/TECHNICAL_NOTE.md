@@ -85,7 +85,7 @@ screen changes, because screens only see `AsyncValue`s and `AppException`s.
 | Simulated carrier marketplace | Lets a single user experience the whole lifecycle: bids arrive, booking, tracking, delivery. | Clearly labelled, idempotent, runs only while the app is open. |
 | Activity feed derived, not stored | Can't disagree with shipments; unread state is one timestamp. | Feed size grows with history; production would page or store events. |
 | Client-side expiry and sample refresh at sign-in | A request past its pickup must free its slot, and a demo account opened days later should still make sense. Both are idempotent, and sample data is only refreshed if untouched. | Only runs when the app opens; production moves expiry to a scheduled server job. |
-| Custom design system | Consistent, denser, brand-specific UI like the reference mockups. | More widget code than stock Material. |
+| Material 3 Expressive theme | Tonal colours generated from the brand orange (the same algorithm Android uses for dynamic colour), so tonal buttons, chips and the navigation indicator all match; shared components (cards, top bar, segmented list) carry the look, so screens stay consistent. | A few Expressive components (button groups, wavy progress) aren't in this Flutter version; their look is built from standard widgets. |
 
 ## 5. Discussion prep
 
@@ -104,7 +104,7 @@ screen changes, because screens only see `AsyncValue`s and `AppException`s.
   `shipperId, createdAt`; the Auth SDK refreshes tokens, and the session
   stream signs the user out if the token is revoked; the Firestore cache
   serves stale data offline while writes fail fast with a clear message.
-- **Tests (118):** domain rules (limit, validation, filters agree with
+- **Tests (143):** domain rules (limit, validation, filters agree with
   counts, activity feed, tracking); repositories on `fake_cloud_firestore`
   (limit, unique references, idempotent create/accept, duplicate refusal,
   lifecycle, owner-filtered queries); auth and account (registration

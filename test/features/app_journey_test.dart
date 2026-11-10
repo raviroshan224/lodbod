@@ -1,8 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodbod/data/models/shipment.dart';
+import 'package:lodbod/data/providers.dart';
 import 'package:lodbod/domain/request_limit.dart';
 import 'package:lodbod/domain/shipment_draft.dart';
+import 'package:lodbod/features/bids/widgets/bid_card.dart';
 import 'package:lodbod/features/create_shipment/create_shipment_controller.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -25,6 +27,16 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await app.tapText('Sign out'); // The account screen's button.
+    expect(find.text('Sign out?'), findsOneWidget);
+
+    // The sheet's backdrop covers the tab bar: tapping a tab underneath just
+    // closes the sheet and doesn't switch tabs.
+    await tester.tap(find.text('Shipments'), warnIfMissed: false);
+    await app.settle();
+    expect(find.text('Sign out?'), findsNothing);
+    expect(app.router.routerDelegate.currentConfiguration.uri.path, '/account');
+
+    await app.tapText('Sign out');
     expect(find.text('Sign out?'), findsOneWidget);
     await app.tapText('Sign out'); // The confirmation sheet's button.
 
@@ -108,6 +120,37 @@ void main() {
     },
   );
 
+  testWidgets('a bid can be accepted straight from its card', (tester) async {
+    final app = await pumpApp(tester);
+    final lod1002 = seedIdFor(app.uid, 1002);
+    await app.go('/shipments/$lod1002/bids');
+
+    // Every open offer has the same actions; none is marked "best".
+    expect(find.text('Accept'), findsWidgets);
+    expect(find.textContaining('Best'), findsNothing);
+    await app.tapText('Rating'); // Himalayan Cargo (4.6) comes first.
+    final himalayanAccept = find.descendant(
+      of: find.ancestor(
+        of: find.text('Himalayan Cargo'),
+        matching: find.byType(BidCard),
+      ),
+      matching: find.text('Accept'),
+    );
+    await tester.ensureVisible(himalayanAccept);
+    await tester.tap(himalayanAccept);
+    await app.settle();
+
+    expect(find.text('Book Himalayan Cargo?'), findsOneWidget);
+    await app.tapText('Accept for Rs. 32,000');
+    await app.settle();
+
+    expect(find.text('Confirmed'), findsWidgets);
+    await app.go('/shipments/$lod1002/bids');
+    expect(find.text('Accept'), findsNothing); // Booked: no more accepting.
+    expect(find.text('Accepted'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('today hides times that have passed', (tester) async {
     final app = await pumpApp(tester, withSamples: false);
     await app.go('/post-load');
@@ -158,6 +201,14 @@ void main() {
   ) async {
     final app = await pumpApp(tester);
     final delivered = seedIdFor(app.uid, 1003);
+    // The samples use all 3 requests, and at the limit Post Load stops before
+    // the form (see post_load_limit_test). Free a slot first.
+    await tester.runAsync(
+      () => app.container
+          .read(shipmentRepositoryProvider)
+          .cancelShipment(seedIdFor(app.uid, 1002)),
+    );
+    await app.settle();
     app.container
         .read(createShipmentProvider.notifier)
         .edit((d) => d.copyWith(pickup: 'Dharan'));

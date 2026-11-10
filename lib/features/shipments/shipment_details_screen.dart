@@ -16,6 +16,8 @@ import '../../data/models/shipment.dart';
 import '../../domain/tracking.dart';
 import '../../routing/routes.dart';
 import '../create_shipment/create_shipment_controller.dart';
+import '../create_shipment/open_post_load.dart';
+import 'live_tracking.dart';
 import 'shipments_providers.dart';
 import 'widgets/status_timeline.dart';
 
@@ -185,9 +187,6 @@ class _ContextCard extends ConsumerWidget {
         return AppCard(
           onTap: hasBids ? () => context.push(Routes.bids(s.id)) : null,
           color: hasBids ? AppColors.infoSoft : AppColors.surface,
-          borderColor: hasBids
-              ? AppColors.info.withValues(alpha: 0.2)
-              : AppColors.border,
           child: Row(
             children: [
               hasBids
@@ -253,14 +252,18 @@ class _ContextCard extends ConsumerWidget {
   }
 }
 
-class _CarrierCard extends StatelessWidget {
+class _CarrierCard extends ConsumerWidget {
   const _CarrierCard({required this.shipment});
   final Shipment shipment;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = shipment;
-    final t = trackingFor(s, now: DateTime.now());
+    final t = trackingFor(
+      s,
+      now: DateTime.now(),
+      live: ref.watch(livePositionProvider(s.id)).value,
+    );
     final carrier = s.carrierName ?? 'Carrier';
     return AppCard(
       child: Column(
@@ -417,6 +420,8 @@ class _ActionBar extends ConsumerWidget {
     final busy = ref.watch(shipmentActionsProvider(s.id)) != null;
 
     Future<void> postSimilar() async {
+      // Before asking to replace an unfinished load: nothing can be posted.
+      if (explainLimitIfReached(context, ref)) return;
       final controller = ref.read(createShipmentProvider.notifier);
       if (controller.hasUserInput) {
         final replace = await confirmAction(

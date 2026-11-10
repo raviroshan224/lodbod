@@ -6,6 +6,7 @@ import 'repositories/firebase/firebase_auth_repository.dart';
 import 'repositories/firebase/firestore_account_repository.dart';
 import 'repositories/firebase/firestore_bid_repository.dart';
 import 'repositories/firebase/firestore_shipment_repository.dart';
+import 'repositories/firebase/firestore_tracking_repository.dart';
 import 'repositories/repositories.dart';
 
 /// Composition root for data access. To move to a REST backend, change the
@@ -29,4 +30,8 @@ final shipmentRepositoryProvider = Provider<ShipmentRepository>(
 
 final bidRepositoryProvider = Provider<BidRepository>(
   (ref) => FirestoreBidRepository(ref.watch(firestoreProvider)),
+);
+
+final trackingRepositoryProvider = Provider<TrackingRepository>(
+  (ref) => FirestoreTrackingRepository(ref.watch(firestoreProvider)),
 );

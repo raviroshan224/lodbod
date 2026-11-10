@@ -13,6 +13,8 @@ import '../auth/session.dart';
 /// "Send feedback": stored in Firestore for the LODBOD team.
 Future<void> showFeedbackSheet(BuildContext context) {
   return showModalBottomSheet<void>(
+    // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     builder: (_) => const _FeedbackSheet(),

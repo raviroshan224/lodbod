@@ -10,6 +10,7 @@ import '../../core/widgets/feedback.dart';
 import '../../routing/routes.dart';
 import '../shipments/shipments_providers.dart';
 import 'create_shipment_controller.dart';
+import 'open_post_load.dart';
 
 /// Confirmation after a successful post. Only reachable once the shipment
 /// has actually been created.
@@ -180,7 +181,8 @@ class ShipmentPostedScreen extends ConsumerWidget {
                         TextButton(
                           // Post Load is nested under Home, so this lands on a
                           // fresh form with Home underneath.
-                          onPressed: () => context.go(Routes.postLoad),
+                          onPressed: () =>
+                              openPostLoad(context, ref, replace: true),
                           style: TextButton.styleFrom(
                             minimumSize: const Size.fromHeight(46),
                           ),

@@ -15,6 +15,8 @@ import '../../domain/shipment_query.dart';
 import '../../domain/tracking.dart';
 import '../../routing/routes.dart';
 import '../auth/session.dart';
+import '../create_shipment/open_post_load.dart';
+import '../shipments/live_tracking.dart';
 import '../shipments/request_limit_sheet.dart';
 import '../shipments/shipments_providers.dart';
 import '../shipments/widgets/shipment_card.dart';
@@ -86,7 +88,7 @@ class DashboardScreen extends ConsumerWidget {
     List<Shipment> all,
   ) {
     if (all.isEmpty) {
-      return [_Welcome(onPostLoad: () => context.push(Routes.postLoad))];
+      return [_Welcome(onPostLoad: () => openPostLoad(context, ref))];
     }
 
     final summary = ShipmentSummary.from(all);
@@ -117,7 +119,7 @@ class DashboardScreen extends ConsumerWidget {
     return [
       _PostLoadCard(
         usage: usage,
-        onPostLoad: () => context.push(Routes.postLoad),
+        onPostLoad: () => openPostLoad(context, ref),
         onLearnMore: () => showRequestLimitSheet(context, usage),
       ),
       Space.v12,
@@ -290,15 +292,10 @@ class _PostLoadCard extends StatelessWidget {
     final atLimit = usage.isAtLimit;
     return Container(
       padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.md),
+      // Tonal hero (Material 3 primary container), flat like other cards.
       decoration: BoxDecoration(
         borderRadius: Radii.card,
-        border: Border.all(color: AppColors.primaryBorder),
-        boxShadow: AppColors.shadow,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFEFE6), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.primaryContainer,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,9 +369,8 @@ class _PostLoadCard extends StatelessWidget {
                   value: v,
                   minHeight: 6,
                   color: AppColors.primary,
-                  backgroundColor: AppColors.primaryBorder.withValues(
-                    alpha: 0.5,
-                  ),
+                  // Visible on the peach hero (the theme track is peach too).
+                  backgroundColor: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -529,16 +525,20 @@ class _ActionTile extends StatelessWidget {
   }
 }
 
-/// In-transit shipment with simulated progress.
-class _LiveCard extends StatelessWidget {
+/// In-transit shipment with its (simulated) live progress.
+class _LiveCard extends ConsumerWidget {
   const _LiveCard({required this.shipment, required this.onTap});
   final Shipment shipment;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = shipment;
-    final t = trackingFor(s, now: DateTime.now());
+    final t = trackingFor(
+      s,
+      now: DateTime.now(),
+      live: ref.watch(livePositionProvider(s.id)).value,
+    );
     final where = t.lastPassed == null
         ? 'Left ${s.pickup}'
         : 'Passed ${t.lastPassed!.name}';

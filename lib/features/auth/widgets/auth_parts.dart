@@ -5,10 +5,11 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/validators.dart';
-import '../../../core/widgets/common.dart';
 import '../../../routing/routes.dart';
 
-/// Shared scaffold for auth screens: centred, scrollable, keyboard-safe.
+/// Shared scaffold for auth screens (Google sign-in style): white page,
+/// large headline, scrollable form, and an action row pinned to the bottom
+/// that rises above the keyboard.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,
@@ -22,10 +23,13 @@ class AuthScaffold extends StatelessWidget {
 
   final List<Widget> children;
   final bool showBack;
+
+  /// Large headline at the top of the form (optional; screens may render
+  /// their own).
   final String? title;
   final String? subtitle;
 
-  /// 0..1 progress shown under the header (multi-step flows).
+  /// 0..1 progress shown at the top (multi-step flows).
   final double? progress;
   final Widget? bottom;
 
@@ -39,73 +43,45 @@ class AuthScaffold extends StatelessWidget {
         if (!didPop) context.go(Routes.login);
       },
       child: Scaffold(
+        backgroundColor: AppColors.surface,
         body: SafeArea(
           child: Column(
             children: [
-              if (showBack || title != null)
+              if (showBack || progress != null)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.page,
-                    Gap.sm,
-                    Gap.page,
-                    0,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(4, 4, Gap.xl, 0),
                   child: Row(
                     children: [
                       if (showBack)
-                        CircleIconButton(
-                          icon: Icons.arrow_back_rounded,
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded),
                           tooltip: 'Back',
-                          size: 40,
                           onPressed: () => context.canPop()
                               ? context.pop()
                               : context.go(Routes.login),
-                        ),
-                      if (title != null) ...[
-                        Space.h12,
+                        )
+                      else
+                        const SizedBox(width: Gap.xl - 4, height: 48),
+                      if (progress != null) ...[
+                        Space.h8,
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title!,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                              if (subtitle != null)
-                                Text(
-                                  subtitle!,
-                                  style: const TextStyle(
-                                    fontSize: 12.5,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                            ],
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(end: progress),
+                            duration: const Duration(milliseconds: 400),
+                            builder: (_, v, _) => LinearProgressIndicator(
+                              value: v,
+                              minHeight: 6,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
                         ),
                       ],
                     ],
                   ),
                 ),
-              if (progress != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Gap.page,
-                    Gap.md,
-                    Gap.page,
-                    0,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: Radii.chip,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(end: progress),
-                      duration: const Duration(milliseconds: 400),
-                      builder: (_, v, _) =>
-                          LinearProgressIndicator(value: v, minHeight: 4),
-                    ),
-                  ),
-                ),
               Expanded(
-                child: Center(
+                child: Align(
+                  alignment: Alignment.topCenter,
                   child: SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
@@ -119,7 +95,27 @@ class AuthScaffold extends StatelessWidget {
                       constraints: const BoxConstraints(maxWidth: 440),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
+                        children: [
+                          if (title != null) ...[
+                            Text(
+                              title!,
+                              style: Theme.of(context).textTheme.headlineLarge,
+                            ),
+                            if (subtitle != null) ...[
+                              Space.v8,
+                              Text(
+                                subtitle!,
+                                style: const TextStyle(
+                                  fontSize: 15.5,
+                                  color: AppColors.textSecondary,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                            Space.v24,
+                          ],
+                          ...children,
+                        ],
                       ),
                     ),
                   ),
@@ -129,6 +125,47 @@ class AuthScaffold extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Google-style action row for auth screens: a secondary text action on the
+/// left and the primary filled pill on the right.
+class AuthActionRow extends StatelessWidget {
+  const AuthActionRow({
+    super.key,
+    required this.primary,
+    this.secondary,
+    this.footer,
+  });
+
+  final Widget primary;
+  final Widget? secondary;
+  final Widget? footer;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.xl, Gap.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              if (secondary != null)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(fit: BoxFit.scaleDown, child: secondary!),
+                  ),
+                ),
+              Space.h8,
+              primary,
+            ],
+          ),
+          if (footer != null) ...[Space.v8, footer!],
+        ],
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../core/widgets/navigation_parts.dart';
 import '../../core/widgets/state_views.dart';
 import '../../domain/shipment_query.dart';
 import '../../routing/routes.dart';
+import '../create_shipment/open_post_load.dart';
 import 'shipments_providers.dart';
 import 'widgets/shipment_card.dart';
 
@@ -40,6 +41,8 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
   Future<void> _showSortSheet() async {
     final current = ref.read(shipmentListQueryProvider).sort;
     final picked = await showModalBottomSheet<ShipmentSort>(
+      // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
+      useRootNavigator: true,
       context: context,
       builder: (context) => SafeArea(
         child: Padding(
@@ -157,7 +160,7 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
                           HapticFeedback.selectionClick();
                           controller.clear();
                         },
-                        onPostLoad: () => context.push(Routes.postLoad),
+                        onPostLoad: () => openPostLoad(context, ref),
                       ),
                     ],
                   ),
