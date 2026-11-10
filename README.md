@@ -13,7 +13,7 @@ and every screen updates live.
 | Navigation | go_router 18: session-driven redirects, stateful tab shell |
 | Backend | Firebase Auth (email + password) and Cloud Firestore, project `lodbod-ravi` |
 | Design | Custom design system on Material 3, Inter typeface, LODBOD orange |
-| Tests | 86: business rules, Firestore repositories, auth and account flows, widgets |
+| Tests | 118: business rules, Firestore repositories, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
 
 Technical note (data flow, repositories, trade-offs, production notes):
 [docs/TECHNICAL_NOTE.md](docs/TECHNICAL_NOTE.md). Screenshots are
@@ -74,7 +74,7 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | **Shipment details** | Status, route with pickup and ETA, 5-step progress, a context card (finding carriers, *N carriers have bid*, carrier with call button, cancelled), details, pickup contact with call, activity log. The main action changes with status: *Compare bids*, *Track shipment*, *Post a similar load*. The ⋮ menu has copy reference, cancel, and labelled carrier simulations. |
 | **Tracking** | Stylised route map with checkpoints and an animated truck, ETA, km remaining, carrier card with call, stop list. Clearly labelled *Simulated tracking*. |
 | **Bids** | Load summary, sort chips, comparable offer cards (fare, delivery date, vehicle and a neutral *under / over your budget*), offer details (fare against your budget, delivery date, vehicle, note), accept through a confirmation sheet; the shipment and all bids update in one transaction. |
-| **Post Load** | Mockup-style flow with step chips, recent-city shortcuts, city suggestions, swap, date and time chips with pickers, summaries of completed steps with *Edit*, a review screen and a confirmation screen. **Save draft** stores the form on your account and it comes back next time, on any device. Closing never loses input. *Post a similar load* prefills from an earlier shipment. |
+| **Post Load** | Mockup-style flow with step chips, recent-city shortcuts, city suggestions, swap, date and time chips with pickers (times that have already passed today are disabled), summaries of completed steps with *Edit*, a review screen and a confirmation screen. **Save draft** stores the form on your account and it comes back next time, on any device. Closing never loses input. *Post a similar load* prefills from an earlier shipment. |
 | **Three-request limit** | Enforced in the Firestore create transaction and in the security rules. The prescribed message appears in a sheet on refusal, and the form data is preserved. Usage appears on Home, Post Load, Review, Analytics and Account. |
 | **Analytics** | Period switch (30 days / 90 days / all time), booked spend, loads posted / open / delivered (tonnes), bids, top routes, status breakdown. |
 | **Account** | Profile & company (edit; phone change re-indexes sign-in), email verification status, request usage, alert switches, help center (FAQ), send feedback (stored in Firestore), Terms and Privacy pages, sample data, sign out (keeps your draft). |
@@ -94,6 +94,7 @@ icon.
 
 - Flutter 3.47.x (stable) with Dart 3.13. Check with `flutter --version`.
 - Android SDK and an emulator or device (Android 7.0 / API 24+), JDK 17+.
+- For iOS: Xcode and a simulator (iOS 15+).
 - Optional: Firebase CLI for the local emulators or deploying rules.
 
 ### Firebase (one-time, in the console for project `lodbod-ravi`)
@@ -121,14 +122,14 @@ Fully local, no cloud project needed. The emulators also enforce
 
 ```bash
 firebase emulators:start --only auth,firestore --project lodbod-ravi
-flutter run --dart-define=USE_FIREBASE_EMULATORS=true   # Android emulator → 10.0.2.2
+flutter run --dart-define=USE_FIREBASE_EMULATORS=true   # Android emulator → 10.0.2.2, iOS simulator → 127.0.0.1
 ```
 
 ### Test, analyse, build
 
 ```bash
 flutter analyze                 # no issues
-flutter test                    # 86 tests
+flutter test                    # 118 tests
 flutter build apk --release     # build/app/outputs/flutter-apk/app-release.apk
 ```
 
@@ -232,7 +233,13 @@ production:
   and In transit count; Delivered, Cancelled and Expired don't. The sample
   data therefore starts at **3 of 3**, and the app makes the way out clear.
 - **Sample dates are relative to when they're loaded** (LOD-1001 is always
-  mid-route, LOD-1004 always a few days ahead), so the data stays coherent.
+  mid-route, LOD-1004 always a few days ahead). If the sample data is more
+  than 12 hours old and still untouched, it refreshes with current dates at
+  sign-in. Once you accept a bid, post a load or change a status, it's left
+  alone.
+- **Expiry:** a request still awaiting bids after its pickup time becomes
+  *Expired* and frees its request slot; its bids can no longer be accepted.
+  Production runs this as a server job; here the app does it at sign-in.
 - **Carrier side is simulated** because this build has no carrier app or
   backend:
   - Bids arrive about 20 seconds after a load is posted. This runs only
@@ -253,7 +260,9 @@ production:
 - No push notifications: alerts are in-app, while the app is open.
 - Lists aren't paginated (production: index on `shipperId, createdAt` +
   cursors).
-- Android only; the Firebase options cover Android.
+- iOS is simulator-only for now: no iOS app is registered in `lodbod-ravi` yet,
+  so `lib/firebase_options.dart` uses a placeholder App ID and the Android
+  client key. Register one and replace both values before shipping iOS.
 
 ---
 

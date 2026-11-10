@@ -97,6 +97,22 @@ void main() {
       expect(applyShipmentQuery(sample, query: 'Dhangadhi'), isEmpty);
     });
 
+    test('references match with or without the hyphen', () {
+      expect(refs(applyShipmentQuery(sample, query: 'lod1001')), ['LOD-1001']);
+      expect(refs(applyShipmentQuery(sample, query: 'LOD 1004')), ['LOD-1004']);
+    });
+
+    test('hyphenated routes match their parts', () {
+      expect(refs(applyShipmentQuery(sample, query: 'kathmandu-pokhara')), [
+        'LOD-1001',
+      ]);
+    });
+
+    test('text in other scripts is searched, not ignored', () {
+      // Previously stripped to an empty query, which showed every shipment.
+      expect(applyShipmentQuery(sample, query: 'काठमाडौं'), isEmpty);
+    });
+
     test('status filter and search combine', () {
       expect(
         refs(

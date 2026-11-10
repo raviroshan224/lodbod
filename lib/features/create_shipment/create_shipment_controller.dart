@@ -130,7 +130,10 @@ class CreateShipmentController extends Notifier<CreateShipmentState> {
     try {
       final saved = await ref.read(accountRepositoryProvider).loadDraft(uid);
       if (saved == null || !ref.mounted || hasUserInput) return false;
-      state = CreateShipmentState(draft: saved, version: state.version + 1);
+      state = CreateShipmentState(
+        draft: saved.withoutPastSchedule(now: _now),
+        version: state.version + 1,
+      );
       return true;
     } catch (_) {
       return false; // A missing draft is not worth an error message.
@@ -217,6 +220,22 @@ class CreateShipmentController extends Notifier<CreateShipmentState> {
   }
 
   void goTo(DraftStep step) => state = state.copyWith(step: step);
+
+  /// Picks a pickup date. A chosen time that would be in the past on that
+  /// date is cleared rather than kept and flagged.
+  void selectPickupDate(DateTime day) =>
+      edit((d) => d.withPickupDate(day, now: _now));
+
+  /// Picks a pickup time. Returns false (and changes nothing) if that time
+  /// has already passed on the chosen date.
+  bool selectPickupTime(PickupTime time) {
+    final day = state.draft.pickupDate;
+    if (day != null && !ShipmentDraft.isOpen(day, time, now: _now)) {
+      return false;
+    }
+    edit((d) => d.copyWith(pickupTime: time));
+    return true;
+  }
 
   bool back() {
     if (state.step.index == 0) return false;

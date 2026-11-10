@@ -138,12 +138,14 @@ class _Tracking extends StatelessWidget {
                         color: AppColors.warning,
                       ),
                       SizedBox(width: 5),
-                      Text(
-                        'Simulated tracking · sample route',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.warning,
+                      Flexible(
+                        child: Text(
+                          'Simulated tracking · sample route',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.warning,
+                          ),
                         ),
                       ),
                     ],
@@ -176,6 +178,10 @@ class _Panel extends StatelessWidget {
     final t = tracking;
     final eta = t.eta;
     final (headline, sub) = switch (s.status) {
+      ShipmentStatus.inTransit when t.isLate => (
+        'Running late',
+        'Expected ${Fmt.weekdayDayMonth(eta!)}, ${Fmt.time(eta)} · ${t.remainingKm} km remaining',
+      ),
       ShipmentStatus.inTransit => (
         eta == null ? 'On the way' : 'ETA ${Fmt.time(eta)}',
         '${eta == null ? '' : '${Fmt.weekdayDayMonth(eta)} · '}${t.remainingKm} km remaining',

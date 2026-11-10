@@ -37,6 +37,9 @@ String? redirectFor(Session session, String location) {
     case SessionLoading():
       // Stay on auth screens while a sign-in finishes; otherwise show splash.
       return atSignedOut || location == Routes.splash ? null : Routes.splash;
+    case SessionProfileError():
+      // The splash screen explains the problem and offers retry/sign out.
+      return location == Routes.splash ? null : Routes.splash;
     case SessionSignedOut():
     case SessionWrongRole():
       return atSignedOut ? null : Routes.login;

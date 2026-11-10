@@ -95,6 +95,135 @@ void main() {
     });
   });
 
+  group('expiry', () {
+    // LOD-1002 is awaiting bids with its pickup two days after `now`.
+    final afterPickup = now.add(const Duration(days: 5));
+
+    test(
+      'an awaiting request past its pickup expires and frees its slot',
+      () async {
+        final later = FirestoreShipmentRepository(db, clock: () => afterPickup);
+        expect(await activeCount(), 3);
+
+        expect(await later.expireOverdueRequests(uid), 1);
+
+        final s = (await shipments.watchShipments(uid).first).firstWhere(
+          (s) => s.id == lod1002,
+        );
+        expect(s.status, ShipmentStatus.expired);
+        expect(s.timeline.last.status, ShipmentStatus.expired);
+        expect(await activeCount(), 2);
+
+        final open = await bids
+            .watchBids(shipmentId: lod1002, shipperId: uid)
+            .first;
+        expect(open.every((b) => b.status == BidStatus.declined), isTrue);
+
+        // Running again changes nothing.
+        expect(await later.expireOverdueRequests(uid), 0);
+        expect(await activeCount(), 2);
+      },
+    );
+
+    test(
+      'requests with a future pickup, or already booked, do not expire',
+      () async {
+        expect(await shipments.expireOverdueRequests(uid), 0);
+
+        await bids.acceptBid(shipmentId: lod1002, bidId: '${lod1002}_a');
+        final later = FirestoreShipmentRepository(db, clock: () => afterPickup);
+        expect(await later.expireOverdueRequests(uid), 0);
+        final s = (await shipments.watchShipments(uid).first).firstWhere(
+          (s) => s.id == lod1002,
+        );
+        expect(s.status, ShipmentStatus.confirmed);
+      },
+    );
+
+    test('a bid cannot be accepted once the pickup time has passed', () async {
+      final later = FirestoreBidRepository(db, clock: () => afterPickup);
+      await expectLater(
+        later.acceptBid(shipmentId: lod1002, bidId: '${lod1002}_a'),
+        throwsA(isA<InvalidStateException>()),
+      );
+      final s = (await shipments.watchShipments(uid).first).firstWhere(
+        (s) => s.id == lod1002,
+      );
+      expect(s.status, ShipmentStatus.awaitingBids);
+      expect(s.acceptedBidId, isNull);
+    });
+  });
+
+  group('stale sample data', () {
+    Future<DateTime> pickupOf(String id) async =>
+        (await shipments.watchShipments(uid).first)
+            .firstWhere((s) => s.id == id)
+            .pickupAt;
+
+    test('is refreshed with current dates once old and untouched', () async {
+      final before = await pickupOf(lod1002);
+      final later = now.add(const Duration(days: 3));
+      final repo = FirestoreAccountRepository(db, clock: () => later);
+
+      expect(await repo.refreshStaleSampleData(uid), isTrue);
+      expect(
+        (await pickupOf(lod1002)).difference(before),
+        const Duration(days: 3),
+      );
+      expect(await activeCount(), 3);
+    });
+
+    test('is left alone while still recent', () async {
+      final soon = FirestoreAccountRepository(
+        db,
+        clock: () => now.add(const Duration(hours: 2)),
+      );
+      expect(await soon.refreshStaleSampleData(uid), isFalse);
+    });
+
+    test('is left alone once the shipper has used it', () async {
+      await bids.acceptBid(shipmentId: lod1002, bidId: '${lod1002}_a');
+      final later = FirestoreAccountRepository(
+        db,
+        clock: () => now.add(const Duration(days: 3)),
+      );
+      expect(await later.refreshStaleSampleData(uid), isFalse);
+      expect(
+        (await shipments.watchShipments(uid).first)
+            .firstWhere((s) => s.id == lod1002)
+            .status,
+        ShipmentStatus.confirmed,
+      );
+    });
+
+    test('accounts without sample data are never seeded', () async {
+      const other = 'u2';
+      await account.createProfile(
+        other,
+        const Registration(
+          name: 'B',
+          phone: '9800000002',
+          email: 'b@example.com',
+          company: '',
+          password: '',
+        ),
+      );
+      final later = FirestoreAccountRepository(
+        db,
+        clock: () => now.add(const Duration(days: 3)),
+      );
+      expect(await later.refreshStaleSampleData(other), isFalse);
+      expect(
+        (await db
+                .collection('shipments')
+                .where('shipperId', isEqualTo: other)
+                .get())
+            .docs,
+        isEmpty,
+      );
+    });
+  });
+
   group('three-request limit', () {
     test('rejects a fourth qualifying request and writes nothing', () async {
       final before = await shipmentDocCount();

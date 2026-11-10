@@ -134,7 +134,47 @@ class FirestoreShipmentRepository implements ShipmentRepository {
   }
 
   @override
-  Future<void> cancelShipment(String shipmentId) {
+  Future<void> cancelShipment(String shipmentId) => _closeRequest(
+    shipmentId,
+    to: ShipmentStatus.cancelled,
+    note: 'Cancelled by shipper',
+    allowedFrom: (status) => status.canCancel,
+  );
+
+  @override
+  Future<int> expireOverdueRequests(String shipperId) => guarded(() async {
+    final now = _now();
+    final open = await _shipments
+        .where(Fields.shipperId, isEqualTo: shipperId)
+        .where(Fields.status, isEqualTo: ShipmentStatus.awaitingBids.name)
+        .get();
+    var expired = 0;
+    for (final doc in open.docs) {
+      final pickup = doc.data()['pickupAt'];
+      if (pickup is! Timestamp || pickup.toDate().isAfter(now)) continue;
+      try {
+        await _closeRequest(
+          doc.id,
+          to: ShipmentStatus.expired,
+          note: 'Expired: the pickup time passed without a booking',
+          allowedFrom: (status) => status == ShipmentStatus.awaitingBids,
+        );
+        expired++;
+      } on InvalidStateException {
+        // Booked or cancelled in the meantime (e.g. on another device).
+      }
+    }
+    return expired;
+  });
+
+  /// Ends a request: sets its final status, frees its request slot and
+  /// declines any open bids, all in one transaction.
+  Future<void> _closeRequest(
+    String shipmentId, {
+    required ShipmentStatus to,
+    required String note,
+    required bool Function(ShipmentStatus status) allowedFrom,
+  }) {
     final shipmentRef = _shipments.doc(shipmentId);
     return guarded(() async {
       final bidRefs = await _bidRefsFor(shipmentId);
@@ -145,10 +185,10 @@ class FirestoreShipmentRepository implements ShipmentRepository {
           throw const NotFoundException('This shipment no longer exists.');
         }
         final status = ShipmentStatus.tryParse(data[Fields.status] as String?);
-        if (status == ShipmentStatus.cancelled) return; // Already done.
-        if (status == null || !status.canCancel) {
+        if (status == to) return; // Already done.
+        if (status == null || !allowedFrom(status)) {
           throw InvalidStateException(
-            "This shipment can't be cancelled because it is "
+            "This shipment can't be ${to.label.toLowerCase()} because it is "
             '${status?.label.toLowerCase() ?? 'in an unknown state'}.',
           );
         }
@@ -158,16 +198,12 @@ class FirestoreShipmentRepository implements ShipmentRepository {
 
         final now = _now();
         tx.update(shipmentRef, {
-          Fields.status: ShipmentStatus.cancelled.name,
+          Fields.status: to.name,
           'updatedAt': Timestamp.fromDate(now),
           'timeline': appendTimeline(
             data,
             FirestoreMappers.timelineToMap(
-              TimelineEntry(
-                status: ShipmentStatus.cancelled,
-                at: now,
-                note: 'Cancelled by shipper',
-              ),
+              TimelineEntry(status: to, at: now, note: note),
             ),
           ),
         });

@@ -235,8 +235,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           const FieldErrorText('Please accept the terms to create an account'),
         if (_error != null) ...[Space.v16, InlineBanner(message: _error!)],
         Space.v16,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             const Text(
               'Already have an account?',

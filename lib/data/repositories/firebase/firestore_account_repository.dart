@@ -153,6 +153,7 @@ class FirestoreAccountRepository implements AccountRepository {
     batch.update(_users.doc(uid), {
       Fields.activeRequestCount: RequestLimit.countQualifying(seed.shipments),
       Fields.seedVersion: DemoSeed.version,
+      Fields.seededAt: Timestamp.fromDate(_now()),
     });
     if (!counters.exists) {
       batch.set(_counters, {
@@ -160,6 +161,34 @@ class FirestoreAccountRepository implements AccountRepository {
       });
     }
     await batch.commit();
+  });
+
+  /// Sample data older than this is refreshed on sign-in if untouched.
+  static const sampleDataShelfLife = Duration(hours: 12);
+
+  @override
+  Future<bool> refreshStaleSampleData(String uid) => guarded(() async {
+    final data = (await _users.doc(uid).get()).data();
+    if (data?[Fields.seedVersion] == null) return false; // Never loaded.
+    final seededAt = data?[Fields.seededAt];
+    // Sample data from before load times were recorded counts as stale.
+    if (seededAt is Timestamp &&
+        _now().difference(seededAt.toDate()) < sampleDataShelfLife) {
+      return false;
+    }
+    // Untouched = exactly the sample loads, each still in its sample status
+    // (no bid accepted, nothing cancelled or delivered, nothing posted).
+    final fresh = DemoSeed.build(shipperId: uid, now: _now());
+    final initial = {for (final s in fresh.shipments) s.id: s.status.name};
+    final current = await _shipments
+        .where(Fields.shipperId, isEqualTo: uid)
+        .get();
+    final untouched =
+        current.docs.length == initial.length &&
+        current.docs.every((d) => initial[d.id] == d.data()[Fields.status]);
+    if (!untouched) return false;
+    await loadSampleData(uid);
+    return true;
   });
 
   @override

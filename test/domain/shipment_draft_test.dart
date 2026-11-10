@@ -101,6 +101,48 @@ void main() {
       );
     });
 
+    test('a slot is open only if it is still ahead of now', () {
+      final today = DateTime(2026, 11, 7); // now is 10:30
+      expect(
+        ShipmentDraft.isOpen(today, const PickupTime(8, 0), now: now),
+        isFalse,
+      );
+      expect(
+        ShipmentDraft.isOpen(today, const PickupTime(10, 30), now: now),
+        isFalse,
+      );
+      expect(
+        ShipmentDraft.isOpen(today, const PickupTime(12, 0), now: now),
+        isTrue,
+      );
+      expect(
+        ShipmentDraft.isOpen(tomorrow, const PickupTime(8, 0), now: now),
+        isTrue,
+      );
+    });
+
+    test('switching to today drops a time that has already passed', () {
+      final today = DateTime(2026, 11, 7);
+      final morning = valid.withPickupDate(today, now: now); // was 08:00
+      expect(morning.pickupDate, today);
+      expect(morning.pickupTime, isNull);
+
+      final afternoon = valid
+          .copyWith(pickupTime: const PickupTime(15, 0))
+          .withPickupDate(today, now: now);
+      expect(afternoon.pickupTime, const PickupTime(15, 0));
+    });
+
+    test('a reopened draft loses a schedule that is now in the past', () {
+      final stale = valid.copyWith(pickupDate: DateTime(2026, 11, 5));
+      final cleaned = stale.withoutPastSchedule(now: now);
+      expect(cleaned.pickupDate, isNull);
+      expect(cleaned.pickupTime, isNull);
+      expect(cleaned.description, valid.description);
+
+      expect(valid.withoutPastSchedule(now: now).pickupAt, valid.pickupAt);
+    });
+
     test('pickup more than 90 days ahead is rejected', () {
       final e = errorsOf(valid.copyWith(pickupDate: DateTime(2027, 3, 1)));
       expect(e[DraftField.pickupDate], contains('90 days'));

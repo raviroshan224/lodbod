@@ -57,16 +57,13 @@ abstract final class Validators {
     return null;
   }
 
-  /// 0 (empty) to 3 (strong), for the password strength hint.
+  /// 0 (empty) to 3 (strong), for the password strength hint. A password
+  /// that fails [newPassword] is always weak, so the hint never praises a
+  /// password the form will reject.
   static int passwordStrength(String v) {
     if (v.isEmpty) return 0;
-    var score = 0;
-    if (v.length >= 8) score++;
-    if (RegExp(r'[0-9]').hasMatch(v) && RegExp(r'[A-Za-z]').hasMatch(v)) {
-      score++;
-    }
-    if (v.length >= 12 || RegExp(r'[^A-Za-z0-9]').hasMatch(v)) score++;
-    return score.clamp(1, 3);
+    if (newPassword(v) != null) return 1;
+    return v.length >= 12 || RegExp(r'[^A-Za-z0-9]').hasMatch(v) ? 3 : 2;
   }
 
   /// Email address or Nepali mobile number.

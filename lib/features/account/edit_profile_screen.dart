@@ -139,7 +139,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     validator: (v) => Validators.phone(v),
                   ),
                   Space.v16,
-                  const FieldLabel('Email', isRequired: false),
+                  const FieldLabel.plain('Email'),
                   TextFormField(
                     initialValue: user.email,
                     enabled: false,

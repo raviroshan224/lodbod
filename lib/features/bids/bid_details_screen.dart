@@ -335,9 +335,12 @@ class _AcceptBar extends ConsumerWidget {
             color: AppColors.textMuted,
           ),
           SizedBox(width: 6),
-          Text(
-            'You confirm before anything is booked',
-            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+          Flexible(
+            child: Text(
+              'You confirm before anything is booked',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+            ),
           ),
         ],
       ),

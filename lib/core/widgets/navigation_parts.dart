@@ -211,6 +211,7 @@ class ChoicePill extends StatelessWidget {
     required this.onTap,
     this.icon,
     this.caption,
+    this.enabled = true,
   });
 
   final String label;
@@ -219,16 +220,29 @@ class ChoicePill extends StatelessWidget {
   final IconData? icon;
   final String? caption;
 
+  /// Disabled pills are shown but can't be chosen (e.g. a time slot that
+  /// has already passed today).
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
-    final fg = selected ? Colors.white : AppColors.textPrimary;
+    final fg = selected
+        ? Colors.white
+        : enabled
+        ? AppColors.textPrimary
+        : AppColors.textMuted;
     return Semantics(
       selected: selected,
+      enabled: enabled,
       button: true,
       label: caption == null ? label : '$label, $caption',
       excludeSemantics: true,
       child: Material(
-        color: selected ? AppColors.primary : AppColors.surface,
+        color: selected
+            ? AppColors.primary
+            : enabled
+            ? AppColors.surface
+            : AppColors.surfaceMuted,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(caption == null ? 999 : 12),
           side: BorderSide(
@@ -237,10 +251,12 @@ class ChoicePill extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onTap();
-          },
+          onTap: enabled
+              ? () {
+                  HapticFeedback.selectionClick();
+                  onTap();
+                }
+              : null,
           // Centre within whatever height the parent gives (tight in
           // horizontal lists, loose in wraps) so text never overflows.
           child: ConstrainedBox(
@@ -250,43 +266,48 @@ class ChoicePill extends StatelessWidget {
               child: Center(
                 widthFactor: 1,
                 heightFactor: 1,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (icon != null) ...[
-                          Icon(
-                            icon,
-                            size: 16,
-                            color: selected
-                                ? Colors.white
-                                : AppColors.textSecondary,
+                // In a fixed-size cell (grids) shrink the content rather than
+                // overflow; elsewhere the pill just takes its natural size.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (icon != null) ...[
+                            Icon(
+                              icon,
+                              size: 16,
+                              color: selected
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
+                            ),
+                            Space.h6,
+                          ],
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: fg,
+                            ),
                           ),
-                          Space.h6,
                         ],
+                      ),
+                      if (caption != null)
                         Text(
-                          label,
+                          caption!,
                           style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: fg,
+                            fontSize: 11,
+                            color: selected
+                                ? Colors.white.withValues(alpha: 0.85)
+                                : AppColors.textMuted,
                           ),
                         ),
-                      ],
-                    ),
-                    if (caption != null)
-                      Text(
-                        caption!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: selected
-                              ? Colors.white.withValues(alpha: 0.85)
-                              : AppColors.textMuted,
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

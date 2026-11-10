@@ -177,6 +177,23 @@ void main() {
     },
   );
 
+  test('today, passed times can\'t be chosen and a stale time is dropped', () {
+    // The test clock reads 7 Nov 2026, 10:00.
+    final today = DateTime(2026, 11, 7);
+    controller().selectPickupDate(DateTime(2026, 11, 8));
+    expect(controller().selectPickupTime(const PickupTime(8, 0)), isTrue);
+
+    // Switching to today drops 08:00 instead of keeping an invalid time.
+    controller().selectPickupDate(today);
+    expect(draft().pickupDate, today);
+    expect(draft().pickupTime, isNull);
+
+    expect(controller().selectPickupTime(const PickupTime(8, 0)), isFalse);
+    expect(draft().pickupTime, isNull);
+    expect(controller().selectPickupTime(const PickupTime(15, 0)), isTrue);
+    expect(draft().pickupTime, const PickupTime(15, 0));
+  });
+
   group('bid acceptance', () {
     String himalayan() => '${seedId(1002)}_a';
     String swift() => '${seedId(1002)}_b';

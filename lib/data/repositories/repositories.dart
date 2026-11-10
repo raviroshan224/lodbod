@@ -59,6 +59,11 @@ abstract interface class AccountRepository {
   /// Replaces the shipper's shipments and bids with the sample data set.
   Future<void> loadSampleData(String uid);
 
+  /// Reloads the sample data with current dates if it was loaded a while
+  /// ago and hasn't been touched since, so a demo account opened days later
+  /// still tells a coherent story. Returns whether it refreshed.
+  Future<bool> refreshStaleSampleData(String uid);
+
   Future<void> markNotificationsSeen(String uid);
 
   Future<void> saveDraft(String uid, ShipmentDraft draft);
@@ -89,6 +94,11 @@ abstract interface class ShipmentRepository {
   });
 
   Future<void> cancelShipment(String shipmentId);
+
+  /// Moves requests still awaiting bids after their pickup time to Expired,
+  /// freeing their request slots. Returns how many expired. A server job in
+  /// production; here it runs on the client at sign-in.
+  Future<int> expireOverdueRequests(String shipperId);
 
   /// Moves the shipment one step along the carrier lifecycle (simulated
   /// carrier update in this build).

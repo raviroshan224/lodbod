@@ -66,91 +66,96 @@ class _BottomBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 66,
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home_rounded,
-                label: 'Home',
-                active: currentBranch == 0,
-                onTap: () => onBranch(0),
-              ),
-              _NavItem(
-                icon: Icons.local_shipping_outlined,
-                activeIcon: Icons.local_shipping_rounded,
-                label: 'Shipments',
-                active: currentBranch == 1,
-                onTap: () => onBranch(1),
-              ),
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  label: 'Post a new load',
-                  excludeSemantics: true,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: onPostLoad,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Transform.translate(
-                          offset: const Offset(0, -6),
-                          child: Container(
-                            width: 46,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(13),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.4,
+        // The bar has a fixed height, so cap label scaling (like system nav
+        // bars do) instead of letting large text overflow it.
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.15,
+          child: SizedBox(
+            height: 66,
+            child: Row(
+              children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Home',
+                  active: currentBranch == 0,
+                  onTap: () => onBranch(0),
+                ),
+                _NavItem(
+                  icon: Icons.local_shipping_outlined,
+                  activeIcon: Icons.local_shipping_rounded,
+                  label: 'Shipments',
+                  active: currentBranch == 1,
+                  onTap: () => onBranch(1),
+                ),
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    label: 'Post a new load',
+                    excludeSemantics: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: onPostLoad,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Transform.translate(
+                            offset: const Offset(0, -6),
+                            child: Container(
+                              width: 46,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(13),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 6),
                                   ),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.add_rounded,
-                              color: Colors.white,
-                              size: 26,
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.add_rounded,
+                                color: Colors.white,
+                                size: 26,
+                              ),
                             ),
                           ),
-                        ),
-                        Transform.translate(
-                          offset: const Offset(0, -5),
-                          child: const Text(
-                            'Post Load',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
+                          Transform.translate(
+                            offset: const Offset(0, -5),
+                            child: const Text(
+                              'Post Load',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              _NavItem(
-                icon: Icons.insert_chart_outlined_rounded,
-                activeIcon: Icons.insert_chart_rounded,
-                label: 'Analytics',
-                active: currentBranch == 2,
-                onTap: () => onBranch(2),
-              ),
-              _NavItem(
-                icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
-                label: 'Account',
-                active: currentBranch == 3,
-                onTap: () => onBranch(3),
-              ),
-            ],
+                _NavItem(
+                  icon: Icons.insert_chart_outlined_rounded,
+                  activeIcon: Icons.insert_chart_rounded,
+                  label: 'Analytics',
+                  active: currentBranch == 2,
+                  onTap: () => onBranch(2),
+                ),
+                _NavItem(
+                  icon: Icons.person_outline_rounded,
+                  activeIcon: Icons.person_rounded,
+                  label: 'Account',
+                  active: currentBranch == 3,
+                  onTap: () => onBranch(3),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -203,6 +208,7 @@ class _NavItem extends StatelessWidget {
               Text(
                 label,
                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: active ? FontWeight.w700 : FontWeight.w500,

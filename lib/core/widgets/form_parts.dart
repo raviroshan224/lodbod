@@ -5,9 +5,17 @@ import '../theme/app_colors.dart';
 /// Label above a field. Required fields get an orange asterisk; optional
 /// ones say so, so it's always clear what must be filled in.
 class FieldLabel extends StatelessWidget {
-  const FieldLabel(this.text, {super.key, this.isRequired = true});
+  const FieldLabel(this.text, {super.key, this.isRequired = true})
+    : _plain = false;
+
+  /// No required/optional marker, for read-only fields.
+  const FieldLabel.plain(this.text, {super.key})
+    : isRequired = false,
+      _plain = true;
+
   final String text;
   final bool isRequired;
+  final bool _plain;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,9 @@ class FieldLabel extends StatelessWidget {
         TextSpan(
           text: text,
           children: [
-            if (isRequired)
+            if (_plain)
+              const TextSpan()
+            else if (isRequired)
               const TextSpan(
                 text: ' *',
                 style: TextStyle(color: AppColors.primary),

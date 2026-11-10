@@ -154,24 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
                   ),
                 Space.v16,
-                Row(
-                  children: [
-                    const Expanded(child: FieldLabel('Password')),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: TextButton(
-                        onPressed: _submitting
-                            ? null
-                            : () => context.push(Routes.forgotPassword),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(0, 32),
-                          padding: EdgeInsets.zero,
-                        ),
-                        child: const Text('Forgot password?'),
-                      ),
-                    ),
-                  ],
-                ),
+                const FieldLabel('Password'),
                 PasswordField(
                   controller: _password,
                   focusNode: _passwordFocus,
@@ -179,6 +162,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   validator: (v) =>
                       (v == null || v.isEmpty) ? 'Password is required' : null,
                   onSubmitted: (_) => _submit(),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _submitting
+                        ? null
+                        : () => context.push(Routes.forgotPassword),
+                    child: const Text('Forgot password?'),
+                  ),
                 ),
               ],
             ),
@@ -193,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: InlineBanner(message: message),
                 ),
         ),
-        Space.v24,
+        Space.v12,
         PrimaryButton(
           label: 'Log in',
           loading: _submitting,

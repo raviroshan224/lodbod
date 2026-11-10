@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -25,10 +26,17 @@ class LodbodApp extends ConsumerWidget {
               );
           ref.read(authActionsProvider).signOut().ignore();
         case SessionReady(:final profile) when previous is! SessionReady:
-          // Once per sign-in, heal the request-limit counter if it drifted.
-          ref
-              .read(accountRepositoryProvider)
-              .reconcileRequestCount(profile.id)
+          // Once per sign-in: bring untouched sample data up to date, expire
+          // requests whose pickup has passed, then heal the request counter
+          // if it drifted. Each step is safe to skip if it fails.
+          final accounts = ref.read(accountRepositoryProvider);
+          final shipments = ref.read(shipmentRepositoryProvider);
+          accounts
+              .refreshStaleSampleData(profile.id)
+              .catchError((_) => false)
+              .then((_) => shipments.expireOverdueRequests(profile.id))
+              .catchError((_) => 0)
+              .then((_) => accounts.reconcileRequestCount(profile.id))
               .ignore();
         default:
           break;
@@ -40,6 +48,12 @@ class LodbodApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       routerConfig: ref.watch(routerProvider),
+      // Screens without an AppBar inherit this, so the system bars stay
+      // readable whatever the phone's own theme is.
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: AppTheme.systemBars,
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

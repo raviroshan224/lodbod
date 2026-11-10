@@ -23,21 +23,30 @@ enum ShipmentFilter {
 }
 
 /// Search matches the reference, route and cargo. Every word in the query
-/// must match somewhere, so "kathmandu pokhara" and "LOD-1001" both work.
+/// must match somewhere, so "kathmandu pokhara", "LOD-1001" and "lod1001"
+/// all work. Words are split on spaces and separators only, so text in any
+/// script is searched rather than silently ignored.
 bool matchesSearch(Shipment s, String query) {
   final tokens = query
       .toLowerCase()
-      .split(RegExp(r'[^a-z0-9-]+'))
+      .split(RegExp(r'[\s,;/>→·]+'))
+      .map((t) => t.replaceAll(RegExp(r'^[.()]+|[.()]+$'), ''))
       .where((t) => t.isNotEmpty);
   if (tokens.isEmpty) return true;
   final haystack = [
     s.reference,
+    s.reference.replaceAll('-', ''),
     s.pickup,
     s.destination,
     s.cargoDescription,
     s.cargoCategory.label,
   ].join(' ').toLowerCase();
-  return tokens.every(haystack.contains);
+  // "kathmandu-pokhara" matches as one word or as its hyphenated parts.
+  bool matches(String t) =>
+      haystack.contains(t) ||
+      (t.contains('-') &&
+          t.split('-').where((p) => p.isNotEmpty).every(haystack.contains));
+  return tokens.every(matches);
 }
 
 /// Newest first.

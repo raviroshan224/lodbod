@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/shipment.dart';
 import '../../data/providers.dart';
+import '../auth/session.dart';
 import '../shipments/shipments_providers.dart';
 
 /// How long after posting simulated carrier bids arrive.
@@ -15,6 +16,9 @@ const simulatedBidDelay = Duration(seconds: 20);
 /// already has bids is skipped by the repository), so several devices can't
 /// double up.
 final bidSimulatorProvider = Provider<void>((ref) {
+  // Rebuild (cancelling pending timers) when the account changes, so a
+  // signed-out user's loads never get bids written from the next session.
+  ref.watch(currentUidProvider);
   final timers = <String, Timer>{};
   final done = <String>{};
   ref.onDispose(() {

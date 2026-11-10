@@ -416,8 +416,21 @@ class _ActionBar extends ConsumerWidget {
     final s = shipment;
     final busy = ref.watch(shipmentActionsProvider(s.id)) != null;
 
-    void postSimilar() {
-      ref.read(createShipmentProvider.notifier).prefillFrom(s);
+    Future<void> postSimilar() async {
+      final controller = ref.read(createShipmentProvider.notifier);
+      if (controller.hasUserInput) {
+        final replace = await confirmAction(
+          context,
+          title: 'Replace your unfinished load?',
+          message:
+              'You have a load you were still filling in. Starting from ${s.reference} will replace it.',
+          confirmLabel: 'Replace it',
+          cancelLabel: 'Keep it',
+          icon: Icons.edit_note_rounded,
+        );
+        if (!replace || !context.mounted) return;
+      }
+      controller.prefillFrom(s);
       context.push(Routes.postLoad);
     }
 

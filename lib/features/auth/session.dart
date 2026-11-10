@@ -28,6 +28,13 @@ class SessionNeedsProfile extends Session {
   final AuthUser user;
 }
 
+/// Signed in, but the profile couldn't be loaded (no connection, missing
+/// permissions). Shown on the splash screen with retry and sign-out.
+class SessionProfileError extends Session {
+  const SessionProfileError(this.error);
+  final AppException error;
+}
+
 /// Signed in as a non-shipper account.
 class SessionWrongRole extends Session {
   const SessionWrongRole();
@@ -64,7 +71,11 @@ final sessionProvider = Provider<Session>((ref) {
   if (user == null) return const SessionSignedOut();
 
   final profile = ref.watch(profileProvider);
-  if (!profile.hasValue) return const SessionLoading();
+  if (!profile.hasValue) {
+    return profile.hasError
+        ? SessionProfileError(mapError(profile.error!))
+        : const SessionLoading();
+  }
   final p = profile.value;
   if (p == null) return SessionNeedsProfile(user);
   if (!p.isShipper) return const SessionWrongRole();
@@ -72,11 +83,23 @@ final sessionProvider = Provider<Session>((ref) {
 });
 
 /// The signed-in shipper's profile. Only read below the auth gate.
-final currentUserProvider = Provider<UserProfile>((ref) {
-  final session = ref.watch(sessionProvider);
-  if (session is SessionReady) return session.profile;
-  throw StateError('No signed-in shipper');
-});
+final currentUserProvider = NotifierProvider<CurrentUser, UserProfile>(
+  CurrentUser.new,
+);
+
+class CurrentUser extends Notifier<UserProfile> {
+  @override
+  UserProfile build() {
+    final session = ref.watch(sessionProvider);
+    if (session is SessionReady) return session.profile;
+    // On sign-out, screens below the auth gate rebuild once more before the
+    // router removes them. Keep the last profile for that frame instead of
+    // failing; nothing can act on it because those screens are leaving.
+    final last = stateOrNull;
+    if (last != null) return last;
+    throw StateError('No signed-in shipper');
+  }
+}
 
 /// Injectable clock so time-based validation is testable.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);

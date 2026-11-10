@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'app_colors.dart';
@@ -5,6 +6,16 @@ import 'app_spacing.dart';
 
 abstract final class AppTheme {
   static const fontFamily = 'Inter';
+
+  /// Dark status/navigation bar icons over the app's light surfaces. Set
+  /// explicitly so a phone in dark mode doesn't show white icons on white.
+  static const systemBars = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark, // Android
+    statusBarBrightness: Brightness.light, // iOS
+    systemNavigationBarColor: AppColors.surface,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  );
 
   static ThemeData light() {
     final scheme =
@@ -117,6 +128,7 @@ abstract final class AppTheme {
         },
       ),
       appBarTheme: const AppBarTheme(
+        systemOverlayStyle: systemBars,
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,

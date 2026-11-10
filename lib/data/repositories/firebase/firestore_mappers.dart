@@ -25,6 +25,7 @@ abstract final class Fields {
   static const activeRequestCount = 'activeRequestCount';
   static const nextShipmentNumber = 'nextShipmentNumber';
   static const seedVersion = 'seedVersion';
+  static const seededAt = 'seededAt';
   static const notificationsSeenAt = 'notificationsSeenAt';
 }
 

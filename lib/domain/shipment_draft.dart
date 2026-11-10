@@ -152,6 +152,38 @@ class ShipmentDraft {
     return DateTime(d.year, d.month, d.day, t.hour, t.minute);
   }
 
+  /// Whether a pickup at [time] on [day] is still in the future. The form
+  /// uses this to disable time slots that have already passed, and
+  /// [validate] applies the same rule.
+  static bool isOpen(DateTime day, PickupTime time, {required DateTime now}) =>
+      DateTime(
+        day.year,
+        day.month,
+        day.day,
+        time.hour,
+        time.minute,
+      ).isAfter(now);
+
+  /// Sets the pickup date and drops the time if it would be in the past on
+  /// that date, so the form never holds a schedule it will reject.
+  ShipmentDraft withPickupDate(DateTime day, {required DateTime now}) {
+    final t = pickupTime;
+    final keepTime = t != null && isOpen(day, t, now: now);
+    return copyWith(pickupDate: day, pickupTime: keepTime ? t : null);
+  }
+
+  /// Clears a schedule that is no longer in the future, e.g. a saved draft
+  /// reopened on a later day. Everything else is kept.
+  ShipmentDraft withoutPastSchedule({required DateTime now}) {
+    final d = pickupDate;
+    if (d == null) return this;
+    final today = DateTime(now.year, now.month, now.day);
+    if (DateTime(d.year, d.month, d.day).isBefore(today)) {
+      return copyWith(pickupDate: null, pickupTime: null);
+    }
+    return withPickupDate(d, now: now);
+  }
+
   double? get weight => double.tryParse(weightText.trim().replaceAll(',', ''));
 
   int? get expectedFare {
@@ -207,11 +239,10 @@ class ShipmentDraft {
     }
     if (pickupTime == null) {
       errors[DraftField.pickupTime] = 'Choose a pickup time';
-    } else if (!errors.containsKey(DraftField.pickupDate)) {
-      final at = pickupAt;
-      if (at != null && !at.isAfter(now)) {
-        errors[DraftField.pickupTime] = "Pickup time can't be in the past";
-      }
+    } else if (date != null &&
+        !errors.containsKey(DraftField.pickupDate) &&
+        !isOpen(date, pickupTime!, now: now)) {
+      errors[DraftField.pickupTime] = "Pickup time can't be in the past";
     }
 
     if (category == null) {

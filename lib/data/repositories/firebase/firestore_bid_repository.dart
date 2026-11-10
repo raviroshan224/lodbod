@@ -108,10 +108,16 @@ class FirestoreBidRepository implements BidRepository {
         if (bid[Fields.status] != BidStatus.pending.name) {
           throw const InvalidStateException('This bid is no longer available.');
         }
+        final now = _now();
+        if (!(shipment['pickupAt'] as Timestamp).toDate().isAfter(now)) {
+          throw const InvalidStateException(
+            'The pickup time for this request has passed. '
+            'Post it again with a new date.',
+          );
+        }
 
         final carrier = bid['carrierName'] as String;
         final fare = (bid['fare'] as num).toInt();
-        final now = _now();
 
         tx.update(shipmentRef, {
           Fields.status: ShipmentStatus.confirmed.name,

@@ -1,4 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodbod/core/errors/app_exception.dart';
 import 'package:lodbod/data/models/shipment.dart';
@@ -298,5 +299,60 @@ void main() {
     test('non-shipper accounts are sent back to login', () {
       expect(redirectFor(const SessionWrongRole(), Routes.home), Routes.login);
     });
+
+    test('a profile that fails to load is explained on the splash screen', () {
+      const failed = SessionProfileError(PermissionException());
+      expect(redirectFor(failed, Routes.home), Routes.splash);
+      expect(redirectFor(failed, Routes.splash), isNull);
+    });
+  });
+
+  group('session edge cases', () {
+    test('a profile load error ends loading instead of hanging', () async {
+      final container = ProviderContainer(
+        overrides: [
+          ...testOverrides(db, auth),
+          profileProvider.overrideWith(
+            (ref) => Stream.error(const PermissionException()),
+          ),
+        ],
+        retry: (_, _) => null,
+      );
+      addTearDown(container.dispose);
+      container.listen(sessionProvider, (_, _) {});
+      await auth.createAccount(email: 'a@example.com', password: 'Lodbod@123');
+
+      Session session = const SessionLoading();
+      for (var i = 0; i < 100 && session is! SessionProfileError; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+        session = container.read(sessionProvider);
+      }
+      expect(session, isA<SessionProfileError>());
+      expect(
+        (session as SessionProfileError).error,
+        isA<PermissionException>(),
+      );
+    });
+
+    test(
+      'signing out while screens still watch the user does not throw',
+      () async {
+        final (container, uid) = await signedInContainer(db, auth: auth);
+        addTearDown(container.dispose);
+        final errors = <Object>[];
+        container.listen(
+          currentUserProvider,
+          (_, _) {},
+          onError: (e, _) => errors.add(e),
+        );
+
+        await container.read(authActionsProvider).signOut();
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        expect(container.read(sessionProvider), isA<SessionSignedOut>());
+        expect(container.read(currentUserProvider).id, uid);
+        expect(errors, isEmpty);
+      },
+    );
   });
 }

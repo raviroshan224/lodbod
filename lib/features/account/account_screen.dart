@@ -105,7 +105,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         // Signing out matters more than the draft.
       }
     }
-    await ref.read(authActionsProvider).signOut();
+    try {
+      await ref.read(authActionsProvider).signOut();
+      // The router moves to the login screen.
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _signingOut = false);
+      showMessage(context, mapError(e).message, isError: true);
+    }
   }
 
   @override

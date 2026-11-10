@@ -15,8 +15,11 @@ class DefaultFirebaseOptions {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return android;
     }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      return ios;
+    }
     throw UnsupportedError(
-      'LODBOD Shipper is configured for Android only. Run '
+      'LODBOD Shipper is configured for Android and iOS only. Run '
       '`flutterfire configure` to add other platforms.',
     );
   }
@@ -27,5 +30,18 @@ class DefaultFirebaseOptions {
     messagingSenderId: '38894148510',
     projectId: 'lodbod-ravi',
     storageBucket: 'lodbod-ravi.firebasestorage.app',
+  );
+
+  /// Development stopgap for the iOS simulator: no iOS app is registered in
+  /// `lodbod-ravi` yet, so [FirebaseOptions.appId] is a placeholder and
+  /// [FirebaseOptions.apiKey] is the Android client key. Replace both with the
+  /// values from the project's `GoogleService-Info.plist` before shipping iOS.
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAWdlZ9diH1o1qFJrBX_EJaFBsUX9r8Os4',
+    appId: '1:38894148510:ios:0000000000000000000000',
+    messagingSenderId: '38894148510',
+    projectId: 'lodbod-ravi',
+    storageBucket: 'lodbod-ravi.firebasestorage.app',
+    iosBundleId: 'com.example.lodbod',
   );
 }

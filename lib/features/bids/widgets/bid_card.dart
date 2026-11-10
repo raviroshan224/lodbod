@@ -179,11 +179,15 @@ class RatingText extends StatelessWidget {
             rating.toStringAsFixed(1),
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
           ),
-          Text(
-            '  ·  $trips trips',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12.5,
+          Flexible(
+            child: Text(
+              '  ·  $trips trips',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12.5,
+              ),
             ),
           ),
         ],

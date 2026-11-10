@@ -17,12 +17,17 @@ class TrackingInfo {
     required this.checkpoints,
     required this.distanceKm,
     required this.eta,
+    this.isLate = false,
   });
 
   final double progress;
   final List<Checkpoint> checkpoints;
   final int distanceKm;
   final DateTime? eta;
+
+  /// In transit past the estimated arrival. The UI then says "running late"
+  /// with the date instead of showing an ETA time that has already passed.
+  final bool isLate;
 
   int get remainingKm => (distanceKm * (1 - progress)).round();
 
@@ -92,11 +97,14 @@ TrackingInfo trackingFor(Shipment s, {required DateTime now}) {
     _ => 0.0,
   };
 
+  final eta = s.etaAt;
   return TrackingInfo(
     progress: progress,
     checkpoints: checkpoints,
     distanceKm: km,
-    eta: s.etaAt,
+    eta: eta,
+    isLate:
+        s.status == ShipmentStatus.inTransit && eta != null && now.isAfter(eta),
   );
 }
 

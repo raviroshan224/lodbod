@@ -422,20 +422,34 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
       lastDate: today.add(const Duration(days: ShipmentDraft.maxDaysAhead)),
       helpText: 'Pickup date',
     );
-    if (picked != null) _controller.edit((d) => d.copyWith(pickupDate: picked));
+    if (picked != null) _controller.selectPickupDate(picked);
   }
 
-  Future<void> _pickTime(PickupTime? current) async {
+  Future<void> _pickTime(PickupTime? current, {required bool isToday}) async {
+    final now = ref.read(clockProvider)();
+    // Today, start the picker at the next whole hour rather than a time
+    // that has already gone.
+    final initial = current != null
+        ? TimeOfDay(hour: current.hour, minute: current.minute)
+        : isToday
+        ? (now.hour >= 23
+              ? const TimeOfDay(hour: 23, minute: 59)
+              : TimeOfDay(hour: now.hour + 1, minute: 0))
+        : const TimeOfDay(hour: 9, minute: 0);
     final picked = await showTimePicker(
       context: context,
-      initialTime: current == null
-          ? const TimeOfDay(hour: 9, minute: 0)
-          : TimeOfDay(hour: current.hour, minute: current.minute),
+      initialTime: initial,
       helpText: 'Pickup time',
     );
-    if (picked != null) {
-      _controller.edit(
-        (d) => d.copyWith(pickupTime: PickupTime(picked.hour, picked.minute)),
+    if (picked == null || !mounted) return;
+    final accepted = _controller.selectPickupTime(
+      PickupTime(picked.hour, picked.minute),
+    );
+    if (!accepted) {
+      showMessage(
+        context,
+        'That time has already passed today. Choose a later time.',
+        isError: true,
       );
     }
   }
@@ -445,9 +459,14 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
     final draft = ref.watch(createShipmentProvider.select((s) => s.draft));
     ref.watch(createShipmentProvider.select((s) => s.revealed));
     final errors = _controller.visibleErrors(DraftStep.route);
-    final recent = _recentCities(
-      ref.watch(shipmentsProvider).value ?? const [],
-    );
+    // Don't suggest a city that's already in one of the fields.
+    final chosen = {
+      draft.pickup.trim().toLowerCase(),
+      draft.destination.trim().toLowerCase(),
+    };
+    final recent = _recentCities(ref.watch(shipmentsProvider).value ?? const [])
+        .where((c) => !chosen.contains(c.toLowerCase()))
+        .toList();
 
     final now = ref.read(clockProvider)();
     final today = DateTime(now.year, now.month, now.day);
@@ -470,6 +489,12 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
     final selectedTime = draft.pickupTime;
     final isCustomTime =
         selectedTime != null && !quickTimes.any((q) => q.$2 == selectedTime);
+    bool slotOpen(PickupTime t) =>
+        selectedDate == null || ShipmentDraft.isOpen(selectedDate, t, now: now);
+    final isToday =
+        selectedDate != null && DateUtils.isSameDay(selectedDate, today);
+    final someSlotsPassed = quickTimes.any((q) => !slotOpen(q.$2));
+    final allSlotsPassed = quickTimes.every((q) => !slotOpen(q.$2));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -585,8 +610,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                 selected:
                     selectedDate != null &&
                     DateUtils.isSameDay(selectedDate, date),
-                onTap: () =>
-                    _controller.edit((d) => d.copyWith(pickupDate: date)),
+                onTap: () => _controller.selectPickupDate(date),
               ),
             ChoicePill(
               label: isCustomDate
@@ -618,24 +642,39 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: Gap.sm,
           crossAxisSpacing: Gap.sm,
-          childAspectRatio: 2.1,
+          // Taller cells when the user has enlarged text.
+          childAspectRatio:
+              2.1 / MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6),
           children: [
             for (final (label, time) in quickTimes)
               ChoicePill(
                 label: label,
-                caption: _hhmm(time),
+                caption: slotOpen(time) ? _hhmm(time) : 'passed',
                 selected: selectedTime == time,
-                onTap: () =>
-                    _controller.edit((d) => d.copyWith(pickupTime: time)),
+                enabled: slotOpen(time),
+                onTap: () => _controller.selectPickupTime(time),
               ),
             ChoicePill(
               label: isCustomTime ? _hhmm(selectedTime) : 'Exact',
               caption: isCustomTime ? 'custom' : 'pick time',
               selected: isCustomTime,
-              onTap: () => _pickTime(selectedTime),
+              onTap: () => _pickTime(selectedTime, isToday: isToday),
             ),
           ],
         ),
+        if (isToday && someSlotsPassed && errors[DraftField.pickupTime] == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              allSlotsPassed
+                  ? "Today's usual slots have passed. Pick an exact time or another day."
+                  : 'Earlier times today have passed. Pick a later slot or an exact time.',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ),
         FieldErrorText(errors[DraftField.pickupTime]),
       ],
     );
@@ -823,8 +862,13 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
                   decimal: true,
                 ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                  LengthLimitingTextInputFormatter(8),
+                  // Digits with at most one decimal point and 2 decimals.
+                  TextInputFormatter.withFunction(
+                    (old, next) =>
+                        RegExp(r'^\d{0,6}(\.\d{0,2})?$').hasMatch(next.text)
+                        ? next
+                        : old,
+                  ),
                 ],
                 onChanged: (v) =>
                     controller.edit((d) => d.copyWith(weightText: v)),

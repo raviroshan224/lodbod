@@ -45,6 +45,7 @@ void main() {
 
     test('delivered is complete and scheduled has not started', () {
       expect(trackingFor(ref('LOD-1003'), now: now).progress, 1);
+      expect(trackingFor(ref('LOD-1001'), now: now).isLate, isFalse);
       expect(trackingFor(ref('LOD-1004'), now: now).progress, 0);
     });
 
@@ -89,5 +90,13 @@ void main() {
       expect(t.isBefore(posted.createdAt), isFalse);
       expect(t.isAfter(arrivedAt), isFalse);
     }
+  });
+
+  test('a load still in transit after its ETA is reported as running late', () {
+    final lod1001 = ref('LOD-1001');
+    final afterEta = lod1001.etaAt!.add(const Duration(days: 2));
+    final t = trackingFor(lod1001, now: afterEta);
+    expect(t.isLate, isTrue);
+    expect(t.progress, lessThan(1)); // Not shown as arrived.
   });
 }

@@ -104,11 +104,15 @@ class _Footer extends StatelessWidget {
                   ],
                 ),
                 style: const TextStyle(fontSize: 12.5),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               )
             : Text(
                 s.expectedFare == null
                     ? 'Fare pending'
                     : 'Budget ${Fmt.npr(s.expectedFare!)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12.5,
                   color: AppColors.textSecondary,
@@ -149,7 +153,9 @@ class _Footer extends StatelessWidget {
           child: Align(alignment: Alignment.centerLeft, child: left),
         ),
         Space.h8,
-        right,
+        // Both sides can shrink so long values ellipsize on narrow screens
+        // or with large text instead of overflowing.
+        Flexible(child: right),
       ],
     );
   }
@@ -171,6 +177,8 @@ class _Amount extends StatelessWidget {
     if (amount == null) return const SizedBox.shrink();
     return Text(
       Fmt.npr(amount!),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         fontSize: 15.5,
         fontWeight: FontWeight.w800,

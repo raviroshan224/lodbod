@@ -580,10 +580,11 @@ class _LiveCard extends StatelessWidget {
               ),
               if (t.eta != null)
                 Text(
-                  'ETA ${Fmt.time(t.eta!)}',
-                  style: const TextStyle(
+                  t.isLate ? 'Running late' : 'ETA ${Fmt.time(t.eta!)}',
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
+                    color: t.isLate ? AppColors.warning : null,
                   ),
                 ),
             ],
@@ -594,15 +595,21 @@ class _LiveCard extends StatelessWidget {
               const Expanded(
                 child: Text(
                   'Simulated tracking',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
                 ),
               ),
-              Text(
-                'Track shipment',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.primary.withValues(alpha: 1),
-                  fontWeight: FontWeight.w700,
+              const Flexible(
+                child: Text(
+                  'Track shipment',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const Icon(
