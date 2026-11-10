@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/visuals.dart';
-import '../../../data/models/shipment.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../domain/shipment.dart';
+import 'shipment_visuals.dart';
 
 /// Horizontal lifecycle stepper: Posted → Booked → Scheduled → On the way →
 /// Delivered.
@@ -158,7 +158,7 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = StatusStyle.of(entry.status);
+    final style = shipmentStatusStyle(entry.status);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,

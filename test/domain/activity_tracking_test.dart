@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/data/models/shipment.dart';
-import 'package:lodbod/data/seed/demo_seed.dart';
-import 'package:lodbod/domain/activity.dart';
-import 'package:lodbod/domain/tracking.dart';
+import 'package:lodbod/features/notifications/domain/activity.dart';
+import 'package:lodbod/features/shipments/data/demo_seed.dart';
+import 'package:lodbod/features/shipments/domain/shipment.dart';
+import 'package:lodbod/features/tracking/domain/tracking.dart';
 
 void main() {
   final now = DateTime(2026, 11, 7, 14);

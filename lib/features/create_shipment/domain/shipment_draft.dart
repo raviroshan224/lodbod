@@ -1,5 +1,5 @@
-import '../core/utils/validators.dart';
-import '../data/models/shipment.dart';
+import '../../../core/utils/validators.dart';
+import '../../shipments/domain/shipment.dart';
 
 /// Every field on the Post Load form, so errors can be keyed per field.
 enum DraftField {

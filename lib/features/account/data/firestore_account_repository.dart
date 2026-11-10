@@ -1,14 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/app_exception.dart';
-import '../../../domain/request_limit.dart';
-import '../../../domain/shipment_draft.dart';
-import '../../models/shipment.dart';
-import '../../models/user_profile.dart';
-import '../../seed/demo_seed.dart';
-import '../repositories.dart';
-import 'firestore_guard.dart';
-import 'firestore_mappers.dart';
+import '../../../core/firebase/firestore_guard.dart';
+import '../../../core/firebase/firestore_schema.dart';
+import '../../auth/domain/user_profile.dart';
+import '../../bids/data/bid_mapper.dart';
+import '../../create_shipment/data/draft_mapper.dart';
+import '../../create_shipment/domain/shipment_draft.dart';
+import '../../shipments/data/demo_seed.dart';
+import '../../shipments/data/shipment_mapper.dart';
+import '../../shipments/domain/request_limit.dart';
+import '../../shipments/domain/shipment.dart';
+import '../domain/account_repository.dart';
+import 'profile_mapper.dart';
 
 /// Shipper profiles and per-account data.
 ///
@@ -43,7 +47,7 @@ class FirestoreAccountRepository implements AccountRepository {
       .snapshots()
       .map((snap) {
         final data = snap.data();
-        return data == null ? null : FirestoreMappers.profileFromMap(uid, data);
+        return data == null ? null : ProfileMapper.fromMap(uid, data);
       })
       .transform(mapStreamErrors());
 
@@ -145,10 +149,10 @@ class FirestoreAccountRepository implements AccountRepository {
       if (!seededBidIds.contains(doc.id)) batch.delete(doc.reference);
     }
     for (final s in seed.shipments) {
-      batch.set(_shipments.doc(s.id), FirestoreMappers.shipmentToMap(s));
+      batch.set(_shipments.doc(s.id), ShipmentMapper.toMap(s));
     }
     for (final b in seed.bids) {
-      batch.set(_bids.doc(b.id), FirestoreMappers.bidToMap(b));
+      batch.set(_bids.doc(b.id), BidMapper.toMap(b));
     }
     batch.update(_users.doc(uid), {
       Fields.activeRequestCount: RequestLimit.countQualifying(seed.shipments),
@@ -200,13 +204,13 @@ class FirestoreAccountRepository implements AccountRepository {
 
   @override
   Future<void> saveDraft(String uid, ShipmentDraft draft) =>
-      guarded(() => _draftRef(uid).set(FirestoreMappers.draftToMap(draft)));
+      guarded(() => _draftRef(uid).set(DraftMapper.toMap(draft)));
 
   @override
   Future<ShipmentDraft?> loadDraft(String uid) => guarded(() async {
     final snap = await _draftRef(uid).get();
     final data = snap.data();
-    return data == null ? null : FirestoreMappers.draftFromMap(data);
+    return data == null ? null : DraftMapper.fromMap(data);
   });
 
   @override

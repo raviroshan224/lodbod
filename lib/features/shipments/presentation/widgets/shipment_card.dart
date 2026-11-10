@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/common.dart';
-import '../../../core/widgets/visuals.dart';
-import '../../../data/models/shipment.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/common.dart';
+import '../../domain/shipment.dart';
+import 'shipment_visuals.dart';
+import 'status_badge.dart';
 
 /// Summary card for one shipment, used on Home and the Shipments list.
 class ShipmentCard extends StatelessWidget {

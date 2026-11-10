@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import '../data/models/shipment.dart';
+import '../../shipments/domain/shipment.dart';
 import 'tracking.dart';
 
 /// Stands in for a driver app, which this build doesn't have: produces the

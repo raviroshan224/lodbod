@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../core/widgets/visuals.dart';
-import '../../data/models/shipment.dart';
-import '../../domain/shipment_analytics.dart';
-import '../create_shipment/open_post_load.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../create_shipment/presentation/open_post_load.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/shipment_visuals.dart';
+import '../domain/shipment_analytics.dart';
 
 enum AnalyticsPeriod {
   days30('30 days', 30),
@@ -125,7 +125,12 @@ class _Content extends StatelessWidget {
         .fold(0, (sum, e) => sum + e.value);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(Gap.page, Gap.xs, Gap.page, Gap.xl),
+      padding: EdgeInsets.fromLTRB(
+        Gap.page,
+        Gap.xs,
+        Gap.page,
+        Gap.xl + MediaQuery.paddingOf(context).bottom,
+      ),
       children: [
         AppCard(
           padding: const EdgeInsets.all(Gap.lg),
@@ -339,7 +344,7 @@ class _StatusBar extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  StatusStyle.of(status).icon,
+                  shipmentStatusStyle(status).icon,
                   size: 16,
                   color: AppColors.textSecondary,
                 ),

@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../core/errors/app_exception.dart';
+import '../errors/app_exception.dart';
+import 'firebase_errors.dart';
 
 /// Upper bound for any single write. Firestore queues writes while offline
 /// and would otherwise leave the UI spinning; failing fast lets us tell the
@@ -15,7 +16,7 @@ Future<T> guarded<T>(Future<T> Function() action) async {
   try {
     return await action().timeout(writeTimeout);
   } catch (error) {
-    throw mapError(error);
+    throw mapFirebaseError(error);
   }
 }
 
@@ -23,7 +24,7 @@ Future<T> guarded<T>(Future<T> Function() action) async {
 StreamTransformer<T, T> mapStreamErrors<T>() =>
     StreamTransformer<T, T>.fromHandlers(
       handleError: (error, stack, sink) =>
-          sink.addError(mapError(error), stack),
+          sink.addError(mapFirebaseError(error), stack),
     );
 
 /// Parses documents, skipping (and logging the id of) any malformed record

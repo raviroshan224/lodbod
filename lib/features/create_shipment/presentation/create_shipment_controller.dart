@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../data/models/shipment.dart';
-import '../../data/models/user_profile.dart';
-import '../../core/utils/formatters.dart';
-import '../../data/providers.dart';
-import '../../domain/shipment_draft.dart';
-import '../auth/session.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/utils/formatters.dart';
+import '../../account/data/providers.dart';
+import '../../auth/domain/user_profile.dart';
+import '../../auth/presentation/session.dart';
+import '../../shipments/data/providers.dart';
+import '../../shipments/domain/shipment.dart';
+import '../domain/shipment_draft.dart';
 
 const _keep = Object();
 

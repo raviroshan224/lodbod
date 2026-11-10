@@ -5,20 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/utils/launch.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/state_views.dart';
-import '../../data/models/shipment.dart';
-import '../../data/providers.dart';
-import '../../domain/simulated_driver.dart';
-import '../../domain/tracking.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/platform/launch.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/status_badge.dart';
+import '../data/providers.dart';
+import '../domain/simulated_driver.dart';
+import '../domain/tracking.dart';
 import 'live_tracking.dart';
-import 'shipments_providers.dart';
 
 /// Route view for a booked shipment. While it's open, a simulated driver
 /// reports the truck's position to Firestore and the view follows those

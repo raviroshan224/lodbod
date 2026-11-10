@@ -1,5 +1,5 @@
-import '../models/bid.dart';
-import '../models/shipment.dart';
+import '../../bids/domain/bid.dart';
+import '../domain/shipment.dart';
 
 class SeedData {
   const SeedData(this.shipments, this.bids);

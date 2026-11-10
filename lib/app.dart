@@ -6,8 +6,9 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_spacing.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/common.dart';
-import 'data/providers.dart';
-import 'features/auth/session.dart';
+import 'features/account/data/providers.dart';
+import 'features/auth/presentation/session.dart';
+import 'features/shipments/data/providers.dart';
 import 'routing/app_router.dart';
 
 class LodbodApp extends ConsumerWidget {

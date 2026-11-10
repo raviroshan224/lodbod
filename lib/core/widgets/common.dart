@@ -2,32 +2,9 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
-import '../../data/models/bid.dart';
-import '../../data/models/shipment.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'visuals.dart';
-
-/// Compact pill showing a shipment status with icon + text (never colour
-/// alone).
-class StatusBadge extends StatelessWidget {
-  const StatusBadge(this.status, {super.key, this.dense = false});
-  final ShipmentStatus status;
-  final bool dense;
-
-  @override
-  Widget build(BuildContext context) =>
-      Pill(label: status.label, style: StatusStyle.of(status), dense: dense);
-}
-
-class BidStatusBadge extends StatelessWidget {
-  const BidStatusBadge(this.status, {super.key});
-  final BidStatus status;
-
-  @override
-  Widget build(BuildContext context) =>
-      Pill(label: status.label, style: StatusStyle.ofBid(status));
-}
 
 class Pill extends StatelessWidget {
   const Pill({
@@ -543,9 +520,18 @@ class CircleIconButton extends StatelessWidget {
 /// LODBOD app mark: orange tile with the "lb" monogram, plus optional
 /// wordmark.
 class BrandMark extends StatelessWidget {
-  const BrandMark({super.key, this.size = 48, this.showWordmark = false});
+  const BrandMark({
+    super.key,
+    this.size = 48,
+    this.showWordmark = false,
+    this.elevated = true,
+  });
   final double size;
   final bool showWordmark;
+
+  /// Soft orange glow under the tile. Off for small, inline uses such as a
+  /// header lockup, where it reads as a smudge.
+  final bool elevated;
 
   @override
   Widget build(BuildContext context) {
@@ -555,13 +541,15 @@ class BrandMark extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: elevated
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
       ),
       child: const BrandGlyph(),
     );
@@ -571,29 +559,7 @@ class BrandMark extends StatelessWidget {
       children: [
         tile,
         Space.v16,
-        // Lowercase italic like the lodbod.com wordmark. Inter ships upright
-        // only here, so the slant is a skew rather than a faux-italic face.
-        Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.skewX(-BrandGlyph.slant),
-          child: const Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: 'lod'),
-                TextSpan(
-                  text: 'bod',
-                  style: TextStyle(color: AppColors.primary),
-                ),
-              ],
-            ),
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.8,
-              height: 1,
-            ),
-          ),
-        ),
+        const BrandWordmark(size: 32),
         Space.v4,
         const Text(
           'SHIPPER',
@@ -605,6 +571,44 @@ class BrandMark extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "lodbod" in lowercase italic, "bod" in orange, like the lodbod.com
+/// wordmark.
+class BrandWordmark extends StatelessWidget {
+  const BrandWordmark({super.key, this.size = 32});
+
+  /// Font size of the letters.
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    // Inter ships upright only here, so the slant is a skew rather than a
+    // faux-italic face.
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.skewX(-BrandGlyph.slant),
+      child: Text.rich(
+        const TextSpan(
+          children: [
+            TextSpan(text: 'lod'),
+            TextSpan(
+              text: 'bod',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ],
+        ),
+        semanticsLabel: 'LODBOD',
+        style: TextStyle(
+          fontSize: size,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -size * 0.025,
+          height: 1,
+          color: AppColors.textPrimary,
+        ),
+      ),
     );
   }
 }

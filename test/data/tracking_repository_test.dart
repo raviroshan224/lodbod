@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/data/repositories/firebase/firestore_tracking_repository.dart';
-import 'package:lodbod/data/seed/demo_seed.dart';
-import 'package:lodbod/domain/simulated_driver.dart';
-import 'package:lodbod/domain/tracking.dart';
+import 'package:lodbod/features/shipments/data/demo_seed.dart';
+import 'package:lodbod/features/tracking/data/firestore_tracking_repository.dart';
+import 'package:lodbod/features/tracking/domain/simulated_driver.dart';
+import 'package:lodbod/features/tracking/domain/tracking.dart';
 
 void main() {
   final start = DateTime(2026, 11, 7, 9);

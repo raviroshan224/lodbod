@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../core/widgets/visuals.dart';
-import '../../data/models/bid.dart';
-import '../../data/models/shipment.dart';
-import '../../domain/bid_rules.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/shipment_visuals.dart';
+import '../domain/bid.dart';
+import '../domain/bid_rules.dart';
 import 'accept_bid.dart';
 import 'widgets/bid_card.dart';
 

@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/widgets/feedback.dart';
-import '../../domain/activity.dart';
-import '../../routing/routes.dart';
-import '../auth/session.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../routing/routes.dart';
+import '../../auth/presentation/session.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../domain/activity.dart';
 
 /// Shows a toast when new bids or delivery updates arrive while the app is
 /// open, according to the shipper's alert preferences. Everything is also

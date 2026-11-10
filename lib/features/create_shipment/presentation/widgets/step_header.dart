@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 /// Material 3 step header: "Step 2 of 4", the step's name, and a segmented
 /// progress bar. Completed segments can be tapped to go back to that step.

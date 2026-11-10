@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../models/user_profile.dart';
-import '../repositories.dart';
-import 'firestore_guard.dart';
+import '../../../core/firebase/firestore_guard.dart';
+import '../domain/auth_repository.dart';
+import '../domain/user_profile.dart';
 
 /// Email + password accounts on Firebase Authentication. Sessions are
 /// persisted by the SDK, so a signed-in shipper stays signed in across

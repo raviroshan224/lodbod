@@ -4,16 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/validators.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/field_prefix.dart';
-import '../../core/widgets/form_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../data/models/user_profile.dart';
-import '../../routing/routes.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/validators.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/field_prefix.dart';
+import '../../../core/widgets/form_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../routing/routes.dart';
+import '../domain/user_profile.dart';
 import 'session.dart';
 import 'widgets/auth_parts.dart';
 
@@ -87,25 +87,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const link = TextStyle(
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.w600,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.textMuted,
+    );
+
     return AuthScaffold(
       showBack: true,
+      step: 'Step 1 of 2',
       title: 'Create your account',
       subtitle: 'Post loads and compare carrier bids in minutes.',
-      progress: 0.5,
-      bottom: AuthActionRow(
-        secondary: TextButton(
-          onPressed: _submitting ? null : () => context.go(Routes.login),
-          child: const Text('Log in instead'),
-        ),
-        primary: SizedBox(
-          width: 190,
-          child: PrimaryButton(
-            label: 'Create account',
-            loading: _submitting,
-            onPressed: _submit,
-          ),
-        ),
-      ),
       children: [
         Form(
           key: _formKey,
@@ -116,7 +109,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const FieldLabel('Full name'),
+                const FieldLabel.plain('Full name'),
                 TextFormField(
                   controller: _name,
                   enabled: !_submitting,
@@ -125,12 +118,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   autofillHints: const [AutofillHints.name],
                   decoration: const InputDecoration(
                     hintText: 'e.g. Aarav Shrestha',
-                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
                   ),
                   validator: Validators.name,
                 ),
-                Space.v16,
-                const FieldLabel('Phone number'),
+                Space.v20,
+                const FieldLabel.plain('Phone number'),
                 TextFormField(
                   controller: _phone,
                   enabled: !_submitting,
@@ -143,12 +135,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ],
                   decoration: const InputDecoration(
                     hintText: '98XXXXXXXX',
-                    prefixIcon: FieldPrefix.phone(),
+                    prefixIcon: FieldPrefix.dialCode(),
                   ),
                   validator: (v) => Validators.phone(v),
                 ),
-                Space.v16,
-                const FieldLabel('Email'),
+                Space.v20,
+                const FieldLabel.plain('Email'),
                 TextFormField(
                   controller: _email,
                   enabled: !_submitting,
@@ -158,12 +150,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   autofillHints: const [AutofillHints.email],
                   decoration: const InputDecoration(
                     hintText: 'you@company.com',
-                    prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
                     helperText: "We'll send a verification link here.",
                   ),
                   validator: Validators.email,
                 ),
-                Space.v16,
+                Space.v20,
                 const FieldLabel('Company name', isRequired: false),
                 TextFormField(
                   controller: _company,
@@ -173,15 +164,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   autofillHints: const [AutofillHints.organizationName],
                   decoration: const InputDecoration(
                     hintText: 'e.g. Himal Traders Pvt. Ltd.',
-                    prefixIcon: Icon(Icons.business_outlined, size: 20),
                   ),
                 ),
-                Space.v16,
-                const FieldLabel('Password'),
+                Space.v20,
+                const FieldLabel.plain('Password'),
                 PasswordField(
                   controller: _password,
                   enabled: !_submitting,
-                  hint: 'Min. 8 characters',
                   showStrength: true,
                   autofillHints: const [AutofillHints.newPassword],
                   validator: Validators.newPassword,
@@ -192,55 +181,70 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
         ),
         Space.v16,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 32,
-              height: 32,
-              child: Checkbox(
+        // The whole row toggles the box, like tapping a form label.
+        InkWell(
+          onTap: _submitting
+              ? null
+              : () => setState(() => _accepted = !_accepted),
+          borderRadius: Radii.input,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Checkbox(
                 value: _accepted,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
                 onChanged: _submitting
                     ? null
                     : (v) => setState(() => _accepted = v ?? false),
               ),
-            ),
-            Space.h8,
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text.rich(
-                  TextSpan(
-                    text: 'I agree to the ',
-                    children: [
-                      TextSpan(
-                        text: 'Terms of Service',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+              Space.h8,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 6, bottom: 6),
+                  child: Text.rich(
+                    TextSpan(
+                      text: 'I agree to the ',
+                      children: [
+                        TextSpan(
+                          text: 'Terms of Service',
+                          style: link,
+                          recognizer: _terms,
                         ),
-                        recognizer: _terms,
-                      ),
-                      const TextSpan(text: ' and '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
+                        const TextSpan(text: ' and '),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: link,
+                          recognizer: _privacy,
                         ),
-                        recognizer: _privacy,
-                      ),
-                    ],
+                      ],
+                    ),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.45,
+                    ),
                   ),
-                  style: const TextStyle(fontSize: 13.5),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         if (_submittedOnce && !_accepted)
           const FieldErrorText('Please accept the terms to create an account'),
-        if (_error != null) ...[Space.v16, InlineBanner(message: _error!)],
+        Space.v24,
+        if (_error != null) ...[InlineBanner(message: _error!), Space.v16],
+        PrimaryButton(
+          label: 'Create account',
+          loading: _submitting,
+          onPressed: _submit,
+        ),
+        Space.v16,
+        AuthSwitchPrompt(
+          prompt: 'Already have an account?',
+          action: 'Log in',
+          onPressed: _submitting ? null : () => context.go(Routes.login),
+        ),
       ],
     );
   }

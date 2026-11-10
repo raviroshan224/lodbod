@@ -8,7 +8,8 @@ class FieldLabel extends StatelessWidget {
   const FieldLabel(this.text, {super.key, this.isRequired = true})
     : _plain = false;
 
-  /// No required/optional marker, for read-only fields.
+  /// No required/optional marker: for read-only fields, and for short forms
+  /// where every field is required (an asterisk on each is just noise).
   const FieldLabel.plain(this.text, {super.key})
     : isRequired = false,
       _plain = true;

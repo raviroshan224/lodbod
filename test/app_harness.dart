@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lodbod/app.dart';
-import 'package:lodbod/features/auth/session.dart';
+import 'package:lodbod/features/auth/presentation/session.dart';
 import 'package:lodbod/routing/app_router.dart';
 
 import 'fakes.dart';

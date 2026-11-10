@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/navigation_parts.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/navigation_parts.dart';
 
 enum LegalDoc { terms, privacy }
 

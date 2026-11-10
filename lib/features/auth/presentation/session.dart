@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/utils/validators.dart';
-import '../../data/models/user_profile.dart';
-import '../../data/providers.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/utils/validators.dart';
+import '../../account/data/providers.dart';
+import '../data/providers.dart';
+import '../domain/user_profile.dart';
 
 /// Where the user is in the sign-in lifecycle. Drives routing.
 sealed class Session {

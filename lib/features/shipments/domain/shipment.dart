@@ -1,4 +1,4 @@
-import '../../core/utils/formatters.dart';
+import '../../../core/utils/formatters.dart';
 import 'cargo.dart';
 import 'shipment_status.dart';
 

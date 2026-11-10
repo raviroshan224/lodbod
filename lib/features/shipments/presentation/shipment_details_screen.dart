@@ -3,22 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/utils/launch.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../core/widgets/visuals.dart';
-import '../../data/models/shipment.dart';
-import '../../domain/tracking.dart';
-import '../../routing/routes.dart';
-import '../create_shipment/create_shipment_controller.dart';
-import '../create_shipment/open_post_load.dart';
-import 'live_tracking.dart';
+import '../../../core/platform/launch.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../routing/routes.dart';
+import '../../create_shipment/presentation/create_shipment_controller.dart';
+import '../../create_shipment/presentation/open_post_load.dart';
+import '../../tracking/domain/tracking.dart';
+import '../../tracking/presentation/live_tracking.dart';
+import '../domain/shipment.dart';
 import 'shipments_providers.dart';
+import 'widgets/shipment_visuals.dart';
+import 'widgets/status_badge.dart';
 import 'widgets/status_timeline.dart';
 
 class ShipmentDetailsScreen extends ConsumerWidget {
@@ -584,7 +585,7 @@ class _MoreMenu extends ConsumerWidget {
             PopupMenuItem(
               value: _MenuAction.carrierUpdate,
               child: ListTile(
-                leading: Icon(StatusStyle.of(next).icon),
+                leading: Icon(shipmentStatusStyle(next).icon),
                 title: Text('Simulate: mark ${next.label.toLowerCase()}'),
                 subtitle: const Text('Demo carrier update'),
                 contentPadding: EdgeInsets.zero,

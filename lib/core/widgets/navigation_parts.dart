@@ -252,7 +252,7 @@ class ChoicePill extends StatelessWidget {
             ? AppColors.surface
             : AppColors.surfaceContainer,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(caption == null ? 999 : 16),
+          borderRadius: BorderRadius.circular(caption == null ? 999 : 12),
           side: BorderSide(
             color: selected
                 ? AppColors.primaryContainer
@@ -333,8 +333,8 @@ class ListGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const outer = Radius.circular(Radii.xl);
-    const inner = Radius.circular(6);
+    const outer = Radius.circular(Radii.cardRadius);
+    const inner = Radius.circular(4);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

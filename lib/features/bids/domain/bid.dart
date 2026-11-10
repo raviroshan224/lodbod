@@ -1,4 +1,4 @@
-import 'cargo.dart';
+import '../../shipments/domain/cargo.dart';
 
 enum BidStatus {
   pending('Open'),

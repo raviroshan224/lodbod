@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/domain/request_limit.dart';
-import 'package:lodbod/features/create_shipment/create_shipment_controller.dart';
+import 'package:lodbod/core/widgets/dock_nav_bar.dart';
+import 'package:lodbod/features/create_shipment/presentation/create_shipment_controller.dart';
+import 'package:lodbod/features/shipments/domain/request_limit.dart';
 
 import '../app_harness.dart';
 import '../helpers.dart';
@@ -19,21 +20,31 @@ void main() {
     final app = await pumpApp(tester); // Sample data: 3 of 3 in use.
     await app.go('/home');
 
-    await app.tapText('Post load'); // Tab bar action.
+    // The Home card doesn't offer posting at the limit; it points to the
+    // open requests instead.
+    expect(find.textContaining('All 3 are in use'), findsOneWidget);
+    expect(find.text('Post a load'), findsNothing);
+    expect(find.text('Manage requests'), findsOneWidget);
+
+    await tester.tap(find.byKey(DockNavBar.actionKey)); // Tab bar action.
+    await app.settle();
     expect(find.text('Request limit reached'), findsOneWidget);
     expect(find.text(RequestLimit.message), findsOneWidget);
     expect(find.textContaining('You can post a new load'), findsOneWidget);
     expect(find.textContaining('Your details are saved'), findsNothing);
-    expect(find.text('Post a load'), findsNothing);
     expect(pathOf(app), '/home');
 
     await app.tapText('Got it');
     expect(find.text('Request limit reached'), findsNothing);
 
-    await app.tapText('Post Load'); // The dashboard card's button.
+    await tester.tap(find.byKey(DockNavBar.actionKey)); // Again: same.
+    await app.settle();
     expect(find.text('Request limit reached'), findsOneWidget);
-    expect(find.text('Post a load'), findsNothing);
     expect(pathOf(app), '/home');
+    await app.tapText('Got it');
+
+    await app.tapText('Manage requests');
+    expect(pathOf(app), '/shipments');
     expect(tester.takeException(), isNull);
   });
 
@@ -58,8 +69,9 @@ void main() {
     final app = await pumpApp(tester, withSamples: false);
     await app.go('/home');
 
-    await app.tapText('Post load');
-    expect(find.text('Post a load'), findsOneWidget);
+    await tester.tap(find.byKey(DockNavBar.actionKey));
+    await app.settle();
+    expect(find.text('Post a load'), findsOneWidget); // The form's title.
     expect(find.text('Request limit reached'), findsNothing);
   });
 }

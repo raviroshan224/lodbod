@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:lodbod/core/errors/app_exception.dart';
-import 'package:lodbod/data/models/user_profile.dart';
-import 'package:lodbod/data/repositories/repositories.dart';
+import 'package:lodbod/features/auth/domain/auth_repository.dart';
+import 'package:lodbod/features/auth/domain/user_profile.dart';
 
 /// In-memory stand-in for Firebase Authentication.
 class FakeAuthRepository implements AuthRepository {

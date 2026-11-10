@@ -1,13 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../data/models/bid.dart';
-import '../../data/models/shipment.dart';
-import '../../data/providers.dart';
-import '../../domain/activity.dart';
-import '../../domain/request_limit.dart';
-import '../../domain/shipment_query.dart';
-import '../auth/session.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../auth/presentation/session.dart';
+import '../../bids/data/providers.dart';
+import '../../bids/domain/bid.dart';
+import '../../notifications/domain/activity.dart';
+import '../data/providers.dart';
+import '../domain/request_limit.dart';
+import '../domain/shipment.dart';
+import '../domain/shipment_query.dart';
 
 /// Single source of truth for the shipper's shipments. Dashboard counts, the
 /// list, details, analytics, notifications and the request-limit indicator
@@ -17,6 +18,13 @@ final shipmentsProvider = StreamProvider<List<Shipment>>((ref) {
   if (uid == null) return Stream.value(const []);
   return ref.watch(shipmentRepositoryProvider).watchShipments(uid);
 });
+
+/// Loads with offers waiting for a decision (the Shipments tab badge).
+final offersToReviewCountProvider = Provider<int>(
+  (ref) => (ref.watch(shipmentsProvider).value ?? const <Shipment>[])
+      .where(awaitsShipperDecision)
+      .length,
+);
 
 final shipmentSummaryProvider = Provider<AsyncValue<ShipmentSummary>>(
   (ref) => ref.watch(shipmentsProvider).whenData(ShipmentSummary.from),

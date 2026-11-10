@@ -1,11 +1,11 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/data/models/shipment.dart';
-import 'package:lodbod/data/providers.dart';
-import 'package:lodbod/domain/request_limit.dart';
-import 'package:lodbod/domain/shipment_draft.dart';
-import 'package:lodbod/features/bids/widgets/bid_card.dart';
-import 'package:lodbod/features/create_shipment/create_shipment_controller.dart';
+import 'package:lodbod/features/bids/presentation/widgets/bid_card.dart';
+import 'package:lodbod/features/create_shipment/domain/shipment_draft.dart';
+import 'package:lodbod/features/create_shipment/presentation/create_shipment_controller.dart';
+import 'package:lodbod/features/shipments/data/providers.dart';
+import 'package:lodbod/features/shipments/domain/request_limit.dart';
+import 'package:lodbod/features/shipments/domain/shipment.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../app_harness.dart';
@@ -29,9 +29,12 @@ void main() {
     await app.tapText('Sign out'); // The account screen's button.
     expect(find.text('Sign out?'), findsOneWidget);
 
-    // The sheet's backdrop covers the tab bar: tapping a tab underneath just
-    // closes the sheet and doesn't switch tabs.
-    await tester.tap(find.text('Shipments'), warnIfMissed: false);
+    // The sheet and its backdrop cover the tab bar: tapping a tab underneath
+    // doesn't switch tabs, and tapping the backdrop closes the sheet.
+    await tester.tap(find.byTooltip('Shipments'), warnIfMissed: false);
+    await app.settle();
+    expect(app.router.routerDelegate.currentConfiguration.uri.path, '/account');
+    await tester.tapAt(const Offset(200, 60)); // The backdrop.
     await app.settle();
     expect(find.text('Sign out?'), findsNothing);
     expect(app.router.routerDelegate.currentConfiguration.uri.path, '/account');
@@ -44,7 +47,10 @@ void main() {
     expect(app.auth.current, isNull);
     expect(tester.takeException(), isNull); // No error during teardown.
 
-    await tester.enterText(find.byKey(const ValueKey('phone')), '9800000001');
+    await tester.enterText(
+      find.byKey(const ValueKey('identifier')),
+      '9800000001',
+    );
     await tester.enterText(
       find.byKey(const ValueKey('password')),
       'Lodbod@123',
@@ -53,7 +59,12 @@ void main() {
     await app.settle();
 
     expect(find.text('Aarav Shrestha'), findsOneWidget);
-    expect(find.text('All requests in use'), findsOneWidget);
+    expect(find.textContaining('All 3 are in use'), findsOneWidget);
+    // LOD-1002's offers wait for a decision: the Shipments tab says so.
+    expect(
+      find.bySemanticsLabel('Shipments, 1 need attention'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('compare bids, accept one, and every view agrees', (
@@ -85,7 +96,7 @@ void main() {
     // Dashboard counts moved: no more awaiting bids, still 3 of 3 in use.
     await app.go('/home');
     expect(find.bySemanticsLabel(RegExp('^0 Awaiting bids')), findsOneWidget);
-    expect(find.text('All requests in use'), findsOneWidget);
+    expect(find.textContaining('All 3 are in use'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -184,7 +195,8 @@ void main() {
 
     await tester.pageBack();
     await app.settle();
-    await app.tapText('Home');
+    await tester.tap(find.byTooltip('Home'));
+    await app.settle();
     expect(find.text('Load posted'), findsNothing);
     expect(find.text('Aarav Shrestha'), findsOneWidget);
 

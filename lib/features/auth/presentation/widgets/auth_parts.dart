@@ -2,39 +2,94 @@ import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/validators.dart';
-import '../../../routing/routes.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/validators.dart';
+import '../../../../core/widgets/common.dart';
+import '../../../../routing/routes.dart';
 
-/// Shared scaffold for auth screens (Google sign-in style): white page,
-/// large headline, scrollable form, and an action row pinned to the bottom
-/// that rises above the keyboard.
+/// Shared layout for every auth screen: a classic single column on white.
+///
+/// Top to bottom: optional back button or brand lockup, an optional step
+/// caption, title and subtitle, then the form with its actions inline (the
+/// primary button sits right under the last field, never pinned far away).
+/// An optional [footer] (legal text) sits at the bottom of the screen and
+/// steps aside while the keyboard is open.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({
     super.key,
+    required this.title,
     required this.children,
-    this.showBack = false,
-    this.title,
     this.subtitle,
-    this.progress,
-    this.bottom,
+    this.subtitleSpan,
+    this.step,
+    this.badge,
+    this.showBack = false,
+    this.showBrand = false,
+    this.footer,
   });
 
-  final List<Widget> children;
-  final bool showBack;
-
-  /// Large headline at the top of the form (optional; screens may render
-  /// their own).
-  final String? title;
+  final String title;
   final String? subtitle;
 
-  /// 0..1 progress shown at the top (multi-step flows).
-  final double? progress;
-  final Widget? bottom;
+  /// Rich subtitle (e.g. with an email address in bold), used instead of
+  /// [subtitle].
+  final InlineSpan? subtitleSpan;
+
+  /// Small caption above the title in multi-step flows, e.g. "Step 1 of 2".
+  final String? step;
+
+  /// Icon above the title on confirmation screens (see [AuthIconBadge]).
+  final Widget? badge;
+  final bool showBack;
+
+  /// The LODBOD logo lockup above the title (entry screens).
+  final bool showBrand;
+  final Widget? footer;
+  final List<Widget> children;
+
+  static const subtitleStyle = TextStyle(
+    color: AppColors.textSecondary,
+    fontSize: 15,
+    height: 1.45,
+  );
+
+  /// Field outline: dark enough for the 3:1 contrast WCAG asks of input
+  /// boundaries, light enough to stay quiet on white.
+  static const _fieldBorder = Color(0xFF9C8D89);
+
+  /// White, outlined fields on the white auth pages; the app's tonal filled
+  /// fields would read as grey blocks here.
+  static ThemeData _theme(ThemeData base) {
+    OutlineInputBorder line(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: Radii.input,
+          borderSide: BorderSide(color: color, width: width),
+        );
+    return base.copyWith(
+      inputDecorationTheme: base.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 16,
+        ),
+        border: line(_fieldBorder),
+        enabledBorder: line(_fieldBorder),
+        disabledBorder: line(AppColors.border),
+        focusedBorder: line(AppColors.primary, 1.5),
+        errorBorder: line(AppColors.error),
+        focusedErrorBorder: line(AppColors.error, 1.5),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final titleStyle = Theme.of(context).textTheme.headlineSmall
+        ?.copyWith(fontSize: 26, letterSpacing: -0.5);
+
     return PopScope(
       // Screens reached with `go` have nothing to pop to: system back
       // returns to log in instead of closing the app.
@@ -42,87 +97,94 @@ class AuthScaffold extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) context.go(Routes.login);
       },
-      child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              if (showBack || progress != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, Gap.xl, 0),
-                  child: Row(
-                    children: [
-                      if (showBack)
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          tooltip: 'Back',
-                          onPressed: () => context.canPop()
-                              ? context.pop()
-                              : context.go(Routes.login),
-                        )
-                      else
-                        const SizedBox(width: Gap.xl - 4, height: 48),
-                      if (progress != null) ...[
-                        Space.h8,
-                        Expanded(
-                          child: TweenAnimationBuilder<double>(
-                            tween: Tween(end: progress),
-                            duration: const Duration(milliseconds: 400),
-                            builder: (_, v, _) => LinearProgressIndicator(
-                              value: v,
-                              minHeight: 6,
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+      child: Theme(
+        data: _theme(Theme.of(context)),
+        child: Scaffold(
+          backgroundColor: AppColors.surface,
+          body: SafeArea(
+            child: Column(
+              children: [
+                if (showBack)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        tooltip: 'Back',
+                        onPressed: () => context.canPop()
+                            ? context.pop()
+                            : context.go(Routes.login),
+                      ),
+                    ),
                   ),
-                ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.topCenter,
+                Expanded(
                   child: SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: const EdgeInsets.fromLTRB(
+                    padding: EdgeInsets.fromLTRB(
                       Gap.xl,
-                      Gap.lg,
+                      showBack ? Gap.sm : Gap.xxl,
                       Gap.xl,
                       Gap.xl,
                     ),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 440),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (title != null) ...[
-                            Text(
-                              title!,
-                              style: Theme.of(context).textTheme.headlineLarge,
-                            ),
-                            if (subtitle != null) ...[
-                              Space.v8,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (showBrand) ...[
+                              const AuthBrand(),
+                              const SizedBox(height: 40),
+                            ],
+                            if (badge != null) ...[
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: badge,
+                              ),
+                              Space.v20,
+                            ],
+                            if (step != null) ...[
                               Text(
-                                subtitle!,
+                                step!,
                                 style: const TextStyle(
-                                  fontSize: 15.5,
-                                  color: AppColors.textSecondary,
-                                  height: 1.4,
+                                  color: AppColors.primary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              Space.v8,
                             ],
-                            Space.v24,
+                            Text(title, style: titleStyle),
+                            if (subtitleSpan != null) ...[
+                              Space.v8,
+                              Text.rich(subtitleSpan!, style: subtitleStyle),
+                            ] else if (subtitle != null) ...[
+                              Space.v8,
+                              Text(subtitle!, style: subtitleStyle),
+                            ],
+                            Space.v32,
+                            ...children,
                           ],
-                          ...children,
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              ?bottom,
-            ],
+                if (footer != null && !keyboardOpen)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Gap.xl,
+                      Gap.sm,
+                      Gap.xl,
+                      Gap.lg,
+                    ),
+                    child: footer,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -130,43 +192,83 @@ class AuthScaffold extends StatelessWidget {
   }
 }
 
-/// Google-style action row for auth screens: a secondary text action on the
-/// left and the primary filled pill on the right.
-class AuthActionRow extends StatelessWidget {
-  const AuthActionRow({
-    super.key,
-    required this.primary,
-    this.secondary,
-    this.footer,
-  });
-
-  final Widget primary;
-  final Widget? secondary;
-  final Widget? footer;
+/// Logo tile and wordmark side by side, for the top of entry screens.
+class AuthBrand extends StatelessWidget {
+  const AuthBrand({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.sm, Gap.xl, Gap.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              if (secondary != null)
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: FittedBox(fit: BoxFit.scaleDown, child: secondary!),
-                  ),
-                ),
-              Space.h8,
-              primary,
-            ],
-          ),
-          if (footer != null) ...[Space.v8, footer!],
-        ],
+    return const Row(
+      children: [
+        BrandMark(size: 36, elevated: false),
+        SizedBox(width: 10),
+        BrandWordmark(size: 24),
+      ],
+    );
+  }
+}
+
+/// Round icon above the title on confirmation screens ("Check your email").
+class AuthIconBadge extends StatelessWidget {
+  const AuthIconBadge(this.icon, {super.key, this.success = false});
+  final IconData icon;
+
+  /// Green for a completed action, brand orange for one still to do.
+  final bool success;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: success ? AppColors.successSoft : AppColors.primarySoft,
+        shape: BoxShape.circle,
       ),
+      child: Icon(
+        icon,
+        size: 28,
+        color: success ? AppColors.success : AppColors.primary,
+      ),
+    );
+  }
+}
+
+/// Centered "Don't have an account? Create account" line under the primary
+/// button.
+class AuthSwitchPrompt extends StatelessWidget {
+  const AuthSwitchPrompt({
+    super.key,
+    required this.prompt,
+    required this.action,
+    required this.onPressed,
+  });
+
+  final String prompt;
+  final String action;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          prompt,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14.5,
+          ),
+        ),
+        TextButton(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+          ),
+          child: Text(action),
+        ),
+      ],
     );
   }
 }
@@ -180,7 +282,7 @@ class PasswordField extends StatefulWidget {
     this.validator,
     this.enabled = true,
     this.showStrength = false,
-    this.hint = 'Your password',
+    this.hint,
     this.onSubmitted,
     this.textInputAction = TextInputAction.done,
     this.autofillHints = const [AutofillHints.password],
@@ -191,7 +293,7 @@ class PasswordField extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final bool enabled;
   final bool showStrength;
-  final String hint;
+  final String? hint;
   final ValueChanged<String>? onSubmitted;
   final TextInputAction textInputAction;
   final Iterable<String> autofillHints;
@@ -216,7 +318,6 @@ class _PasswordFieldState extends State<PasswordField> {
       onChanged: widget.showStrength ? (_) => setState(() {}) : null,
       decoration: InputDecoration(
         hintText: widget.hint,
-        prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
         suffixIcon: IconButton(
           tooltip: _obscure ? 'Show password' : 'Hide password',
           icon: Icon(
@@ -236,12 +337,12 @@ class _PasswordFieldState extends State<PasswordField> {
     final strength = Validators.passwordStrength(widget.controller.text);
     final (label, color) = switch (strength) {
       0 => (
-        'Use 8+ characters with a letter and a number',
+        'At least 8 characters, with a letter and a number',
         AppColors.textMuted,
       ),
-      1 => ('Weak', AppColors.error),
-      2 => ('Good', AppColors.warning),
-      _ => ('Strong', AppColors.success),
+      1 => ('Weak password', AppColors.error),
+      2 => ('Good password', AppColors.warning),
+      _ => ('Strong password', AppColors.success),
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,7 +355,7 @@ class _PasswordFieldState extends State<PasswordField> {
               Expanded(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  height: 4,
+                  height: 3,
                   decoration: BoxDecoration(
                     color: i <= strength ? color : AppColors.divider,
                     borderRadius: Radii.chip,
@@ -265,13 +366,13 @@ class _PasswordFieldState extends State<PasswordField> {
             ],
           ],
         ),
-        Space.v4,
+        Space.v6,
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
-            color: strength == 0 ? AppColors.textMuted : color,
-            fontWeight: FontWeight.w600,
+            fontSize: 12.5,
+            color: color,
+            fontWeight: strength == 0 ? FontWeight.w400 : FontWeight.w600,
           ),
         ),
       ],
@@ -307,8 +408,10 @@ class _LegalFootnoteState extends State<LegalFootnote> {
   @override
   Widget build(BuildContext context) {
     const link = TextStyle(
-      color: AppColors.primary,
+      color: AppColors.textPrimary,
       fontWeight: FontWeight.w600,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.textMuted,
     );
     return Text.rich(
       TextSpan(

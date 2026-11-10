@@ -2,11 +2,11 @@ import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../domain/simulated_driver.dart';
-import '../../../domain/tracking.dart';
-import '../../models/shipment.dart';
-import '../repositories.dart';
-import 'firestore_guard.dart';
+import '../../../core/firebase/firestore_guard.dart';
+import '../../shipments/domain/shipment.dart';
+import '../domain/simulated_driver.dart';
+import '../domain/tracking.dart';
+import '../domain/tracking_repository.dart';
 
 /// Live tracking: `tracking/{shipmentId}` holds the latest position report
 /// for a shipment. Every device listening to it gets each report as soon as

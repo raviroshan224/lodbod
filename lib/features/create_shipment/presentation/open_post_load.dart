@@ -2,9 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../routing/routes.dart';
-import '../shipments/request_limit_sheet.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../routing/routes.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/request_limit_sheet.dart';
 
 /// Every way into Post Load goes through here. With all mobile requests in
 /// use, the limit is explained before the form opens, so nobody fills in a

@@ -1,4 +1,4 @@
-import '../data/models/shipment.dart';
+import '../../shipments/domain/shipment.dart';
 
 class RouteStat {
   const RouteStat(this.route, this.count);

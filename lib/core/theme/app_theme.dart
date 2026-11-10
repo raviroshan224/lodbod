@@ -17,7 +17,7 @@ abstract final class AppTheme {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark, // Android
     statusBarBrightness: Brightness.light, // iOS
-    systemNavigationBarColor: AppColors.surfaceContainer,
+    systemNavigationBarColor: AppColors.background,
     systemNavigationBarIconBrightness: Brightness.dark,
   );
 
@@ -326,13 +326,13 @@ abstract final class AppTheme {
         ),
         actionTextColor: scheme.inversePrimary,
         insetPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Radii.xxl),
+          borderRadius: BorderRadius.circular(Radii.xl),
         ),
         titleTextStyle: const TextStyle(
           fontFamily: fontFamily,
@@ -353,7 +353,7 @@ abstract final class AppTheme {
         color: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         textStyle: const TextStyle(
           fontFamily: fontFamily,
           fontSize: 14.5,

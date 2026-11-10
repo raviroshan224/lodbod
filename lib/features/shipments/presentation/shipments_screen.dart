@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../domain/shipment_query.dart';
-import '../../routing/routes.dart';
-import '../create_shipment/open_post_load.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../routing/routes.dart';
+import '../../create_shipment/presentation/open_post_load.dart';
+import '../domain/shipment_query.dart';
 import 'shipments_providers.dart';
 import 'widgets/shipment_card.dart';
 
@@ -166,11 +166,11 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
                   ),
                   AsyncData(:final value) => ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(
+                    padding: EdgeInsets.fromLTRB(
                       Gap.page,
                       Gap.sm,
                       Gap.page,
-                      Gap.xl,
+                      Gap.xl + MediaQuery.paddingOf(context).bottom,
                     ),
                     itemCount: value.length + 1,
                     separatorBuilder: (_, _) => Space.v8,

@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../data/models/bid.dart';
-import '../../data/models/shipment.dart';
-import '../../routing/routes.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../routing/routes.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../domain/bid.dart';
 
 /// The one booking flow, used from the bid list and from offer details:
 /// confirm in a sheet, accept (the shipment only changes after the server

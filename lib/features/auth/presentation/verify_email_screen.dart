@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/state_views.dart';
-import '../../data/providers.dart';
-import '../../routing/routes.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../routing/routes.dart';
+import '../data/providers.dart';
 import 'session.dart';
 import 'widgets/auth_parts.dart';
 
@@ -106,97 +106,63 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final email = session is SessionReady ? session.user.email : '';
 
     return AuthScaffold(
+      step: 'Step 2 of 2',
+      badge: const AuthIconBadge(Icons.mark_email_unread_outlined),
       title: 'Verify your email',
-      subtitle: 'One last step before you start posting loads.',
-      progress: 1,
-      bottom: BottomActionBar(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            PrimaryButton(
-              label: "I've verified my email",
-              loading: _checking,
-              onPressed: _check,
+      subtitleSpan: TextSpan(
+        text: 'We sent a verification link to ',
+        children: [
+          TextSpan(
+            text: email,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
-            Space.v4,
-            TextButton(
-              onPressed: () => context.go(Routes.home),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary,
-                minimumSize: const Size.fromHeight(44),
-              ),
-              child: const Text('Skip for now'),
-            ),
-          ],
-        ),
+          ),
+          const TextSpan(text: '. Open it to activate your account.'),
+        ],
       ),
       children: [
-        Center(
-          child: Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              color: AppColors.primarySoft,
-              borderRadius: BorderRadius.circular(26),
-            ),
-            child: const Icon(
-              Icons.mark_email_unread_outlined,
-              size: 40,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-        Space.v24,
-        Text(
-          'Check your inbox',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        Space.v8,
-        Text.rich(
-          TextSpan(
-            text: 'We sent a verification link to ',
-            children: [
-              TextSpan(
-                text: email,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const TextSpan(text: '. Open it to confirm your account.'),
-            ],
-          ),
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14.5,
-            height: 1.5,
-          ),
-        ),
-        Space.v16,
-        Center(
-          child: _secondsLeft > 0
-              ? Text(
-                  'Resend available in 0:${_secondsLeft.toString().padLeft(2, '0')}',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 13,
-                  ),
-                )
-              : TextButton(
-                  onPressed: _resend,
-                  child: const Text('Resend email'),
-                ),
-        ),
         if (_message != null) ...[
-          Space.v12,
           InlineBanner(
             message: _message!,
             tone: _messageIsError ? BannerTone.warning : BannerTone.success,
           ),
+          Space.v16,
         ],
+        PrimaryButton(
+          label: "I've verified my email",
+          loading: _checking,
+          onPressed: _check,
+        ),
+        Space.v16,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const Text(
+              "Didn't get it?",
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
+            ),
+            TextButton(
+              onPressed: _secondsLeft > 0 ? null : _resend,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
+              child: Text(
+                _secondsLeft > 0
+                    ? 'Resend in 0:${_secondsLeft.toString().padLeft(2, '0')}'
+                    : 'Resend email',
+              ),
+            ),
+          ],
+        ),
+        const Divider(height: Gap.xxl),
+        TextButton(
+          onPressed: () => context.go(Routes.home),
+          style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
+          child: const Text('Skip for now'),
+        ),
       ],
     );
   }

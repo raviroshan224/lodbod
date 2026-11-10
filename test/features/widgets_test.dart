@@ -2,10 +2,10 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodbod/core/theme/app_theme.dart';
-import 'package:lodbod/features/auth/login_screen.dart';
-import 'package:lodbod/features/auth/session.dart';
-import 'package:lodbod/features/shipments/shipments_providers.dart';
-import 'package:lodbod/features/shipments/shipments_screen.dart';
+import 'package:lodbod/features/auth/presentation/login_screen.dart';
+import 'package:lodbod/features/auth/presentation/session.dart';
+import 'package:lodbod/features/shipments/presentation/shipments_providers.dart';
+import 'package:lodbod/features/shipments/presentation/shipments_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../fakes.dart';
@@ -56,7 +56,7 @@ void main() {
         await pumpLogin(tester);
         await tapLogIn(tester);
 
-        expect(find.text('Phone number is required'), findsOneWidget);
+        expect(find.text('Enter your email or phone number'), findsOneWidget);
         expect(find.text('Password is required'), findsOneWidget);
         expect(auth.current, isNull);
       },
@@ -66,18 +66,16 @@ void main() {
       tester,
     ) async {
       await pumpLogin(tester);
-      await tester.enterText(field('phone'), '12345');
+      await tester.enterText(field('identifier'), '12345');
       await tester.enterText(field('password'), 'whatever1');
       await tapLogIn(tester);
 
       expect(find.textContaining('10-digit mobile number'), findsOneWidget);
     });
 
-    testWidgets('email mode validates the email format', (tester) async {
+    testWidgets('an email address is validated as an email', (tester) async {
       await pumpLogin(tester);
-      await tester.tap(find.text('Email'));
-      await tester.pump();
-      await tester.enterText(field('email'), 'aarav@');
+      await tester.enterText(field('identifier'), 'aarav@');
       await tester.enterText(field('password'), 'Lodbod@123');
       await tapLogIn(tester);
 
@@ -88,7 +86,7 @@ void main() {
       'wrong password shows feedback; correct phone + password signs in',
       (tester) async {
         await pumpLogin(tester);
-        await tester.enterText(field('phone'), '9800000001');
+        await tester.enterText(field('identifier'), '9800000001');
         await tester.enterText(field('password'), 'wrong-password');
         await tapLogIn(tester);
 
@@ -107,9 +105,7 @@ void main() {
 
     testWidgets('signs in with email too', (tester) async {
       await pumpLogin(tester);
-      await tester.tap(find.text('Email'));
-      await tester.pump();
-      await tester.enterText(field('email'), 'Aarav@Example.com');
+      await tester.enterText(field('identifier'), 'Aarav@Example.com');
       await tester.enterText(field('password'), 'Lodbod@123');
       await tapLogIn(tester);
 

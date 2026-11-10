@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/common.dart';
-import '../../../data/models/bid.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/common.dart';
+import '../../domain/bid.dart';
+import 'bid_status_badge.dart';
 
 /// One carrier offer. Every bid shows the same fields in the same places so
 /// offers can be compared at a glance; no bid is singled out as "best".
@@ -109,7 +110,7 @@ class BidCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainer,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

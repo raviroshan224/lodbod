@@ -3,21 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../core/theme/app_colors.dart';
-import '../features/bids/bid_simulator.dart';
-import '../features/create_shipment/open_post_load.dart';
-import '../features/notifications/in_app_alerts.dart';
+import '../core/widgets/dock_nav_bar.dart';
+import '../features/bids/presentation/bid_simulator.dart';
+import '../features/create_shipment/presentation/open_post_load.dart';
+import '../features/notifications/presentation/in_app_alerts.dart';
+import '../features/shipments/presentation/shipments_providers.dart';
 
-/// Material 3 navigation bar: Home, Shipments, Post load, Analytics,
-/// Account. Post load is styled as the bar's primary action and opens the
-/// create flow over the current tab instead of switching tabs.
+/// Bottom navigation: Home, Shipments, Post load, Analytics, Account.
+/// Post load is the raised centre action and opens the create flow over the
+/// current tab instead of switching tabs.
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
-
-  /// Bar position of the Post load action.
-  static const _postLoadSlot = 2;
 
   void _goBranch(int branch) {
     navigationShell.goBranch(
@@ -32,73 +30,62 @@ class AppShell extends ConsumerWidget {
     // Session-scoped background behaviour: simulated carrier bids and
     // in-app alerts for new activity.
     ref.watch(bidSimulatorProvider);
-    final branch = navigationShell.currentIndex;
+    final offersToReview = ref.watch(offersToReviewCountProvider);
     return InAppAlerts(
       child: Scaffold(
-        body: navigationShell,
-        bottomNavigationBar: MediaQuery.withClampedTextScaling(
-          // The bar has a fixed height: cap label scaling like system bars.
-          maxScaleFactor: 1.15,
-          child: NavigationBar(
-            selectedIndex: branch >= _postLoadSlot ? branch + 1 : branch,
-            onDestinationSelected: (i) {
-              if (i == _postLoadSlot) {
-                HapticFeedback.mediumImpact();
-                openPostLoad(context, ref);
-                return;
-              }
-              HapticFeedback.selectionClick();
-              _goBranch(i > _postLoadSlot ? i - 1 : i);
-            },
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
+        // The body runs under the transparent strip around the raised Post
+        // load button; screens still pad for the bar itself (via SafeArea).
+        extendBody: true,
+        body: Builder(
+          builder: (context) {
+            final mq = MediaQuery.of(context);
+            return MediaQuery(
+              data: mq.copyWith(
+                padding: mq.padding.copyWith(
+                  bottom: mq.padding.bottom - DockNavBar.overhang,
+                ),
               ),
-              NavigationDestination(
-                icon: Icon(Icons.local_shipping_outlined),
-                selectedIcon: Icon(Icons.local_shipping_rounded),
-                label: 'Shipments',
-              ),
-              NavigationDestination(
-                icon: _PostLoadIcon(),
-                label: 'Post load',
-                tooltip: 'Post a new load',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.insert_chart_outlined_rounded),
-                selectedIcon: Icon(Icons.insert_chart_rounded),
-                label: 'Analytics',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Account',
-              ),
-            ],
-          ),
+              child: navigationShell,
+            );
+          },
+        ),
+        bottomNavigationBar: DockNavBar(
+          selectedIndex: navigationShell.currentIndex,
+          onSelect: (branch) {
+            HapticFeedback.selectionClick();
+            _goBranch(branch);
+          },
+          actionLabel: 'Post load',
+          actionSemanticLabel: 'Post a new load',
+          onAction: () {
+            HapticFeedback.mediumImpact();
+            openPostLoad(context, ref);
+          },
+          items: [
+            const DockItem(
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
+              label: 'Home',
+            ),
+            DockItem(
+              icon: Icons.local_shipping_outlined,
+              selectedIcon: Icons.local_shipping_rounded,
+              label: 'Shipments',
+              badgeCount: offersToReview,
+            ),
+            const DockItem(
+              icon: Icons.insert_chart_outlined_rounded,
+              selectedIcon: Icons.insert_chart_rounded,
+              label: 'Analytics',
+            ),
+            const DockItem(
+              icon: Icons.person_outline_rounded,
+              selectedIcon: Icons.person_rounded,
+              label: 'Account',
+            ),
+          ],
         ),
       ),
-    );
-  }
-}
-
-/// The bar's primary action: a filled brand pill, as wide as the selected
-/// indicator, so it reads as "create" rather than as a tab.
-class _PostLoadIcon extends StatelessWidget {
-  const _PostLoadIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 32,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
     );
   }
 }

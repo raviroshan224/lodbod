@@ -13,7 +13,7 @@ and every screen updates live.
 | Navigation | go_router 18: session-driven redirects, stateful tab shell |
 | Backend | Firebase Auth (email + password) and Cloud Firestore, project `lodbod-ravi` |
 | Design | Material 3 Expressive (Google's 2025–26 design language): tonal palette generated from LODBOD orange, large rounded shapes, pill buttons, M3 navigation bar and segmented buttons, Android 16-style grouped lists; Inter typeface |
-| Tests | 143: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
+| Tests | 154: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
 
 Technical note (data flow, repositories, trade-offs, production notes):
 [docs/TECHNICAL_NOTE.md](docs/TECHNICAL_NOTE.md). Screenshots are
@@ -131,7 +131,7 @@ flutter run --dart-define=USE_FIREBASE_EMULATORS=true   # Android emulator → 1
 
 ```bash
 flutter analyze                 # no issues
-flutter test                    # 143 tests
+flutter test                    # 154 tests
 flutter build apk --release     # build/app/outputs/flutter-apk/app-release.apk
 ```
 
@@ -144,26 +144,19 @@ sideloading but not for the Play Store.
 
 ```
 lib/
-  main.dart, app.dart        Firebase init (+ optional emulators), session side effects
-  core/                      Theme, formatters, validators, reusable widgets, error mapping
-  domain/                    Pure business rules (no Flutter/Firebase), unit-tested:
-                             request limit, draft validation, search/filters/counts,
-                             analytics, activity feed, simulated tracking, bid rules
-  data/
-    models/                  Shipment, Bid, UserProfile, AuthUser, enums
-    repositories/            Interfaces: Auth, Account, Shipment, Bid
-    repositories/firebase/   Firebase implementations + Firestore mappers
-    seed/                    Sample data set
-    providers.dart           Composition root (swap implementations here)
-  features/                  Screens + Riverpod controllers per feature:
-                             auth, dashboard, notifications, shipments, bids,
-                             create_shipment, analytics, account
-  routing/                   GoRouter, redirect rules, custom bottom bar
+  main.dart, app.dart    start-up (Firebase, ProviderScope) and the MaterialApp
+  routing/               router, auth redirect, tab shell
+  core/                  feature-agnostic: errors/ and utils/ (pure Dart),
+                         firebase/ (guard, error mapping, schema), theme/,
+                         widgets/ (UI kit), constants/, platform/
+  features/<feature>/    auth, account, shipments, bids, tracking,
+                         create_shipment, dashboard, analytics, notifications
+    domain/              models, repository contract, business rules (pure Dart)
+    data/                Firebase repository + mapper; providers.dart wires it
+    presentation/        screens, widgets and their Riverpod state
 ```
 
-**Layering:** widgets → Riverpod providers/controllers → repository
-interfaces → Firebase. Widgets never touch Firebase, and repositories only
-throw typed `AppException`s with user-safe messages.
+**Dependency rule:** feature-first clean architecture with three layers. Inside each feature, presentation → domain ← data; domain is pure Dart, with no Flutter or Firebase. A feature may use another feature's domain, state and widgets, but never its data internals (only `data/providers.dart`) or its screens (navigation goes through routes). core is feature-agnostic, and only data layers, core/firebase and start-up import Firebase. `test/architecture_test.dart` fails the build on any violation. Details: docs/TECHNICAL_NOTE.md §1.
 
 **Session:** `authUserProvider` (Firebase auth state) and `profileProvider`
 (`users/{uid}`) combine into one `Session` state: *loading*, *signed out*,
@@ -280,14 +273,16 @@ production:
 
 ## Screenshots
 
-Captured on a Pixel 7 emulator (Android 16).
+Captured on a Pixel 7 emulator (Android 16) against the live Firebase
+project, except * (rendered from the app by the widget-test harness, so it
+has no status bar).
 
-| Splash | Log in | Create account | Verify email |
+| Splash | Log in | Create account | Forgot password |
 |---|---|---|---|
-| ![](docs/screenshots/01-splash.png) | ![](docs/screenshots/02-login.png) | ![](docs/screenshots/03-register.png) | ![](docs/screenshots/04-verify-email.png) |
-| **Welcome (new account)** | **Home** | **Notifications** | **Shipments** |
+| ![](docs/screenshots/01-splash.png) | ![](docs/screenshots/02-login.png) | ![](docs/screenshots/03-register.png) | ![](docs/screenshots/04-forgot-password.png) |
+| **Welcome (new account)*** | **Home** | **Notifications** | **Shipments** |
 | ![](docs/screenshots/05-welcome.png) | ![](docs/screenshots/06-home.png) | ![](docs/screenshots/07-notifications.png) | ![](docs/screenshots/08-shipments.png) |
-| **Shipment details** | **Bids after booking** | **Offer details** | **Accept sheet** |
+| **Shipment details** | **Compare & accept bids** | **Offer details** | **Accept sheet** |
 | ![](docs/screenshots/09-details.png) | ![](docs/screenshots/10-bids.png) | ![](docs/screenshots/11-offer.png) | ![](docs/screenshots/12-accept-sheet.png) |
 | **Booked** | **Tracking** | **Post Load: route** | **Post Load: vehicle** |
 | ![](docs/screenshots/13-booked.png) | ![](docs/screenshots/14-tracking.png) | ![](docs/screenshots/15-post-route.png) | ![](docs/screenshots/16-post-vehicle.png) |
@@ -296,6 +291,7 @@ Captured on a Pixel 7 emulator (Android 16).
 | **Analytics** | **Account** | **Help center** | **Edit profile** |
 | ![](docs/screenshots/21-analytics.png) | ![](docs/screenshots/22-account.png) | ![](docs/screenshots/23-help.png) | ![](docs/screenshots/24-edit-profile.png) |
 
+
 ---
 
 ## Third-party code and AI assistance
@@ -303,7 +299,3 @@ Captured on a Pixel 7 emulator (Android 16).
 - Packages: `material_ui`, `flutter_riverpod`, `go_router`, `firebase_core`,
   `firebase_auth`, `cloud_firestore`, `url_launcher`; dev: `flutter_lints`,
   `fake_cloud_firestore`. Font: Inter (SIL Open Font License,
-  `assets/fonts/OFL.txt`).
-- Developed with the help of **Claude Code** (Anthropic's AI coding
-  assistant).
-# lodbod

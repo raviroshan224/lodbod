@@ -1,6 +1,6 @@
-import '../core/utils/formatters.dart';
-import '../data/models/bid.dart';
-import '../data/models/shipment.dart';
+import '../../../core/utils/formatters.dart';
+import '../../bids/domain/bid.dart';
+import '../../shipments/domain/shipment.dart';
 
 enum ActivityKind {
   posted,

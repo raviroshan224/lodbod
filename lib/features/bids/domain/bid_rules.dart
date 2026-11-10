@@ -1,5 +1,5 @@
-import '../data/models/bid.dart';
-import '../data/models/shipment.dart';
+import '../../shipments/domain/shipment.dart';
+import 'bid.dart';
 
 /// The status to show for a bid. Bids that arrived after another bid was
 /// accepted (or after cancellation) may still be stored as pending; the

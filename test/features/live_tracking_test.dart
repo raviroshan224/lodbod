@@ -1,10 +1,10 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/data/providers.dart';
-import 'package:lodbod/data/repositories/firebase/firestore_tracking_repository.dart';
-import 'package:lodbod/domain/simulated_driver.dart';
-import 'package:lodbod/domain/tracking.dart';
-import 'package:lodbod/features/shipments/shipments_providers.dart';
+import 'package:lodbod/core/firebase/firebase_providers.dart';
+import 'package:lodbod/features/shipments/presentation/shipments_providers.dart';
+import 'package:lodbod/features/tracking/data/firestore_tracking_repository.dart';
+import 'package:lodbod/features/tracking/domain/simulated_driver.dart';
+import 'package:lodbod/features/tracking/domain/tracking.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../app_harness.dart';

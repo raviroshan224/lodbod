@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/models/shipment.dart';
-import '../../data/providers.dart';
-import '../auth/session.dart';
-import '../shipments/shipments_providers.dart';
+import '../../auth/presentation/session.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../data/providers.dart';
 
 /// How long after posting simulated carrier bids arrive.
 const simulatedBidDelay = Duration(seconds: 20);

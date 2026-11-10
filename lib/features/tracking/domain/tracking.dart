@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import '../data/models/shipment.dart';
+import '../../shipments/domain/shipment.dart';
 
 class Checkpoint {
   const Checkpoint(this.name, this.fraction);

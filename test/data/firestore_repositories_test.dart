@@ -1,12 +1,12 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lodbod/core/errors/app_exception.dart';
-import 'package:lodbod/data/models/bid.dart';
-import 'package:lodbod/data/models/shipment.dart';
-import 'package:lodbod/data/repositories/firebase/firestore_account_repository.dart';
-import 'package:lodbod/data/repositories/firebase/firestore_bid_repository.dart';
-import 'package:lodbod/data/repositories/firebase/firestore_shipment_repository.dart';
-import 'package:lodbod/data/models/user_profile.dart';
+import 'package:lodbod/features/account/data/firestore_account_repository.dart';
+import 'package:lodbod/features/auth/domain/user_profile.dart';
+import 'package:lodbod/features/bids/data/firestore_bid_repository.dart';
+import 'package:lodbod/features/bids/domain/bid.dart';
+import 'package:lodbod/features/shipments/data/firestore_shipment_repository.dart';
+import 'package:lodbod/features/shipments/domain/shipment.dart';
 
 void main() {
   final now = DateTime(2026, 11, 7, 10);

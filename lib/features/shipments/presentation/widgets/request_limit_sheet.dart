@@ -1,12 +1,13 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/widgets/common.dart';
-import '../../data/models/shipment.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/common.dart';
+import '../../../../routing/routes.dart';
 import '../../domain/request_limit.dart';
-import '../../routing/routes.dart';
+import '../../domain/shipment.dart';
+import 'status_badge.dart';
 
 /// Explains the three-request rule. When [blocked] it leads with the
 /// prescribed message: [detailsSaved] says whether a filled-in load was kept

@@ -2,24 +2,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/state_views.dart';
-import '../../data/models/shipment.dart';
-import '../../data/providers.dart';
-import '../../domain/request_limit.dart';
-import '../../domain/shipment_query.dart';
-import '../../domain/tracking.dart';
-import '../../routing/routes.dart';
-import '../auth/session.dart';
-import '../create_shipment/open_post_load.dart';
-import '../shipments/live_tracking.dart';
-import '../shipments/request_limit_sheet.dart';
-import '../shipments/shipments_providers.dart';
-import '../shipments/widgets/shipment_card.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../../routing/routes.dart';
+import '../../account/data/providers.dart';
+import '../../auth/presentation/session.dart';
+import '../../create_shipment/presentation/open_post_load.dart';
+import '../../shipments/domain/request_limit.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/domain/shipment_query.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/request_limit_sheet.dart';
+import '../../shipments/presentation/widgets/shipment_card.dart';
+import '../../shipments/presentation/widgets/status_badge.dart';
+import '../../tracking/domain/tracking.dart';
+import '../../tracking/presentation/live_tracking.dart';
+import 'widgets/request_usage_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -53,11 +55,13 @@ class DashboardScreen extends ConsumerWidget {
               ...switch (shipments) {
                 AsyncData(:final value) => [
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
+                    // Bottom inset keeps the last item clear of the
+                    // floating navigation bar.
+                    padding: EdgeInsets.fromLTRB(
                       Gap.page,
                       0,
                       Gap.page,
-                      Gap.xl,
+                      Gap.xl + MediaQuery.paddingOf(context).bottom,
                     ),
                     sliver: SliverList.list(
                       children: _content(context, ref, value),
@@ -94,9 +98,7 @@ class DashboardScreen extends ConsumerWidget {
     final summary = ShipmentSummary.from(all);
     final usage = RequestLimit.usageOf(all);
     final now = DateTime.now();
-    final needsAction = all
-        .where((s) => s.status == ShipmentStatus.awaitingBids && s.bidCount > 0)
-        .toList();
+    final needsAction = all.where(awaitsShipperDecision).toList();
     final onTheRoad = all
         .where((s) => s.status == ShipmentStatus.inTransit)
         .toList();
@@ -117,9 +119,10 @@ class DashboardScreen extends ConsumerWidget {
     }
 
     return [
-      _PostLoadCard(
+      RequestUsageCard(
         usage: usage,
         onPostLoad: () => openPostLoad(context, ref),
+        onManage: () => openFiltered(ShipmentFilter.all),
         onLearnMore: () => showRequestLimitSheet(context, usage),
       ),
       Space.v12,
@@ -269,146 +272,6 @@ class _Header extends StatelessWidget {
             tooltip: 'Notifications',
             badge: unread,
             onPressed: onBell,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PostLoadCard extends StatelessWidget {
-  const _PostLoadCard({
-    required this.usage,
-    required this.onPostLoad,
-    required this.onLearnMore,
-  });
-
-  final RequestLimitUsage usage;
-  final VoidCallback onPostLoad;
-  final VoidCallback onLearnMore;
-
-  @override
-  Widget build(BuildContext context) {
-    final atLimit = usage.isAtLimit;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.md),
-      // Tonal hero (Material 3 primary container), flat like other cards.
-      decoration: BoxDecoration(
-        borderRadius: Radii.card,
-        color: AppColors.primaryContainer,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      atLimit ? 'All requests in use' : 'Ship something new',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    Space.v2,
-                    Text.rich(
-                      TextSpan(
-                        text: 'Mobile requests used: ',
-                        children: [
-                          TextSpan(
-                            text: '${usage.used} of ${usage.limit}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Space.h8,
-              FilledButton.icon(
-                onPressed: onPostLoad,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size(0, 42),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  textStyle: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                icon: const Icon(Icons.add_rounded, size: 20),
-                label: const Text('Post Load'),
-              ),
-            ],
-          ),
-          Space.v12,
-          Semantics(
-            label: '${usage.used} of ${usage.limit} mobile requests used',
-            child: ClipRRect(
-              borderRadius: Radii.chip,
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(end: usage.fraction),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutCubic,
-                builder: (_, v, _) => LinearProgressIndicator(
-                  value: v,
-                  minHeight: 6,
-                  color: AppColors.primary,
-                  // Visible on the peach hero (the theme track is peach too).
-                  backgroundColor: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          ),
-          InkWell(
-            onTap: onLearnMore,
-            borderRadius: Radii.input,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      atLimit
-                          ? 'Finish or cancel a request to post another.'
-                          : '${usage.remaining} more ${usage.remaining == 1 ? 'request' : 'requests'} available from mobile.',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  const Text(
-                    'How it works',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

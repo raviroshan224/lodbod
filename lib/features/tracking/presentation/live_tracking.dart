@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/models/shipment.dart';
-import '../../data/providers.dart';
-import '../../domain/simulated_driver.dart';
-import '../../domain/tracking.dart';
-import 'shipments_providers.dart';
+import '../../shipments/domain/shipment.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../data/providers.dart';
+import '../domain/simulated_driver.dart';
+import '../domain/tracking.dart';
 
 /// The latest position report for a shipment, live over Firestore. Null
 /// before the first report, and while it can't be read (offline, or the

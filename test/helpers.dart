@@ -1,10 +1,12 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
-import 'package:lodbod/data/models/user_profile.dart';
-import 'package:lodbod/data/providers.dart';
-import 'package:lodbod/features/auth/session.dart';
-import 'package:lodbod/features/shipments/live_tracking.dart';
+import 'package:lodbod/core/firebase/firebase_providers.dart';
+import 'package:lodbod/features/account/data/providers.dart';
+import 'package:lodbod/features/auth/data/providers.dart';
+import 'package:lodbod/features/auth/domain/user_profile.dart';
+import 'package:lodbod/features/auth/presentation/session.dart';
+import 'package:lodbod/features/tracking/presentation/live_tracking.dart';
 
 import 'fakes.dart';
 

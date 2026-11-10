@@ -2,21 +2,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/visuals.dart';
-import '../../data/providers.dart';
-import '../../domain/request_limit.dart';
-import '../../routing/routes.dart';
-import '../auth/session.dart';
-import '../create_shipment/create_shipment_controller.dart';
-import '../shipments/request_limit_sheet.dart';
-import '../shipments/shipments_providers.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/visuals.dart';
+import '../../../routing/routes.dart';
+import '../../auth/data/providers.dart';
+import '../../auth/presentation/session.dart';
+import '../../create_shipment/presentation/create_shipment_controller.dart';
+import '../../shipments/domain/request_limit.dart';
+import '../../shipments/presentation/shipments_providers.dart';
+import '../../shipments/presentation/widgets/request_limit_sheet.dart';
+import '../data/providers.dart';
 import 'feedback_sheet.dart';
 
 class AccountScreen extends ConsumerStatefulWidget {
@@ -128,7 +129,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       body: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(Gap.page, 0, Gap.page, Gap.xl),
+          padding: EdgeInsets.fromLTRB(
+            Gap.page,
+            0,
+            Gap.page,
+            Gap.xl + MediaQuery.paddingOf(context).bottom,
+          ),
           children: [
             const TabHeader(title: 'Account', inset: false),
             AppCard(

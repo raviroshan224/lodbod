@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lodbod/data/models/shipment.dart';
-import 'package:lodbod/domain/shipment_draft.dart';
+import 'package:lodbod/features/create_shipment/domain/shipment_draft.dart';
+import 'package:lodbod/features/shipments/domain/shipment.dart';
 
 void main() {
   final now = DateTime(2026, 11, 7, 10, 30);

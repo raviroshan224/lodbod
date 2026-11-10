@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/errors/app_exception.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/utils/formatters.dart';
-import '../../core/utils/validators.dart';
-import '../../core/widgets/common.dart';
-import '../../core/widgets/feedback.dart';
-import '../../core/widgets/field_prefix.dart';
-import '../../core/widgets/form_parts.dart';
-import '../../core/widgets/navigation_parts.dart';
-import '../../core/widgets/state_views.dart';
-import '../../data/providers.dart';
-import '../auth/session.dart';
+import '../../../core/errors/app_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/formatters.dart';
+import '../../../core/utils/validators.dart';
+import '../../../core/widgets/common.dart';
+import '../../../core/widgets/feedback.dart';
+import '../../../core/widgets/field_prefix.dart';
+import '../../../core/widgets/form_parts.dart';
+import '../../../core/widgets/navigation_parts.dart';
+import '../../../core/widgets/state_views.dart';
+import '../../auth/presentation/session.dart';
+import '../data/providers.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});

@@ -1,4 +1,4 @@
-import '../data/models/shipment.dart';
+import 'shipment.dart';
 
 /// Status groups used by the dashboard tiles and the list filter chips, so a
 /// tile and the list it opens always count the same shipments.
@@ -48,6 +48,11 @@ bool matchesSearch(Shipment s, String query) {
           t.split('-').where((p) => p.isNotEmpty).every(haystack.contains));
   return tokens.every(matches);
 }
+
+/// A load with carrier offers waiting for the shipper to choose one. Drives
+/// Home's "Needs your action" list and the Shipments tab badge.
+bool awaitsShipperDecision(Shipment s) =>
+    s.status == ShipmentStatus.awaitingBids && s.bidCount > 0;
 
 /// Newest first.
 List<Shipment> sortByRecent(Iterable<Shipment> shipments) =>

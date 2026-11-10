@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/app_exception.dart';
-import '../../models/bid.dart';
-import '../../models/shipment.dart';
-import '../../seed/demo_seed.dart';
-import '../repositories.dart';
-import 'firestore_guard.dart';
-import 'firestore_mappers.dart';
+import '../../../core/firebase/firestore_guard.dart';
+import '../../../core/firebase/firestore_schema.dart';
+import '../../shipments/data/demo_seed.dart';
+import '../../shipments/data/shipment_mapper.dart';
+import '../../shipments/domain/shipment.dart';
+import '../domain/bid.dart';
+import '../domain/bid_repository.dart';
+import 'bid_mapper.dart';
 
 /// Firestore-backed bids. `bids/{id}` documents link to their shipment via
 /// `shipmentId` (and to the shipper via `shipperId`, for security rules and
@@ -35,7 +37,7 @@ class FirestoreBidRepository implements BidRepository {
         .map((snap) {
           final bids = parseDocs(
             snap.docs.map((d) => (id: d.id, data: d.data())),
-            FirestoreMappers.bidFromMap,
+            BidMapper.fromMap,
           );
           return bids..sort((a, b) => a.createdAt.compareTo(b.createdAt));
         })
@@ -50,7 +52,7 @@ class FirestoreBidRepository implements BidRepository {
         .map(
           (snap) => parseDocs(
             snap.docs.map((d) => (id: d.id, data: d.data())),
-            FirestoreMappers.bidFromMap,
+            BidMapper.fromMap,
           ),
         )
         .transform(mapStreamErrors());
@@ -136,7 +138,7 @@ class FirestoreBidRepository implements BidRepository {
           'updatedAt': Timestamp.fromDate(now),
           'timeline': appendTimeline(
             shipment,
-            FirestoreMappers.timelineToMap(
+            ShipmentMapper.timelineToMap(
               TimelineEntry(
                 status: ShipmentStatus.confirmed,
                 at: now,
@@ -167,7 +169,7 @@ class FirestoreBidRepository implements BidRepository {
         if (data == null) {
           throw const NotFoundException('This shipment no longer exists.');
         }
-        final shipment = FirestoreMappers.shipmentFromMap(snap.id, data);
+        final shipment = ShipmentMapper.fromMap(snap.id, data);
         if (shipment.status != ShipmentStatus.awaitingBids) {
           throw const InvalidStateException(
             'Only shipments awaiting bids can receive bids.',
@@ -183,7 +185,7 @@ class FirestoreBidRepository implements BidRepository {
           newId: () => _bids.doc().id,
         );
         for (final bid in bids) {
-          tx.set(_bids.doc(bid.id), FirestoreMappers.bidToMap(bid));
+          tx.set(_bids.doc(bid.id), BidMapper.toMap(bid));
         }
         tx.update(shipmentRef, {
           'bidCount': bids.length,

@@ -1,6 +1,68 @@
-# Technical note: data flow, repositories and trade-offs
+# Technical note: architecture, data flow, repositories and trade-offs
 
-## 1. Data flow
+## 1. Architecture
+
+Feature-first clean architecture, kept to three layers: every feature has
+`domain/`, `data/` and `presentation/`, and every dependency points inward,
+toward the feature's pure domain.
+
+```
+lib/
+  main.dart, app.dart     start-up (Firebase, ProviderScope) and the MaterialApp
+  routing/                router, auth redirect, tab shell (composes screens)
+  core/                   feature-agnostic foundation
+    errors/               AppException types (pure Dart)
+    utils/                formatters, validators (pure Dart)
+    firebase/             Firestore instance, schema names, strict readers,
+                          guard (timeouts) and Firebase → AppException mapping
+    theme/ widgets/       UI kit
+    constants/ platform/  locations; phone/URL launchers
+  features/<feature>/
+    domain/               models, repository contract, business rules
+    data/                 Firebase repository + mapper; providers.dart is
+                          the feature's composition root
+    presentation/         screens, widgets and their Riverpod state
+```
+
+| Feature | domain | data | presentation |
+|---|---|---|---|
+| auth | `UserProfile`, `AuthUser`, `AuthRepository` | Firebase Auth | login, register, verify, splash; `Session` state |
+| account | `AccountRepository` | profile, phone index, drafts, sample data | account, edit profile, help |
+| shipments | `Shipment`, statuses, cargo, request limit, filters | shipments, sample data | list, details, cards, limit sheet; shipments stream |
+| bids | `Bid`, bid rules | bids | bids, offer details, accept flow; simulated bids |
+| tracking | `LivePosition`, simulated driver | live positions | tracking screen; live position + driver |
+| create_shipment | draft + validation | draft mapping | form, review, posted; Post Load controller |
+| analytics, notifications | analytics, activity feed | | screens, in-app alerts |
+| dashboard | | | Home |
+
+**Rules** (enforced by `test/architecture_test.dart`, which lists any
+offending `file → import`):
+
+```
+ presentation ──► domain ◄── data
+```
+
+- **domain is pure Dart.** It imports only other domain code and core's
+  errors and utils: no Flutter, no Firebase. The request limit, draft
+  validation, bid rules, filters, analytics, tracking and the simulated
+  driver are tested without widgets or a database.
+- **Inward only.** data never imports presentation.
+- **Data internals are private.** Outside data, the only data file anyone
+  imports is a feature's `data/providers.dart`, so every repository is
+  reached through its domain contract. Data layers may share the Firestore
+  schema, because one transaction can span collections (accepting a bid
+  updates the shipment and its bids together).
+- **Screens are private.** A feature may use another feature's domain,
+  state and widgets (bids show a shipment's status badge; Home reads the
+  shipments stream), but never its screens: navigation goes through routes.
+- **core is feature-agnostic**, and only data layers, `core/firebase` and
+  start-up import Firebase.
+
+**Shared entities.** Features depend on each other only through domain
+models and presentation state, never through implementations. `Shipment`
+is owned by `shipments`, and the other features import it from there.
+
+## 2. Data flow
 
 ```
  Widgets (screens)
@@ -16,17 +78,18 @@
    │   ├─ requestLimitUsageProvider   limit meter / warnings
    │   └─ activityFeedProvider ◄── shipperBidsProvider   notifications, alerts
    │ bidsProvider(shipmentId)            bids, offer details
+   │ livePositionProvider(shipmentId)    tracking, Home, details (live reports)
    │ CreateShipmentController            draft, steps, save/restore, submit
    │ ShipmentActionsController(id)       cancel, accept bid, simulated carrier events
    ▼
- Repository interfaces (data/repositories/repositories.dart)
+ Repository contracts (features/*/domain/*_repository.dart)
    ▼
  Firebase implementations ── transactions ──► Firestore      Firebase Auth
                          ◄── snapshots() live streams          (sessions persist)
 ```
 
 - **Reads are streams.** Every shipment-derived value comes from one
-  per-user snapshot stream, passed through pure functions in `domain/`.
+  per-user snapshot stream, passed through pure domain functions.
   After any write, Firestore pushes a new snapshot and every screen updates,
   with nothing to refresh by hand.
 - **Writes are commands.** Controllers call repository methods that run
@@ -42,9 +105,10 @@
   `AppException`s with user-safe messages. Writes time out after 15 s, so a
   queued offline write never hangs the UI.
 
-## 2. Repository design
+## 3. Repository design
 
-Four interfaces describe business operations rather than CRUD:
+Each feature's `domain/` declares its repository contract; together they
+describe business operations rather than CRUD:
 
 - `AuthRepository`: sign in, create account, reset password, verify email,
   sign out.
@@ -53,15 +117,20 @@ Four interfaces describe business operations rather than CRUD:
 - `ShipmentRepository`: watch, create (limit + reference), cancel, carrier
   update.
 - `BidRepository`: watch, accept (atomic, idempotent), simulate bids.
+- `TrackingRepository`: watch a shipment's live position, report the
+  simulated driver's next position (skipped if another device just did).
 
-Models are plain Dart; Firestore mapping lives in `firestore_mappers.dart`.
+Models are plain Dart in each feature's `domain/`; Firestore mapping lives
+next to the repository in the feature's `data/` (`ShipmentMapper`,
+`BidMapper`, ...), on top of strict field readers in `core/firebase`.
 Malformed documents are skipped and their ids logged, so one bad record
-can't break a list. `data/providers.dart` is the only place that names
-concrete classes.
+can't break a list. Each feature's `data/providers.dart` is the only place
+that names its concrete class.
 
-## 3. Swapping in a REST backend
+## 4. Swapping in a REST backend
 
-Implement the same interfaces (for example with `dio`):
+Implement the same contracts with HTTP in each feature's `data/` (for
+example with `dio`):
 
 - `createShipment` → `POST /shipments` with an `Idempotency-Key` equal to
   the request id.
@@ -70,10 +139,11 @@ Implement the same interfaces (for example with `dio`):
 
 Map HTTP errors to the same exceptions: `409 LIMIT_REACHED` →
 `RequestLimitReachedException`, `401` → sign-out, `5xx`/timeouts →
-`NetworkException`. Then change the providers in `data/providers.dart`. No
-screen changes, because screens only see `AsyncValue`s and `AppException`s.
+`NetworkException`. Then point each feature's `data/providers.dart` at the
+new class. No screen changes, because screens only see `AsyncValue`s and `AppException`s,
+and the architecture test guarantees no screen imports Firebase.
 
-## 4. Decisions and trade-offs
+## 5. Decisions and trade-offs
 
 | Decision | Why | Cost / mitigation |
 |---|---|---|
@@ -87,7 +157,7 @@ screen changes, because screens only see `AsyncValue`s and `AppException`s.
 | Client-side expiry and sample refresh at sign-in | A request past its pickup must free its slot, and a demo account opened days later should still make sense. Both are idempotent, and sample data is only refreshed if untouched. | Only runs when the app opens; production moves expiry to a scheduled server job. |
 | Material 3 Expressive theme | Tonal colours generated from the brand orange (the same algorithm Android uses for dynamic colour), so tonal buttons, chips and the navigation indicator all match; shared components (cards, top bar, segmented list) carry the look, so screens stay consistent. | A few Expressive components (button groups, wavy progress) aren't in this Flutter version; their look is built from standard widgets. |
 
-## 5. Discussion prep
+## 6. Discussion prep
 
 - **Limit in production:** callable Cloud Function or API endpoint running
   the create transaction with the Admin SDK; rules deny direct writes; the
@@ -104,8 +174,10 @@ screen changes, because screens only see `AsyncValue`s and `AppException`s.
   `shipperId, createdAt`; the Auth SDK refreshes tokens, and the session
   stream signs the user out if the token is revoked; the Firestore cache
   serves stale data offline while writes fail fast with a clear message.
-- **Tests (143):** domain rules (limit, validation, filters agree with
-  counts, activity feed, tracking); repositories on `fake_cloud_firestore`
+- **Tests (154):** the architecture rules; domain rules (limit,
+  validation, filters agree with counts, activity feed, tracking, the
+  simulated driver); Firebase error mapping; repositories on
+  `fake_cloud_firestore`
   (limit, unique references, idempotent create/accept, duplicate refusal,
   lifecycle, owner-filtered queries); auth and account (registration
   rollback, phone sign-in, reset that reveals nothing, phone re-index,

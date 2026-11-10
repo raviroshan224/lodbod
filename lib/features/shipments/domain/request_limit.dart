@@ -1,4 +1,5 @@
-import '../data/models/shipment.dart';
+import '../../../core/errors/app_exception.dart';
+import 'shipment.dart';
 
 /// The mobile three-request rule.
 ///
@@ -13,10 +14,9 @@ import '../data/models/shipment.dart';
 abstract final class RequestLimit {
   static const int max = 3;
 
-  /// Prescribed wording from the brief. Do not paraphrase.
-  static const String message =
-      'You have reached the mobile request limit of 3. Please use the LODBOD '
-      'web platform to create additional requests.';
+  /// Prescribed wording from the brief, shown whenever the limit blocks a
+  /// request.
+  static const String message = RequestLimitReachedException.prescribedMessage;
 
   static int countQualifying(Iterable<Shipment> shipments) =>
       shipments.where((s) => s.status.countsTowardRequestLimit).length;

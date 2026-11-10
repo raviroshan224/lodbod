@@ -3,14 +3,15 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/errors/app_exception.dart';
-import '../../../domain/request_limit.dart';
-import '../../../domain/shipment_query.dart';
-import '../../models/bid.dart';
-import '../../models/shipment.dart';
-import '../../seed/demo_seed.dart';
-import '../repositories.dart';
-import 'firestore_guard.dart';
-import 'firestore_mappers.dart';
+import '../../../core/firebase/firestore_guard.dart';
+import '../../../core/firebase/firestore_schema.dart';
+import '../../bids/domain/bid.dart';
+import '../domain/request_limit.dart';
+import '../domain/shipment.dart';
+import '../domain/shipment_query.dart';
+import '../domain/shipment_repository.dart';
+import 'demo_seed.dart';
+import 'shipment_mapper.dart';
 
 /// Firestore-backed shipments.
 ///
@@ -48,7 +49,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
           (snap) => sortByRecent(
             parseDocs(
               snap.docs.map((d) => (id: d.id, data: d.data())),
-              FirestoreMappers.shipmentFromMap,
+              ShipmentMapper.fromMap,
             ),
           ),
         )
@@ -74,10 +75,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
         if (existing.exists) {
           // A retry of a submission that already committed (e.g. the
           // response was lost). Return it instead of creating a duplicate.
-          return FirestoreMappers.shipmentFromMap(
-            existing.id,
-            existing.data()!,
-          );
+          return ShipmentMapper.fromMap(existing.id, existing.data()!);
         }
         final user = await tx.get(userRef);
         if (!user.exists) {
@@ -123,7 +121,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
           ],
         );
 
-        tx.set(shipmentRef, FirestoreMappers.shipmentToMap(shipment));
+        tx.set(shipmentRef, ShipmentMapper.toMap(shipment));
         tx.update(userRef, {Fields.activeRequestCount: activeCount + 1});
         tx.set(_counters, {
           Fields.nextShipmentNumber: number + 1,
@@ -202,7 +200,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
           'updatedAt': Timestamp.fromDate(now),
           'timeline': appendTimeline(
             data,
-            FirestoreMappers.timelineToMap(
+            ShipmentMapper.timelineToMap(
               TimelineEntry(status: to, at: now, note: note),
             ),
           ),
@@ -258,7 +256,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
           'updatedAt': Timestamp.fromDate(now),
           'timeline': appendTimeline(
             data,
-            FirestoreMappers.timelineToMap(
+            ShipmentMapper.timelineToMap(
               TimelineEntry(status: next, at: now, note: _carrierNote(next)),
             ),
           ),
