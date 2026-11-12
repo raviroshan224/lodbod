@@ -178,7 +178,6 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ListRow(
                   icon: Icons.mail_outline_rounded,
                   title: l10n.fieldEmail,
-                  value: verified ? null : user.email,
                   trailing: verified
                       ? Pill(label: l10n.accountVerified, style: _verifiedStyle)
                       : TextButton(

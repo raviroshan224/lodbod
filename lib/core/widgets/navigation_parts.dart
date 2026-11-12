@@ -409,6 +409,8 @@ class ListRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
+                    maxLines: value == null ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -429,12 +431,16 @@ class ListRow extends StatelessWidget {
               ),
             ),
             if (value != null) ...[
-              Flexible(
+              // Right-aligned beside the chevron; the title gives way first,
+              // and only a very long value (an email) truncates.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.sizeOf(context).width * 0.4,
+                ),
                 child: Text(
                   value!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.end,
                   style: TextStyle(
                     fontSize: 13.5,
                     color: AppColors.textSecondary,
