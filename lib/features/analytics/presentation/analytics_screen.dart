@@ -119,7 +119,7 @@ class _Content extends StatelessWidget {
     final a = analytics;
     final ranked = a.byStatus.entries.where((e) => e.value > 0).toList()
       ..sort((x, y) => y.value.compareTo(x.value));
-    final maxCount = ranked.isEmpty ? 1 : ranked.first.value;
+    final statusTotal = ranked.fold(0, (sum, e) => sum + e.value);
     final open = a.byStatus.entries
         .where((e) => e.key.countsTowardRequestLimit)
         .fold(0, (sum, e) => sum + e.value);
@@ -206,7 +206,7 @@ class _Content extends StatelessWidget {
                 value: a.averageBids == null
                     ? '—'
                     : a.averageBids!.toStringAsFixed(1),
-                caption: 'more bids, better prices',
+                caption: 'per posted load',
               ),
             ),
           ],
@@ -217,7 +217,7 @@ class _Content extends StatelessWidget {
           child: Column(
             children: [
               for (final e in ranked)
-                _StatusBar(status: e.key, count: e.value, max: maxCount),
+                _StatusBar(status: e.key, count: e.value, total: statusTotal),
             ],
           ),
         ),
@@ -325,11 +325,14 @@ class _StatusBar extends StatelessWidget {
   const _StatusBar({
     required this.status,
     required this.count,
-    required this.max,
+    required this.total,
   });
   final ShipmentStatus status;
   final int count;
-  final int max;
+
+  /// Bars show each status's share of all shipments, so four statuses with
+  /// one shipment each read as quarters, not four full bars.
+  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -363,20 +366,23 @@ class _StatusBar extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             LayoutBuilder(
-              builder: (context, c) => Align(
+              builder: (context, c) => Container(
+                height: 10,
                 alignment: Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceContainer,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: count / max),
+                  tween: Tween(begin: 0, end: total == 0 ? 0 : count / total),
                   duration: const Duration(milliseconds: 600),
                   curve: Curves.easeOutCubic,
                   builder: (_, f, _) => Container(
                     height: 10,
                     width: c.maxWidth * f,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.horizontal(
-                        right: Radius.circular(4),
-                      ),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ),

@@ -92,7 +92,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
       canPop: !state.submitting,
       child: Scaffold(
         appBar: DetailAppBar(
-          title: 'Review your load',
+          title: 'Post a load',
           subtitle: 'Check everything before posting',
           onBack: state.submitting ? () {} : null,
         ),
@@ -128,7 +128,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
                     InlineBanner(
                       tone: BannerTone.warning,
                       title: 'All 3 mobile requests are in use',
-                      message: 'Posting will be blocked until one of your requests is delivered or cancelled.',
+                      message: 'You can post this load once one of your requests is delivered or cancelled.',
                       action: GestureDetector(
                         onTap: () => showRequestLimitSheet(context, usage),
                         child: const Text(

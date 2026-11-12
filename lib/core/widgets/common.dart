@@ -346,7 +346,11 @@ class InfoRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // A trailing control (call button) centres on its row; plain rows
+        // top-align so a wrapped value hangs under its label.
+        crossAxisAlignment: trailing == null
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
             Icon(icon, size: 17, color: AppColors.textMuted),

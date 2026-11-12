@@ -194,7 +194,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                       InlineBanner(
                         tone: BannerTone.warning,
                         title: 'All 3 mobile requests are in use',
-                        message: 'You can prepare this load now. It can be posted once one of your requests is delivered or cancelled.',
+                        message: 'Prepare it now and post it once one of your requests is delivered or cancelled.',
                         action: GestureDetector(
                           onTap: () => showRequestLimitSheet(context, usage),
                           child: const Text(
@@ -827,48 +827,104 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
           ),
         ),
         Space.v16,
-        const FieldLabel('Total weight'),
+        // The unit sits on the label row, as a setting for the field, so
+        // the value box holds only the number.
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _weight,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  // Digits with at most one decimal point and 2 decimals.
-                  TextInputFormatter.withFunction(
-                    (old, next) =>
-                        RegExp(r'^\d{0,6}(\.\d{0,2})?$').hasMatch(next.text)
-                        ? next
-                        : old,
-                  ),
-                ],
-                onChanged: (v) =>
-                    controller.edit((d) => d.copyWith(weightText: v)),
-                decoration: InputDecoration(
-                  hintText: 'e.g. 12',
-                  prefixIcon: const Icon(Icons.scale_outlined, size: 20),
-                  errorText: errors[DraftField.weight],
-                ),
-              ),
-            ),
-            Space.h8,
-            SizedBox(
-              width: 128,
-              child: PillTabs<WeightUnit>(
-                values: WeightUnit.values,
-                selected: draft.weightUnit,
-                labelOf: (u) => u == WeightUnit.tonne ? 'Tonnes' : 'kg',
-                onChanged: (u) =>
-                    controller.edit((d) => d.copyWith(weightUnit: u)),
-              ),
+            const Expanded(child: FieldLabel('Total weight')),
+            _UnitToggle(
+              selected: draft.weightUnit,
+              onChanged: (u) =>
+                  controller.edit((d) => d.copyWith(weightUnit: u)),
             ),
           ],
         ),
+        TextField(
+          controller: _weight,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            // Digits with at most one decimal point and 2 decimals.
+            TextInputFormatter.withFunction(
+              (old, next) =>
+                  RegExp(r'^\d{0,6}(\.\d{0,2})?$').hasMatch(next.text)
+                  ? next
+                  : old,
+            ),
+          ],
+          onChanged: (v) => controller.edit((d) => d.copyWith(weightText: v)),
+          decoration: InputDecoration(
+            hintText: 'e.g. 12',
+            prefixIcon: const Icon(Icons.scale_outlined, size: 20),
+            suffixText: draft.weightUnit == WeightUnit.tonne ? 'tonnes' : 'kg',
+            errorText: errors[DraftField.weight],
+          ),
+        ),
       ],
+    );
+  }
+}
+
+/// "Tonnes | kg" switch on the weight field's label row.
+class _UnitToggle extends StatelessWidget {
+  const _UnitToggle({required this.selected, required this.onChanged});
+  final WeightUnit selected;
+  final ValueChanged<WeightUnit> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      // Matches FieldLabel's bottom padding so both sit on one baseline.
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainer,
+          borderRadius: Radii.chip,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [for (final unit in WeightUnit.values) _unit(unit)],
+        ),
+      ),
+    );
+  }
+
+  Widget _unit(WeightUnit unit) {
+    final isSelected = unit == selected;
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      label: unit.label,
+      excludeSemantics: true,
+      child: Material(
+        color: isSelected ? AppColors.surface : Colors.transparent,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        elevation: isSelected ? 1 : 0,
+        shadowColor: Colors.black26,
+        child: InkWell(
+          onTap: () {
+            if (!isSelected) HapticFeedback.selectionClick();
+            onChanged(unit);
+          },
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            alignment: Alignment.center,
+            child: Text(
+              unit == WeightUnit.tonne ? 'Tonnes' : 'kg',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? AppColors.textPrimary
+                    : AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

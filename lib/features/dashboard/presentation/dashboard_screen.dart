@@ -126,38 +126,42 @@ class DashboardScreen extends ConsumerWidget {
         onLearnMore: () => showRequestLimitSheet(context, usage),
       ),
       Space.v12,
-      Row(
-        children: [
-          Expanded(
-            child: _StatTile(
-              icon: Icons.local_shipping_outlined,
-              color: const Color(0xFFB93C0B),
-              count: summary.active,
-              label: 'Active',
-              onTap: () => openFiltered(ShipmentFilter.active),
+      // Equal-height tiles even when one label wraps at large text sizes.
+      IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _StatTile(
+                icon: Icons.local_shipping_outlined,
+                color: const Color(0xFFB93C0B),
+                count: summary.active,
+                label: 'Active',
+                onTap: () => openFiltered(ShipmentFilter.active),
+              ),
             ),
-          ),
-          Space.h8,
-          Expanded(
-            child: _StatTile(
-              icon: Icons.gavel_rounded,
-              color: AppColors.info,
-              count: summary.awaitingBids,
-              label: 'Awaiting bids',
-              onTap: () => openFiltered(ShipmentFilter.awaitingBids),
+            Space.h8,
+            Expanded(
+              child: _StatTile(
+                icon: Icons.gavel_rounded,
+                color: AppColors.info,
+                count: summary.awaitingBids,
+                label: 'Awaiting bids',
+                onTap: () => openFiltered(ShipmentFilter.awaitingBids),
+              ),
             ),
-          ),
-          Space.h8,
-          Expanded(
-            child: _StatTile(
-              icon: Icons.check_circle_outline_rounded,
-              color: AppColors.success,
-              count: summary.completed,
-              label: 'Completed',
-              onTap: () => openFiltered(ShipmentFilter.completed),
+            Space.h8,
+            Expanded(
+              child: _StatTile(
+                icon: Icons.check_circle_outline_rounded,
+                color: AppColors.success,
+                count: summary.completed,
+                label: 'Completed',
+                onTap: () => openFiltered(ShipmentFilter.completed),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       if (needsAction.isNotEmpty) ...[
         const SectionHeader('Needs your action'),
@@ -192,20 +196,40 @@ class DashboardScreen extends ConsumerWidget {
           onTap: () => context.push(Routes.shipment(upcoming.first.id)),
         ),
       ],
-      SectionHeader(
-        'Recent shipments',
-        action: TextButton(
-          onPressed: () => openFiltered(ShipmentFilter.all),
-          child: const Text('See all'),
-        ),
-      ),
-      for (final s in all.take(3)) ...[
-        ShipmentCard(
-          shipment: s,
-          onTap: () => context.push(Routes.shipment(s.id)),
-        ),
-        Space.v8,
-      ],
+      // Shipments already shown in a section above are not repeated here.
+      ...() {
+        final featured = {
+          for (final s in needsAction) s.id,
+          for (final s in onTheRoad) s.id,
+          if (upcoming.isNotEmpty) upcoming.first.id,
+        };
+        final recent = all.where((s) => !featured.contains(s.id)).take(3);
+        if (recent.isEmpty) {
+          return [
+            Space.v24,
+            OutlinedButton(
+              onPressed: () => openFiltered(ShipmentFilter.all),
+              child: Text('See all ${all.length} shipments'),
+            ),
+          ];
+        }
+        return [
+          SectionHeader(
+            'Other shipments',
+            action: TextButton(
+              onPressed: () => openFiltered(ShipmentFilter.all),
+              child: const Text('See all'),
+            ),
+          ),
+          for (final s in recent) ...[
+            ShipmentCard(
+              shipment: s,
+              onTap: () => context.push(Routes.shipment(s.id)),
+            ),
+            Space.v8,
+          ],
+        ];
+      }(),
     ];
   }
 }
@@ -298,7 +322,7 @@ class _StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.fromLTRB(Gap.md, Gap.md, Gap.md, 10),
+      padding: const EdgeInsets.fromLTRB(10, Gap.md, 10, 10),
       semanticLabel: '$count $label. Show these shipments',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,11 +344,16 @@ class _StatTile extends StatelessWidget {
           ),
           Text(
             label,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
+            // The count scales fully; the caption is capped so a single
+            // word ("Completed") still fits a third of a 320dp screen.
+            textScaler: MediaQuery.textScalerOf(context)
+                .clamp(maxScaleFactor: 1.15),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12.5,
+              height: 1.2,
             ),
           ),
         ],

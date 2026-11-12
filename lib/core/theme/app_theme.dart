@@ -147,10 +147,15 @@ abstract final class AppTheme {
       ),
     );
 
-    final inputBorder = OutlineInputBorder(
-      borderRadius: Radii.input,
-      borderSide: BorderSide.none,
-    );
+    // Outlined white fields. The outline is dark enough for the 3:1
+    // contrast WCAG asks of input boundaries, light enough to stay quiet.
+    const fieldBorder = Color(0xFF9C8D89);
+    OutlineInputBorder inputLine(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: Radii.input,
+          borderSide: BorderSide(color: color, width: width),
+        );
+    final inputBorder = inputLine(fieldBorder);
     const buttonText = TextStyle(
       fontFamily: fontFamily,
       fontSize: 15.5,
@@ -191,15 +196,13 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: Radii.card),
       ),
-      // Filled text fields with fully rounded corners; a 2dp brand outline
-      // shows focus.
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceContainer,
+        fillColor: AppColors.surface,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 17,
+          horizontal: 14,
+          vertical: 16,
         ),
         hintStyle: const TextStyle(
           color: AppColors.textMuted,
@@ -213,16 +216,10 @@ abstract final class AppTheme {
         ),
         border: inputBorder,
         enabledBorder: inputBorder,
-        disabledBorder: inputBorder,
-        focusedBorder: inputBorder.copyWith(
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        errorBorder: inputBorder.copyWith(
-          borderSide: const BorderSide(color: AppColors.error),
-        ),
-        focusedErrorBorder: inputBorder.copyWith(
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
-        ),
+        disabledBorder: inputLine(AppColors.border),
+        focusedBorder: inputLine(AppColors.primary, 1.5),
+        errorBorder: inputLine(AppColors.error),
+        focusedErrorBorder: inputLine(AppColors.error, 1.5),
         errorStyle: const TextStyle(fontSize: 12.5, color: AppColors.error),
         errorMaxLines: 3,
         helperStyle: const TextStyle(

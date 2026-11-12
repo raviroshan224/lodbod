@@ -397,15 +397,19 @@ class _SmallIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sized to sit inside a single info row; the 48dp tap target comes from
+    // the row's own padding plus the button's own, not from its paint size.
     return IconButton.filledTonal(
       tooltip: tooltip,
       onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
       style: IconButton.styleFrom(
         backgroundColor: AppColors.primarySoft,
         foregroundColor: AppColors.primary,
-        minimumSize: const Size(40, 40),
+        minimumSize: const Size(32, 32),
+        padding: EdgeInsets.zero,
       ),
-      icon: Icon(icon, size: 19),
+      icon: Icon(icon, size: 17),
     );
   }
 }

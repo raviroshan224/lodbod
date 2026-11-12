@@ -341,12 +341,14 @@ class ListGroup extends StatelessWidget {
         if (title != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, Gap.xl, 16, Gap.sm),
+            // Quiet grouping label: orange is reserved for actions.
             child: Text(
               title!,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                letterSpacing: 0.2,
+                color: AppColors.textSecondary,
               ),
             ),
           ),

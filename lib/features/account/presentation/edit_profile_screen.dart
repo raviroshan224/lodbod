@@ -96,69 +96,57 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 size: 72,
               ),
             ),
+            Space.v8,
+            const Text(
+              'Carriers see your name and company on the loads you post.',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
             Space.v24,
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const FieldLabel('Full name'),
-                  TextFormField(
-                    controller: _name,
-                    enabled: !_saving,
-                    textCapitalization: TextCapitalization.words,
-                    onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                    ),
-                    validator: Validators.name,
-                  ),
-                  Space.v16,
-                  const FieldLabel('Company name', isRequired: false),
-                  TextFormField(
-                    controller: _company,
-                    enabled: !_saving,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.business_outlined, size: 20),
-                    ),
-                  ),
-                  Space.v16,
-                  const FieldLabel('Phone number'),
-                  TextFormField(
-                    controller: _phone,
-                    enabled: !_saving,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]')),
-                      LengthLimitingTextInputFormatter(16),
-                    ],
-                    decoration: const InputDecoration(
-                      prefixIcon: FieldPrefix.phone(),
-                      helperText: 'You can log in with this number.',
-                    ),
-                    validator: (v) => Validators.phone(v),
-                  ),
-                  Space.v16,
-                  const FieldLabel.plain('Email'),
-                  TextFormField(
-                    initialValue: user.email,
-                    enabled: false,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.mail_outline_rounded, size: 20),
-                      helperText:
-                          'Your sign-in email. Contact support to change it.',
-                    ),
-                  ),
-                ],
+            const FieldLabel.plain('Full name'),
+            TextFormField(
+              controller: _name,
+              enabled: !_saving,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              onChanged: (_) => setState(() {}),
+              validator: Validators.name,
+            ),
+            Space.v20,
+            const FieldLabel('Company name', isRequired: false),
+            TextFormField(
+              controller: _company,
+              enabled: !_saving,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+            ),
+            Space.v20,
+            const FieldLabel.plain('Phone number'),
+            TextFormField(
+              controller: _phone,
+              enabled: !_saving,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]')),
+                LengthLimitingTextInputFormatter(16),
+              ],
+              decoration: const InputDecoration(
+                prefixIcon: FieldPrefix.dialCode(),
+                helperText: 'You can log in with this number.',
+              ),
+              validator: (v) => Validators.phone(v),
+            ),
+            Space.v20,
+            const FieldLabel.plain('Email'),
+            TextFormField(
+              initialValue: user.email,
+              enabled: false,
+              style: const TextStyle(color: AppColors.textSecondary),
+              decoration: const InputDecoration(
+                helperText: 'Your sign-in email. Contact support to change it.',
               ),
             ),
             if (_error != null) ...[Space.v16, InlineBanner(message: _error!)],
-            Space.v12,
-            const Text(
-              'Carriers see your name and company on requests you post.',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),

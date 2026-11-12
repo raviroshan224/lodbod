@@ -4,8 +4,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// Material 3 step header: "Step 2 of 4", the step's name, and a segmented
-/// progress bar. Completed segments can be tapped to go back to that step.
+/// Step header for the posting flow: the step's name with "Step 2 of 4"
+/// beside it, over a segmented progress bar. Completed segments can be
+/// tapped to go back to that step.
+///
+/// Kept to one text line so the first input stays above the fold on small
+/// phones (the app bar already says "Post a load").
 class StepHeader extends StatelessWidget {
   const StepHeader({
     super.key,
@@ -23,28 +27,44 @@ class StepHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final count = titles.length;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.page + 4, 0, Gap.page + 4, Gap.md),
+      padding: const EdgeInsets.fromLTRB(Gap.page + 4, 0, Gap.page + 4, Gap.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Step ${current + 1} of $count',
-            style: const TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  layoutBuilder: (current, previous) => Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [...previous, ?current],
+                  ),
+                  child: Text(
+                    titles[current],
+                    key: ValueKey(current),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ),
+              Space.h12,
+              Text(
+                'Step ${current + 1} of $count',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
           ),
-          Space.v2,
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            child: Text(
-              titles[current],
-              key: ValueKey(current),
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          Space.v12,
+          Space.v4,
           Row(
             children: [
               for (var i = 0; i < count; i++) ...[
@@ -85,10 +105,10 @@ class StepHeader extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeOutCubic,
-            height: 6,
+            height: 4,
             decoration: BoxDecoration(
               color: reached ? AppColors.primary : AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ),

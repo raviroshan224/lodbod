@@ -54,36 +54,6 @@ class AuthScaffold extends StatelessWidget {
     height: 1.45,
   );
 
-  /// Field outline: dark enough for the 3:1 contrast WCAG asks of input
-  /// boundaries, light enough to stay quiet on white.
-  static const _fieldBorder = Color(0xFF9C8D89);
-
-  /// White, outlined fields on the white auth pages; the app's tonal filled
-  /// fields would read as grey blocks here.
-  static ThemeData _theme(ThemeData base) {
-    OutlineInputBorder line(Color color, [double width = 1]) =>
-        OutlineInputBorder(
-          borderRadius: Radii.input,
-          borderSide: BorderSide(color: color, width: width),
-        );
-    return base.copyWith(
-      inputDecorationTheme: base.inputDecorationTheme.copyWith(
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 16,
-        ),
-        border: line(_fieldBorder),
-        enabledBorder: line(_fieldBorder),
-        disabledBorder: line(AppColors.border),
-        focusedBorder: line(AppColors.primary, 1.5),
-        errorBorder: line(AppColors.error),
-        focusedErrorBorder: line(AppColors.error, 1.5),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
@@ -97,94 +67,91 @@ class AuthScaffold extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) context.go(Routes.login);
       },
-      child: Theme(
-        data: _theme(Theme.of(context)),
-        child: Scaffold(
-          backgroundColor: AppColors.surface,
-          body: SafeArea(
-            child: Column(
-              children: [
-                if (showBack)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        tooltip: 'Back',
-                        onPressed: () => context.canPop()
-                            ? context.pop()
-                            : context.go(Routes.login),
-                      ),
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        body: SafeArea(
+          child: Column(
+            children: [
+              if (showBack)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      tooltip: 'Back',
+                      onPressed: () => context.canPop()
+                          ? context.pop()
+                          : context.go(Routes.login),
                     ),
                   ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    padding: EdgeInsets.fromLTRB(
-                      Gap.xl,
-                      showBack ? Gap.sm : Gap.xxl,
-                      Gap.xl,
-                      Gap.xl,
-                    ),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 420),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (showBrand) ...[
-                              const AuthBrand(),
-                              const SizedBox(height: 40),
-                            ],
-                            if (badge != null) ...[
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: badge,
-                              ),
-                              Space.v20,
-                            ],
-                            if (step != null) ...[
-                              Text(
-                                step!,
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Space.v8,
-                            ],
-                            Text(title, style: titleStyle),
-                            if (subtitleSpan != null) ...[
-                              Space.v8,
-                              Text.rich(subtitleSpan!, style: subtitleStyle),
-                            ] else if (subtitle != null) ...[
-                              Space.v8,
-                              Text(subtitle!, style: subtitleStyle),
-                            ],
-                            Space.v32,
-                            ...children,
+                ),
+              Expanded(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.fromLTRB(
+                    Gap.xl,
+                    showBack ? Gap.sm : Gap.xxl,
+                    Gap.xl,
+                    Gap.xl,
+                  ),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (showBrand) ...[
+                            const AuthBrand(),
+                            const SizedBox(height: 40),
                           ],
-                        ),
+                          if (badge != null) ...[
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: badge,
+                            ),
+                            Space.v20,
+                          ],
+                          if (step != null) ...[
+                            Text(
+                              step!,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Space.v8,
+                          ],
+                          Text(title, style: titleStyle),
+                          if (subtitleSpan != null) ...[
+                            Space.v8,
+                            Text.rich(subtitleSpan!, style: subtitleStyle),
+                          ] else if (subtitle != null) ...[
+                            Space.v8,
+                            Text(subtitle!, style: subtitleStyle),
+                          ],
+                          Space.v32,
+                          ...children,
+                        ],
                       ),
                     ),
                   ),
                 ),
-                if (footer != null && !keyboardOpen)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Gap.xl,
-                      Gap.sm,
-                      Gap.xl,
-                      Gap.lg,
-                    ),
-                    child: footer,
+              ),
+              if (footer != null && !keyboardOpen)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Gap.xl,
+                    Gap.sm,
+                    Gap.xl,
+                    Gap.lg,
                   ),
-              ],
-            ),
+                  child: footer,
+                ),
+            ],
           ),
         ),
       ),
