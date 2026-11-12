@@ -1,4 +1,20 @@
-# Technical note: architecture, data flow, repositories and trade-offs
+# Technical note: what it is built with, how it works, and why
+
+## 0. What this system is built with
+
+| Layer | Choice | Used for |
+|---|---|---|
+| Framework | **Flutter 3.47.2 / Dart 3.13.2**, `material_ui` 1.10 (Material 3 Expressive widgets) | One codebase; Android is the primary target, iOS runs on the simulator. |
+| State | **Riverpod 3.5** (`flutter_riverpod`, `Notifier`/`AsyncNotifier`, no code generation) | Live streams become `AsyncValue`s; controllers hold form and action state; `ref.listen` drives side effects. |
+| Navigation | **go_router 18** (`StatefulShellRoute`, `redirect`) | Five tabs with their own back stacks; a pure `redirectFor(session, location)` gates auth. |
+| Backend | **Firebase Auth** (email + password, phone index for phone login) and **Cloud Firestore** (transactions, `snapshots()` streams, security rules) | Real accounts and persisted sessions; every screen is live; the request limit and bid acceptance are atomic. |
+| Device settings | `shared_preferences` | Language and appearance, kept on the phone. |
+| Localisation | `flutter_localizations`, `intl`, `flutter gen-l10n` (ARB → `AppLocalizations`) | English and Nepali for every string, including validation and error messages. |
+| Other | `url_launcher` (call the carrier), Inter typeface (OFL) | |
+| Tests | `flutter_test` with an `AppHarness` that runs the whole app over `fake_cloud_firestore`; `flutter_lints` | 161 tests: rules, repositories, journeys, layout sweeps, appearance and language. The same harness renders the documentation screenshots. |
+| Tooling | Firebase emulators for local runs (`--dart-define=USE_FIREBASE_EMULATORS=true`), `firestore.rules` deployed to the project | |
+| Assistance | Claude Code, declared in the README | Scaffolding, UI iteration, tests and documentation, reviewed and decided by the author. |
+
 
 ## 1. Architecture
 
@@ -174,7 +190,7 @@ and the architecture test guarantees no screen imports Firebase.
   `shipperId, createdAt`; the Auth SDK refreshes tokens, and the session
   stream signs the user out if the token is revoked; the Firestore cache
   serves stale data offline while writes fail fast with a clear message.
-- **Tests (154):** the architecture rules; domain rules (limit,
+- **Tests (161):** the architecture rules; domain rules (limit,
   validation, filters agree with counts, activity feed, tracking, the
   simulated driver); Firebase error mapping; repositories on
   `fake_cloud_firestore`
@@ -185,8 +201,9 @@ and the architecture test guarantees no screen imports Firebase.
   search); end-to-end journeys through the real router and screens (sign-out
   and phone login, accepting a bid, the limit block, disabled past times);
   and a layout sweep of every screen at 320×568 with ×1.3 text and 360×640
-  with ×1.6 text. **Next:** emulator-backed tests of the security rules and
-  golden tests for key screens.
+  with ×1.6 text; appearance and language switching on live screens.
+  **Next:** emulator-backed tests of the security rules and golden tests
+  for key screens.
 
 ## 7. Appearance and language
 
@@ -211,4 +228,117 @@ widgets get Nepali from `material_ui`'s own `GlobalMaterialLocalizations`
 (this project uses `package:material_ui`, whose `MaterialLocalizations` type
 differs from `flutter/material`'s). Text written to Firestore (timeline
 notes) stays English because it is data, not UI.
+
+## 8. Features, with screenshots
+
+Frames are rendered by `flutter test test/docs_screenshots_test.dart
+--dart-define=SCREENSHOTS=true` over the brief's sample data.
+
+### Sign in and accounts
+
+| | |
+|---|---|
+| ![](screenshots/02-login.png) | ![](screenshots/03-register.png) |
+
+One field accepts an email or a Nepali mobile number; a phone number is
+resolved to the account's email through `phoneIndex/{phone}` and signed in
+with Firebase Auth. Registration creates the auth account and the
+`users/{uid}` profile together; if the profile write fails the auth account
+is removed so the email can be reused. Email verification is encouraged,
+not forced. Only `shipper` accounts may use the app (checked after sign-in,
+enforced by rules).
+
+### Home
+
+| | |
+|---|---|
+| ![](screenshots/06-home.png) | ![](screenshots/05-welcome.png) |
+
+Everything on Home derives from one live `shipmentsProvider` stream: the
+mobile-request meter, Active / Awaiting bids / Completed tiles (each opens
+the list pre-filtered), *Needs your action* (loads with offers to review),
+*On the road* (live progress), *Next pickup*, and other shipments. A new
+account sees a three-step welcome and can load the sample data set.
+
+### Shipments and details
+
+| | |
+|---|---|
+| ![](screenshots/08-shipments.png) | ![](screenshots/09-details.png) |
+
+Search matches reference, route and cargo; status chips carry counts; sort
+by newest, pickup date or status. Details show the route, a five-step
+lifecycle stepper, a context card that changes with status (bids waiting,
+carrier booked, cancelled), cargo and contact details with a call button,
+and the stored activity log. The primary action follows the status:
+*Compare bids*, *Track shipment*, *Post a similar load*.
+
+### Bids and booking
+
+| | | |
+|---|---|---|
+| ![](screenshots/10-bids.png) | ![](screenshots/11-offer.png) | ![](screenshots/12-accept-sheet.png) |
+
+Offers show the same fields in the same places so they compare at a glance;
+nothing is labelled "best". Sorting is the shipper's choice. Accepting runs
+one Firestore transaction that confirms the shipment, records carrier, fare
+and ETA, accepts this bid and declines the others; retrying the same accept
+is a no-op, a second different accept is refused. The UI only shows
+"Booked" after the server commits.
+
+### Posting a load
+
+| | | |
+|---|---|---|
+| ![](screenshots/15-post-route.png) | ![](screenshots/16-post-cargo.png) | ![](screenshots/17-post-vehicle.png) |
+
+| | | |
+|---|---|---|
+| ![](screenshots/18-review.png) | ![](screenshots/19-limit.png) | ![](screenshots/20-posted.png) |
+
+Three short steps and a review. Every rule lives in `ShipmentDraft.validate`
+(pure Dart, unit-tested): pickup and destination required and different,
+weight positive, pickup date today or later with time slots that have
+passed disabled. The draft survives closing the form, restarts and other
+devices (`users/{uid}/drafts/current`). The three-request limit is checked
+when Post Load opens, again on submit, and finally inside the create
+transaction, which also allocates the unique `LOD-n` reference; the client
+request id makes a retry after a lost response idempotent. At the limit the
+prescribed message appears and nothing typed is lost.
+
+### Tracking
+
+| | |
+|---|---|
+| ![](screenshots/14-tracking.png) | ![](screenshots/13-booked.png) |
+
+A stylised route map with checkpoints, ETA and distance remaining, the
+carrier card with a call button, and the stop list. Position reports come
+from a simulated driver written to `tracking/{shipmentId}` so every device
+watching sees the same truck; without reports the position is estimated
+from the schedule. Both states say "simulated".
+
+### Notifications and analytics
+
+| | |
+|---|---|
+| ![](screenshots/07-notifications.png) | ![](screenshots/21-analytics.png) |
+
+The feed is derived from shipment timelines and bids, so it can never
+disagree with them; unread state is one timestamp. In-app toasts appear for
+new bids and delivery updates while the app is open. Analytics (30 / 90
+days / all time) are computed from the same list: booked spend, loads
+posted, bids received, shipments by status, top routes.
+
+### Account and preferences
+
+| | | |
+|---|---|---|
+| ![](screenshots/22-account.png) | ![](screenshots/25-preferences-dark.png) | ![](screenshots/27-home-nepali.png) |
+
+Profile and company, email verification, request usage, help centre, send
+feedback (stored in Firestore), legal summaries, sample data, sign out.
+Preferences: **Language** (English / नेपाली), **Appearance** (System /
+Light / Dark) and **Notifications** with per-kind switches; see section 7 for
+how the palette and strings switch at runtime.
 

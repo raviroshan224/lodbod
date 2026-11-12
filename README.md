@@ -278,9 +278,12 @@ production:
 
 ## Screenshots
 
-Rendered from the app by the widget-test harness (`flutter test test/gallery
---dart-define=GALLERY_DIR=…`) over the brief's sample data, so they have no
-status bar; the splash is a Pixel 7 emulator capture.
+Rendered from the real app by its widget-test harness on a Pixel 7 frame
+(412×915) over the brief's sample data, so every frame is reproducible:
+
+```bash
+flutter test test/docs_screenshots_test.dart --dart-define=SCREENSHOTS=true
+```
 
 | Splash | Log in | Create account | Forgot password |
 |---|---|---|---|
@@ -295,6 +298,8 @@ status bar; the splash is a Pixel 7 emulator capture.
 | ![](docs/screenshots/17-post-vehicle.png) | ![](docs/screenshots/18-review.png) | ![](docs/screenshots/19-limit.png) | ![](docs/screenshots/20-posted.png) |
 | **Analytics** | **Account** | **Help center** | **Edit profile** |
 | ![](docs/screenshots/21-analytics.png) | ![](docs/screenshots/22-account.png) | ![](docs/screenshots/23-help.png) | ![](docs/screenshots/24-edit-profile.png) |
+| **Preferences (dark)** | **Home (dark)** | **Home (नेपाली)** | **Details (नेपाली)** |
+| ![](docs/screenshots/25-preferences-dark.png) | ![](docs/screenshots/26-home-dark.png) | ![](docs/screenshots/27-home-nepali.png) | ![](docs/screenshots/28-details-nepali.png) |
 
 
 ---
