@@ -69,14 +69,14 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                         children: [
                           TextSpan(
                             text: '${usage.used} of ${usage.limit}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
                           ),
                         ],
                       ),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                       ),
@@ -140,7 +140,7 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                   ),
                 ],
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 height: 1.4,
                 color: AppColors.textSecondary,

@@ -119,7 +119,7 @@ class _Tracking extends ConsumerWidget {
                               ),
                               TextSpan(
                                 text: '   ${s.routeLabel}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -222,7 +222,7 @@ class _TrackingBadgeState extends State<_TrackingBadge> {
           : 'Simulated tracking · sample route';
       color = AppColors.warning;
       background = AppColors.warningSoft;
-      leading = const Icon(
+      leading = Icon(
         Icons.science_outlined,
         size: 14,
         color: AppColors.warning,
@@ -239,7 +239,7 @@ class _TrackingBadgeState extends State<_TrackingBadge> {
       leading = Container(
         width: 8,
         height: 8,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.success,
           shape: BoxShape.circle,
         ),
@@ -310,7 +310,7 @@ class _Panel extends StatelessWidget {
     final carrier = s.carrierName ?? 'Carrier';
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: Radii.sheet,
         boxShadow: [
@@ -349,10 +349,7 @@ class _Panel extends StatelessWidget {
           Space.v2,
           Text(
             sub,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 13.5,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
           ),
           Space.v16,
           ClipRRect(
@@ -370,10 +367,7 @@ class _Panel extends StatelessWidget {
             children: [
               Text(
                 s.pickup,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               Expanded(
                 child: Text(
@@ -389,10 +383,7 @@ class _Panel extends StatelessWidget {
               ),
               Text(
                 s.destination,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -421,7 +412,7 @@ class _Panel extends StatelessWidget {
                             s.vehicleNumber!,
                           s.vehicleType.label,
                         ].join(' · '),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           color: AppColors.textSecondary,
                         ),
@@ -505,13 +496,13 @@ class _FastForward extends ConsumerWidget {
 
     return Row(
       children: [
-        const Icon(
+        Icon(
           Icons.fast_forward_rounded,
           size: 18,
           color: AppColors.textSecondary,
         ),
         const SizedBox(width: 8),
-        const Expanded(
+        Expanded(
           child: Text(
             'Simulate: fast-forward ×${SimulatedDriver.fastForward}',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
@@ -579,7 +570,7 @@ class _Stop extends StatelessWidget {
                   ),
                   Text(
                     caption,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -596,6 +587,10 @@ class _Stop extends StatelessWidget {
 
 /// Stylised map: soft background, decorative roads, the route as a curve,
 /// checkpoints and the truck at the current (simulated) position.
+/// Ink used on the map, which keeps its light cartography in dark mode.
+const _mapInk = Color(0xFF231917);
+const _mapInkMuted = Color(0xFF53433F);
+
 class _RouteMap extends StatelessWidget {
   const _RouteMap({
     required this.shipment,
@@ -698,7 +693,8 @@ class _RouteMap extends StatelessWidget {
           style: TextStyle(
             fontSize: small ? 10.5 : 12,
             fontWeight: small ? FontWeight.w600 : FontWeight.w800,
-            color: small ? AppColors.textSecondary : AppColors.textPrimary,
+            // The chip is white in both modes, so its ink is fixed too.
+            color: small ? _mapInkMuted : _mapInk,
           ),
         ),
       ),
@@ -834,7 +830,7 @@ class _MapPainter extends CustomPainter {
     }
 
     final start = metric.getTangentForOffset(0)!.position;
-    canvas.drawCircle(start, 9, Paint()..color = AppColors.textPrimary);
+    canvas.drawCircle(start, 9, Paint()..color = _mapInk);
     canvas.drawCircle(start, 4, Paint()..color = Colors.white);
     final end = metric.getTangentForOffset(metric.length)!.position;
     canvas.drawCircle(

@@ -149,10 +149,7 @@ class BidCard extends StatelessWidget {
             if (showActions) ...[
               Text(
                 'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12.5,
-                ),
+                style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),
               Space.v12,
               Row(
@@ -192,7 +189,7 @@ class BidCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12.5,
                       ),
@@ -244,10 +241,7 @@ class RatingText extends StatelessWidget {
               '  ·  $trips trips',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12.5,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
             ),
           ),
         ],
@@ -269,7 +263,7 @@ class _Metric extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textMuted,
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
@@ -285,7 +279,7 @@ class _Metric extends StatelessWidget {
         if (caption != null)
           Text(
             caption!,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
           ),
       ],
     );

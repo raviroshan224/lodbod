@@ -114,7 +114,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
         children: [
           TextSpan(
             text: email,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
             ),
@@ -140,7 +140,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text(
+            Text(
               "Didn't get it?",
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
             ),

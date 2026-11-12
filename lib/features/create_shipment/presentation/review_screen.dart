@@ -131,7 +131,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
                       message: 'You can post this load once one of your requests is delivered or cancelled.',
                       action: GestureDetector(
                         onTap: () => showRequestLimitSheet(context, usage),
-                        child: const Text(
+                        child: Text(
                           'How it works',
                           style: TextStyle(
                             color: AppColors.warning,

@@ -82,7 +82,7 @@ class HelpScreen extends StatelessWidget {
                       children: [
                         Text(
                           faq.$2,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             height: 1.5,
                           ),
@@ -100,7 +100,7 @@ class HelpScreen extends StatelessWidget {
               children: [
                 const IconTile(Icons.support_agent_rounded, size: 44),
                 Space.h12,
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

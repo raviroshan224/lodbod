@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'core/settings/app_settings.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_spacing.dart';
 import 'core/theme/app_theme.dart';
@@ -11,11 +12,64 @@ import 'features/auth/presentation/session.dart';
 import 'features/shipments/data/providers.dart';
 import 'routing/app_router.dart';
 
-class LodbodApp extends ConsumerWidget {
+class LodbodApp extends ConsumerStatefulWidget {
   const LodbodApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LodbodApp> createState() => _LodbodAppState();
+}
+
+class _LodbodAppState extends ConsumerState<LodbodApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// "System" appearance follows the phone.
+  @override
+  void didChangePlatformBrightness() => _applyPalette();
+
+  Brightness get _platformBrightness =>
+      WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+  /// Switches the static palette and rebuilds every widget. Widgets read
+  /// `AppColors` directly rather than through an inherited theme, so no
+  /// dependency tells them it changed; marking the tree dirty once does.
+  void _applyPalette() {
+    final next = ref
+        .read(settingsProvider)
+        .appearance
+        .resolve(_platformBrightness);
+    if (next == AppColors.brightness) return;
+    AppColors.brightness = next;
+    void rebuild(Element e) {
+      e.markNeedsBuild();
+      e.visitChildren(rebuild);
+    }
+
+    (context as Element).visitChildren(rebuild);
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(settingsProvider, (_, _) => _applyPalette());
+    final brightness = ref
+        .watch(settingsProvider)
+        .appearance
+        .resolve(_platformBrightness);
+    AppColors.brightness = brightness;
+    final theme = AppTheme.build(brightness);
+    SystemChrome.setSystemUIOverlayStyle(AppTheme.systemBars);
+
     ref.listen(sessionProvider, (previous, next) {
       switch (next) {
         case SessionWrongRole():
@@ -47,7 +101,7 @@ class LodbodApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'LODBOD Shipper',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
+      theme: theme,
       routerConfig: ref.watch(routerProvider),
       // Screens without an AppBar inherit this, so the system bars stay
       // readable whatever the phone's own theme is.
@@ -69,7 +123,7 @@ class StartupErrorApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      home: const Scaffold(
+      home: Scaffold(
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(Gap.xl),

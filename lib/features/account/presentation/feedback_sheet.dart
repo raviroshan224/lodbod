@@ -83,7 +83,7 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Space.v4,
-              const Text(
+              Text(
                 'We read every message.',
                 style: TextStyle(color: AppColors.textSecondary),
               ),

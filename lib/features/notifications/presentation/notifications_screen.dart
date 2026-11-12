@@ -177,7 +177,7 @@ class _Row extends StatelessWidget {
                       ),
                       Text(
                         Fmt.relative(item.at),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11.5,
                           color: AppColors.textMuted,
                         ),
@@ -187,7 +187,7 @@ class _Row extends StatelessWidget {
                   Space.v2,
                   Text(
                     item.body,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                       height: 1.35,

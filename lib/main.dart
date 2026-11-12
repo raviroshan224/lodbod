@@ -6,8 +6,10 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/settings/app_settings.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
@@ -36,5 +38,11 @@ Future<void> main() async {
     runApp(const StartupErrorApp());
     return;
   }
-  runApp(const ProviderScope(child: LodbodApp()));
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const LodbodApp(),
+    ),
+  );
 }

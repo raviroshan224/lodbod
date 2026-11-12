@@ -139,7 +139,7 @@ class _Content extends StatelessWidget {
             children: [
               Text(
                 'Booked spend · ${period.label.toLowerCase()}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.onPrimaryContainer,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -148,7 +148,7 @@ class _Content extends StatelessWidget {
               Space.v4,
               Text(
                 Fmt.npr(a.committedSpend),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 36,
                   fontWeight: FontWeight.w700,
@@ -159,7 +159,7 @@ class _Content extends StatelessWidget {
               Text(
                 '${a.bookedCount} booked ${a.bookedCount == 1 ? 'load' : 'loads'}'
                 '${a.averageFare == null ? '' : ' · avg ${Fmt.npr(a.averageFare!)} per load'}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.onPrimaryContainer,
                   fontSize: 14,
                 ),
@@ -256,7 +256,7 @@ class _Content extends StatelessWidget {
                       ),
                       Text(
                         '${r.count} ${r.count == 1 ? 'load' : 'loads'}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
                         ),
@@ -291,10 +291,7 @@ class _StatTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12.5,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
           Space.v4,
           Text(
@@ -309,7 +306,7 @@ class _StatTile extends StatelessWidget {
             caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ],
       ),

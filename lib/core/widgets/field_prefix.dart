@@ -43,7 +43,7 @@ class FieldPrefix extends StatelessWidget {
           ],
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w500,

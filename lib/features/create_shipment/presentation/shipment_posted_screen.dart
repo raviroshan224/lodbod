@@ -35,7 +35,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
       child: Scaffold(
         body: Stack(
           children: [
-            const Positioned(
+            Positioned(
               top: -120,
               left: 0,
               right: 0,
@@ -102,7 +102,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
                                 ? 'Your request is live.'
                                 : "${shipment.reference} is live. We'll let you know as soon as the first bid arrives.",
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               height: 1.45,
                               fontSize: 14.5,
@@ -114,7 +114,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'REQUEST CREATED',
                                     style: TextStyle(
                                       fontSize: 11,

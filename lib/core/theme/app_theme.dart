@@ -11,18 +11,24 @@ import 'app_spacing.dart';
 abstract final class AppTheme {
   static const fontFamily = 'Inter';
 
-  /// Dark status/navigation bar icons over the app's light surfaces. Set
-  /// explicitly so a phone in dark mode doesn't show white icons on white.
-  static const systemBars = SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark, // Android
-    statusBarBrightness: Brightness.light, // iOS
-    systemNavigationBarColor: AppColors.background,
-    systemNavigationBarIconBrightness: Brightness.dark,
-  );
+  /// Status/navigation bar icons that contrast with the current surfaces.
+  /// Set explicitly so the bars follow the app's appearance setting, not
+  /// just the phone's.
+  static SystemUiOverlayStyle get systemBars {
+    final dark = AppColors.isDark;
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: AppColors.background,
+      systemNavigationBarIconBrightness: dark
+          ? Brightness.light
+          : Brightness.dark,
+    );
+  }
 
-  static const scheme = ColorScheme(
-    brightness: Brightness.light,
+  static ColorScheme get scheme => ColorScheme(
+    brightness: AppColors.brightness,
     primary: AppColors.primary,
     onPrimary: Colors.white,
     primaryContainer: AppColors.primaryContainer,
@@ -57,8 +63,17 @@ abstract final class AppTheme {
     surfaceTint: Colors.transparent,
   );
 
-  static ThemeData light() {
-    const text = TextTheme(
+  static ThemeData light() => build(Brightness.light);
+  static ThemeData dark() => build(Brightness.dark);
+
+  /// Theme for the palette currently selected on [AppColors]. The caller
+  /// sets `AppColors.brightness` first; [brightness] is only a sanity check.
+  static ThemeData build(Brightness brightness) {
+    assert(
+      brightness == AppColors.brightness,
+      'Set AppColors.brightness first',
+    );
+    final text = TextTheme(
       displaySmall: TextStyle(
         fontSize: 36,
         fontWeight: FontWeight.w700,
@@ -165,14 +180,14 @@ abstract final class AppTheme {
     const pill = StadiumBorder();
 
     return base.copyWith(
-      pageTransitionsTheme: const PageTransitionsTheme(
+      pageTransitionsTheme: PageTransitionsTheme(
         builders: {
           TargetPlatform.android: FadeForwardsPageTransitionsBuilder(
             backgroundColor: AppColors.background,
           ),
         },
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         systemOverlayStyle: systemBars,
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
@@ -204,7 +219,7 @@ abstract final class AppTheme {
           horizontal: 14,
           vertical: 16,
         ),
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
           color: AppColors.textMuted,
           fontWeight: FontWeight.w400,
         ),
@@ -220,12 +235,9 @@ abstract final class AppTheme {
         focusedBorder: inputLine(AppColors.primary, 1.5),
         errorBorder: inputLine(AppColors.error),
         focusedErrorBorder: inputLine(AppColors.error, 1.5),
-        errorStyle: const TextStyle(fontSize: 12.5, color: AppColors.error),
+        errorStyle: TextStyle(fontSize: 12.5, color: AppColors.error),
         errorMaxLines: 3,
-        helperStyle: const TextStyle(
-          fontSize: 12.5,
-          color: AppColors.textMuted,
-        ),
+        helperStyle: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -273,7 +285,7 @@ abstract final class AppTheme {
         selectedColor: AppColors.primaryContainer,
         side: const BorderSide(color: Color(0xFFD8C2BC)),
         shape: const StadiumBorder(),
-        labelStyle: const TextStyle(
+        labelStyle: TextStyle(
           fontFamily: fontFamily,
           color: AppColors.textPrimary,
           fontSize: 13.5,
@@ -311,7 +323,7 @@ abstract final class AppTheme {
           ),
         ),
       ),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.divider,
         thickness: 1,
         space: 1,
@@ -335,14 +347,14 @@ abstract final class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(Radii.xl),
         ),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           fontFamily: fontFamily,
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
@@ -355,7 +367,7 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
           fontFamily: fontFamily,
           fontSize: 14.5,
           color: AppColors.textPrimary,
@@ -371,18 +383,18 @@ abstract final class AppTheme {
       ),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        side: const BorderSide(color: AppColors.textSecondary, width: 2),
+        side: BorderSide(color: AppColors.textSecondary, width: 2),
       ),
       // The 2024 Material 3 progress indicators: rounded, with a gap and a
       // stop indicator at the end of the track.
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         // ignore: deprecated_member_use
         year2023: false,
         color: AppColors.primary,
         linearTrackColor: AppColors.primaryContainer,
         circularTrackColor: Colors.transparent,
       ),
-      listTileTheme: const ListTileThemeData(
+      listTileTheme: ListTileThemeData(
         iconColor: AppColors.textSecondary,
         titleTextStyle: TextStyle(
           fontFamily: fontFamily,

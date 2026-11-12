@@ -179,7 +179,7 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
                           padding: const EdgeInsets.only(left: 2),
                           child: Text(
                             '${value.length} ${value.length == 1 ? 'shipment' : 'shipments'} · ${query.sort.label.toLowerCase()}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12.5,
                             ),

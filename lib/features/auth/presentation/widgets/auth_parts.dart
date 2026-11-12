@@ -48,11 +48,8 @@ class AuthScaffold extends StatelessWidget {
   final Widget? footer;
   final List<Widget> children;
 
-  static const subtitleStyle = TextStyle(
-    color: AppColors.textSecondary,
-    fontSize: 15,
-    height: 1.45,
-  );
+  static TextStyle get subtitleStyle =>
+      TextStyle(color: AppColors.textSecondary, fontSize: 15, height: 1.45);
 
   @override
   Widget build(BuildContext context) {
@@ -219,10 +216,7 @@ class AuthSwitchPrompt extends StatelessWidget {
       children: [
         Text(
           prompt,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14.5,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
         ),
         TextButton(
           onPressed: onPressed,
@@ -368,7 +362,7 @@ class _LegalFootnoteState extends State<LegalFootnote> {
 
   @override
   Widget build(BuildContext context) {
-    const link = TextStyle(
+    final link = TextStyle(
       color: AppColors.textPrimary,
       fontWeight: FontWeight.w600,
       decoration: TextDecoration.underline,
@@ -385,7 +379,7 @@ class _LegalFootnoteState extends State<LegalFootnote> {
         ],
       ),
       textAlign: TextAlign.center,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12.5,
         color: AppColors.textSecondary,
         height: 1.5,

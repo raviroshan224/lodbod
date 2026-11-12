@@ -145,7 +145,7 @@ Future<bool> confirmAction(
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 15,
                 height: 1.45,

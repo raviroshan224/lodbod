@@ -77,10 +77,7 @@ class _Body extends StatelessWidget {
                   const Spacer(),
                   Text(
                     Fmt.relative(s.updatedAt),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                   ),
                 ],
               ),
@@ -191,7 +188,7 @@ class _ContextCard extends ConsumerWidget {
           child: Row(
             children: [
               hasBids
-                  ? const IconTile(
+                  ? IconTile(
                       Icons.gavel_rounded,
                       color: AppColors.info,
                       background: Colors.white,
@@ -224,7 +221,7 @@ class _ContextCard extends ConsumerWidget {
                       hasBids
                           ? 'Compare price, rating and delivery time, then book one.'
                           : 'Your load is visible to carriers. Bids usually arrive within minutes.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                         height: 1.35,
@@ -234,7 +231,7 @@ class _ContextCard extends ConsumerWidget {
                 ),
               ),
               if (hasBids)
-                const Icon(Icons.chevron_right_rounded, color: AppColors.info),
+                Icon(Icons.chevron_right_rounded, color: AppColors.info),
             ],
           ),
         );
@@ -292,7 +289,7 @@ class _CarrierCard extends ConsumerWidget {
                           s.vehicleNumber!,
                         s.vehicleType.label,
                       ].join(' · '),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                       ),
@@ -345,10 +342,7 @@ class _CarrierCard extends ConsumerWidget {
             Space.v8,
             Text(
               '${t.lastPassed == null ? 'Left ${s.pickup}' : 'Passed ${t.lastPassed!.name}'} · ${t.remainingKm} km to go · simulated',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ],
@@ -369,7 +363,7 @@ class _Metric extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         Space.v2,
         Text(
@@ -571,7 +565,7 @@ class _MoreMenu extends ConsumerWidget {
           ),
         ),
         if (s.status.canCancel)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _MenuAction.cancel,
             child: ListTile(
               leading: Icon(Icons.cancel_outlined, color: AppColors.error),

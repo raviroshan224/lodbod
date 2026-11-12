@@ -31,7 +31,7 @@ class ShipmentCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   s.reference,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
@@ -97,7 +97,7 @@ class _Footer extends StatelessWidget {
                       text: s.expectedFare == null
                           ? '  ·  Fare pending'
                           : '  ·  Budget ${Fmt.npr(s.expectedFare!)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
@@ -114,7 +114,7 @@ class _Footer extends StatelessWidget {
                     : 'Budget ${Fmt.npr(s.expectedFare!)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,

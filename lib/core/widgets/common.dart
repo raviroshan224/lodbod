@@ -60,7 +60,7 @@ class AppCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.padding = const EdgeInsets.all(Gap.lg),
-    this.color = AppColors.surface,
+    this.color,
     this.borderColor,
     this.semanticLabel,
   });
@@ -68,7 +68,7 @@ class AppCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
-  final Color color;
+  final Color? color;
   final Color? borderColor;
   final String? semanticLabel;
 
@@ -79,7 +79,7 @@ class AppCard extends StatelessWidget {
       content = InkWell(onTap: onTap, child: content);
     }
     final card = Material(
-      color: color,
+      color: color ?? AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: Radii.card,
         side: borderColor == null
@@ -257,7 +257,7 @@ class RouteStack extends StatelessWidget {
                 Space.v2,
                 Text(
                   caption,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,
                   ),
@@ -356,10 +356,7 @@ class InfoRow extends StatelessWidget {
             width: 104,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13.5,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5),
             ),
           ),
           Expanded(
@@ -558,7 +555,7 @@ class BrandMark extends StatelessWidget {
         Space.v16,
         const BrandWordmark(size: 32),
         Space.v4,
-        const Text(
+        Text(
           'SHIPPER',
           style: TextStyle(
             fontSize: 11,

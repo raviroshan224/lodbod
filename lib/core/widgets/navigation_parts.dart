@@ -47,7 +47,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               subtitle!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
                 color: AppColors.textSecondary,
                 fontWeight: FontWeight.w400,
@@ -98,7 +98,7 @@ class TabHeader extends StatelessWidget {
                   Space.v2,
                   Text(
                     subtitle!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
                     ),
@@ -341,7 +341,7 @@ class ListGroup extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, Gap.xl, 4, Gap.sm),
             child: Text(
               title!.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
@@ -357,11 +357,7 @@ class ListGroup extends StatelessWidget {
             children: [
               for (var i = 0; i < children.length; i++) ...[
                 if (i > 0)
-                  const Divider(
-                    height: 1,
-                    indent: 48,
-                    color: AppColors.divider,
-                  ),
+                  Divider(height: 1, indent: 48, color: AppColors.divider),
                 children[i],
               ],
             ],
@@ -422,7 +418,7 @@ class ListRow extends StatelessWidget {
                     Space.v2,
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         color: AppColors.textSecondary,
                       ),
@@ -438,7 +434,7 @@ class ListRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.end,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.5,
                     color: AppColors.textSecondary,
                   ),
@@ -449,7 +445,7 @@ class ListRow extends StatelessWidget {
             if (trailing != null)
               trailing!
             else if (onTap != null)
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
                 color: AppColors.textMuted,

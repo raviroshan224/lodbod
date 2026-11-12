@@ -75,7 +75,7 @@ class LegalScreen extends StatelessWidget {
             Space.v6,
             Text(
               body,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textSecondary,
                 height: 1.55,
                 fontSize: 14.5,

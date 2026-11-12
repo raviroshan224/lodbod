@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/choice_sheet.dart';
 import '../../../core/widgets/common.dart';
 import '../../../core/widgets/feedback.dart';
 import '../../../core/widgets/navigation_parts.dart';
@@ -121,6 +123,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     final user = ref.watch(currentUserProvider);
     final session = ref.watch(sessionProvider);
     final verified = session is SessionReady && session.user.emailVerified;
+    final settings = ref.watch(settingsProvider);
+    final alertsOn = user.bidAlerts || user.statusAlerts;
     final usage =
         ref.watch(requestLimitUsageProvider).value ??
         const RequestLimitUsage(used: 0);
@@ -154,7 +158,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         Space.v2,
                         Text(
                           '${user.displayCompany} · Shipper',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                           ),
@@ -162,10 +166,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    color: AppColors.textMuted,
-                  ),
+                  Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
                 ],
               ),
             ),
@@ -182,7 +183,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                   title: 'Email',
                   value: verified ? null : user.email,
                   trailing: verified
-                      ? const Pill(label: 'Verified', style: _verifiedStyle)
+                      ? Pill(label: 'Verified', style: _verifiedStyle)
                       : TextButton(
                           onPressed: _sendingVerification ? null : _verifyEmail,
                           child: Text(
@@ -202,21 +203,82 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               title: 'Preferences',
               children: [
                 ListRow(
-                  icon: Icons.notifications_none_rounded,
-                  title: 'New bid alerts',
-                  trailing: _CompactSwitch(
-                    value: user.bidAlerts,
-                    onChanged: (v) => _setAlerts(bids: v),
-                  ),
+                  icon: Icons.translate_rounded,
+                  title: 'Language',
+                  value: settings.language.nativeName,
+                  onTap: () async {
+                    final choice = await showChoiceSheet<AppLanguage>(
+                      context,
+                      title: 'Language',
+                      selected: settings.language,
+                      options: [
+                        for (final l in AppLanguage.values)
+                          ChoiceOption(l, l.nativeName),
+                      ],
+                    );
+                    if (choice != null) {
+                      await ref
+                          .read(settingsProvider.notifier)
+                          .setLanguage(choice);
+                    }
+                  },
                 ),
                 ListRow(
-                  icon: Icons.local_shipping_outlined,
-                  title: 'Delivery updates',
+                  icon: Icons.brightness_6_outlined,
+                  title: 'Appearance',
+                  value: _appearanceLabel(settings.appearance),
+                  onTap: () async {
+                    final choice = await showChoiceSheet<Appearance>(
+                      context,
+                      title: 'Appearance',
+                      selected: settings.appearance,
+                      options: [
+                        for (final a in Appearance.values)
+                          ChoiceOption(
+                            a,
+                            _appearanceLabel(a),
+                            icon: switch (a) {
+                              Appearance.system =>
+                                Icons.brightness_auto_outlined,
+                              Appearance.light => Icons.light_mode_outlined,
+                              Appearance.dark => Icons.dark_mode_outlined,
+                            },
+                          ),
+                      ],
+                    );
+                    if (choice != null) {
+                      await ref
+                          .read(settingsProvider.notifier)
+                          .setAppearance(choice);
+                    }
+                  },
+                ),
+                ListRow(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'Notifications',
                   trailing: _CompactSwitch(
-                    value: user.statusAlerts,
-                    onChanged: (v) => _setAlerts(status: v),
+                    value: alertsOn,
+                    onChanged: (v) => _setAlerts(bids: v, status: v),
                   ),
                 ),
+                if (alertsOn) ...[
+                  ListRow(
+                    icon: Icons.gavel_rounded,
+                    title: 'New bid alerts',
+                    trailing: _CompactSwitch(
+                      value: user.bidAlerts,
+                      onChanged: (v) => _setAlerts(bids: v),
+                    ),
+                  ),
+                  ListRow(
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Delivery updates',
+                    trailing: _CompactSwitch(
+                      value: user.statusAlerts,
+                      onChanged: (v) => _setAlerts(status: v),
+                    ),
+                  ),
+                ],
               ],
             ),
             ListGroup(
@@ -274,7 +336,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               label: const Text('Sign out'),
             ),
             Space.v16,
-            const Center(
+            Center(
               child: Text(
                 'LODBOD Shipper · version 1.0.0',
                 style: TextStyle(fontSize: 12, color: AppColors.textMuted),
@@ -287,7 +349,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 }
 
-const _verifiedStyle = StatusStyle(
+StatusStyle get _verifiedStyle => StatusStyle(
   AppColors.success,
   AppColors.successSoft,
   Icons.verified_rounded,
@@ -313,3 +375,9 @@ class _CompactSwitch extends StatelessWidget {
     );
   }
 }
+
+String _appearanceLabel(Appearance a) => switch (a) {
+  Appearance.system => 'System',
+  Appearance.light => 'Light',
+  Appearance.dark => 'Dark',
+};

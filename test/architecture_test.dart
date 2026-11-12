@@ -145,6 +145,7 @@ class _Place {
     'errors',
     'firebase',
     'platform',
+    'settings',
     'theme',
     'utils',
     'widgets',

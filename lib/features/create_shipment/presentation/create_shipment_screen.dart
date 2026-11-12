@@ -197,7 +197,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                         message: 'Prepare it now and post it once one of your requests is delivered or cancelled.',
                         action: GestureDetector(
                           onTap: () => showRequestLimitSheet(context, usage),
-                          child: const Text(
+                          child: Text(
                             'How it works',
                             style: TextStyle(
                               color: AppColors.warning,
@@ -291,11 +291,11 @@ class _DoneStep extends StatelessWidget {
           Container(
             width: 32,
             height: 32,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.successSoft,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.check_rounded,
               color: AppColors.success,
               size: 18,
@@ -317,7 +317,7 @@ class _DoneStep extends StatelessWidget {
                   _summary,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.5,
                     color: AppColors.textSecondary,
                   ),
@@ -480,7 +480,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
             Column(
               children: [
                 const SizedBox(height: 17),
-                const Icon(
+                Icon(
                   Icons.radio_button_checked_rounded,
                   size: 16,
                   color: AppColors.textPrimary,
@@ -544,7 +544,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
             separatorBuilder: (_, _) => Space.h6,
             itemBuilder: (_, i) {
               if (i == 0) {
-                return const Center(
+                return Center(
                   child: Padding(
                     padding: EdgeInsets.only(right: 4),
                     child: Text(
@@ -564,7 +564,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                 label: Text(city),
                 onPressed: () => _useCity(city),
                 padding: const EdgeInsets.symmetric(horizontal: 2),
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -602,10 +602,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
             padding: const EdgeInsets.only(top: 6, left: 4),
             child: Text(
               Fmt.weekdayDayMonth(selectedDate),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
         FieldErrorText(errors[DraftField.pickupDate]),
@@ -644,10 +641,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
               allSlotsPassed
                   ? "Today's usual slots have passed. Pick an exact time or another day."
                   : 'Earlier times today have passed. Pick a later slot or an exact time.',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
         FieldErrorText(errors[DraftField.pickupTime]),

@@ -24,11 +24,11 @@ class ErrorView extends StatelessWidget {
             Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.errorSoft,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.wifi_off_rounded,
                 size: 28,
                 color: AppColors.error,
@@ -43,7 +43,7 @@ class ErrorView extends StatelessWidget {
             Space.v6,
             Text(
               message,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -94,7 +94,7 @@ class EmptyView extends StatelessWidget {
             width: 76,
             height: 76,
             decoration: BoxDecoration(
-              gradient: const RadialGradient(
+              gradient: RadialGradient(
                 colors: [Color(0xFFFFE4D6), AppColors.primarySoft],
               ),
               borderRadius: BorderRadius.circular(24),
@@ -110,10 +110,7 @@ class EmptyView extends StatelessWidget {
           Space.v6,
           Text(
             message,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              height: 1.45,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, height: 1.45),
             textAlign: TextAlign.center,
           ),
           if (action != null) ...[Space.v20, action!],
@@ -167,7 +164,7 @@ class _SkeletonBoxState extends State<SkeletonBox>
             gradient: LinearGradient(
               begin: Alignment(t - 1, 0),
               end: Alignment(t + 1, 0),
-              colors: const [
+              colors: [
                 AppColors.skeleton,
                 AppColors.skeletonHighlight,
                 AppColors.skeleton,

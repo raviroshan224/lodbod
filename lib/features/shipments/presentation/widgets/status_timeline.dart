@@ -213,7 +213,7 @@ class _TimelineRow extends StatelessWidget {
                       Fmt.dateTime(entry.at),
                       if (entry.note.isNotEmpty) entry.note,
                     ].join(' · '),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textSecondary,
                       height: 1.35,

@@ -18,6 +18,7 @@ dependencies:
   cloud_firestore: ^7.1.0 # Persistence, live streams, transactions
   firebase_auth: ^7.0.1 # Accounts, sessions, password reset
   url_launcher: ^6.3.3 # Call carrier / pickup contact
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:

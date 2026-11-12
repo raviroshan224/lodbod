@@ -22,7 +22,7 @@ class SplashScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
@@ -46,7 +46,7 @@ class SplashScreen extends ConsumerWidget {
                     child: const LinearProgressIndicator(minHeight: 3),
                   ),
                   Space.v8,
-                  const Row(
+                  Row(
                     children: [
                       Expanded(
                         child: Text(
@@ -101,7 +101,7 @@ class _ProfileLoadFailed extends ConsumerWidget {
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 Space.v24,
                 FilledButton(

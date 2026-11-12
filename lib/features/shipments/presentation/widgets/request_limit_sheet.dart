@@ -47,7 +47,7 @@ Future<void> showRequestLimitSheet(
                   ? RequestLimit.message
                   : 'You can have up to ${RequestLimit.max} open requests from the mobile app at a time. '
                         'You are using ${usage.used} of ${usage.limit}.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14.5,
                 height: 1.45,
                 color: AppColors.textSecondary,
@@ -59,7 +59,7 @@ Future<void> showRequestLimitSheet(
                 detailsSaved
                     ? 'Your details are saved. You can submit as soon as a request is delivered, cancelled or expires.'
                     : 'You can post a new load as soon as a request is delivered, cancelled or expires.',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
                   height: 1.45,
                   color: AppColors.textSecondary,

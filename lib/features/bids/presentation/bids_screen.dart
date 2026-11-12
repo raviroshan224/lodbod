@@ -149,7 +149,7 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
                     Text(
                       'Pickup ${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)} · ${s.vehicleType.label}'
                       '${s.expectedFare == null ? '' : ' · Budget ${Fmt.npr(s.expectedFare!)}'}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                       ),
@@ -186,7 +186,7 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const Spacer(),
-              const Text(
+              Text(
                 'Sort by',
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),

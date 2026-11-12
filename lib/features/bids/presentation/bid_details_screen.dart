@@ -150,7 +150,7 @@ class _Details extends StatelessWidget {
               Space.v4,
               RatingText(rating: bid.carrierRating, trips: bid.completedTrips),
               Space.v20,
-              const Text(
+              Text(
                 'Offered fare',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
@@ -238,7 +238,7 @@ class _BudgetDelta extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w600,
@@ -276,7 +276,7 @@ class _AcceptBar extends ConsumerWidget {
     );
 
     return BottomActionBar(
-      caption: const Row(
+      caption: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(

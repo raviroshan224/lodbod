@@ -68,7 +68,7 @@ class DockNavBar extends StatelessWidget {
             bottom: 0,
             height: barHeight,
             child: DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surface,
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),

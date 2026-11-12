@@ -97,7 +97,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
             ),
             Space.v8,
-            const Text(
+            Text(
               'Carriers see your name and company on the loads you post.',
               style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
@@ -141,7 +141,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             TextFormField(
               initialValue: user.email,
               enabled: false,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
               decoration: const InputDecoration(
                 helperText: 'Your sign-in email. Contact support to change it.',
               ),

@@ -274,7 +274,7 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   _greeting,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
@@ -350,7 +350,7 @@ class _StatTile extends StatelessWidget {
             // word ("Completed") still fits a third of a 320dp screen.
             textScaler: MediaQuery.textScalerOf(context)
                 .clamp(maxScaleFactor: 1.15),
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12.5,
               height: 1.2,
@@ -402,7 +402,7 @@ class _ActionTile extends StatelessWidget {
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12.5,
                   ),
@@ -410,7 +410,7 @@ class _ActionTile extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
         ],
       ),
     );
@@ -443,7 +443,7 @@ class _LiveCard extends ConsumerWidget {
               Expanded(
                 child: Text(
                   s.reference,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
@@ -483,7 +483,7 @@ class _LiveCard extends ConsumerWidget {
           Space.v12,
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Simulated tracking',
                   maxLines: 1,
@@ -583,7 +583,7 @@ class _WelcomeState extends ConsumerState<_Welcome> {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Space.v6,
-              const Text(
+              Text(
                 'Move goods across Nepal with trusted carriers. Here is how it works:',
                 style: TextStyle(color: AppColors.textSecondary, height: 1.45),
               ),
@@ -603,7 +603,7 @@ class _WelcomeState extends ConsumerState<_Welcome> {
                           ),
                           Text(
                             step.$3,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
                               color: AppColors.textSecondary,
                             ),

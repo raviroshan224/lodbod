@@ -7,7 +7,7 @@ import '../../domain/shipment.dart';
 /// Colours and icon for a shipment status. Status is always shown with text
 /// as well as colour, so it never relies on colour alone.
 StatusStyle shipmentStatusStyle(ShipmentStatus s) => switch (s) {
-  ShipmentStatus.awaitingBids => const StatusStyle(
+  ShipmentStatus.awaitingBids => StatusStyle(
     AppColors.info,
     AppColors.infoSoft,
     Icons.gavel_rounded,
@@ -27,12 +27,12 @@ StatusStyle shipmentStatusStyle(ShipmentStatus s) => switch (s) {
     Color(0xFFFFEDE3),
     Icons.local_shipping_outlined,
   ),
-  ShipmentStatus.delivered => const StatusStyle(
+  ShipmentStatus.delivered => StatusStyle(
     AppColors.success,
     AppColors.successSoft,
     Icons.check_circle_outline,
   ),
-  ShipmentStatus.cancelled => const StatusStyle(
+  ShipmentStatus.cancelled => StatusStyle(
     AppColors.error,
     AppColors.errorSoft,
     Icons.cancel_outlined,
