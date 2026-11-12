@@ -133,11 +133,15 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       fontFamily: fontFamily,
+      // Glyphs Inter lacks (e.g. the route arrow) come from the platform
+      // sans-serif instead of a tofu box.
+      fontFamilyFallback: const ['Roboto'],
       scaffoldBackgroundColor: AppColors.background,
       visualDensity: VisualDensity.standard,
       splashFactory: InkSparkle.splashFactory,
       textTheme: text.apply(
         fontFamily: fontFamily,
+        fontFamilyFallback: const ['Roboto'],
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
       ),

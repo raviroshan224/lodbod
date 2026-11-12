@@ -12,7 +12,7 @@ and every screen updates live.
 | State management | Riverpod 3 (`flutter_riverpod` 3.5, no code generation) |
 | Navigation | go_router 18: session-driven redirects, stateful tab shell |
 | Backend | Firebase Auth (email + password) and Cloud Firestore, project `lodbod-ravi` |
-| Design | Material 3 Expressive (Google's 2025–26 design language): tonal palette generated from LODBOD orange, large rounded shapes, pill buttons, M3 navigation bar and segmented buttons, Android 16-style grouped lists; Inter typeface |
+| Design | Material 3 Expressive (Google's 2025–26 design language): tonal palette generated from LODBOD orange, rounded cards, pill buttons and segmented buttons, Android 16-style grouped lists, an icon-only bottom bar with a raised **Post load** button; Inter typeface |
 | Tests | 154: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
 
 Technical note (data flow, repositories, trade-offs, production notes):
@@ -39,8 +39,8 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 
 ### Core journey
 
-1. **Log in.** Home shows Active 2 · Awaiting bids 1 · Completed 1 and
-   *Mobile requests used: 3 of 3* (see [Assumptions](#assumptions)).
+1. **Log in.** Home shows *Mobile requests · 3 of 3 in use* (see
+   [Assumptions](#assumptions)) and Active 2 · Awaiting bids 1 · Completed 1.
 2. **Needs your action → 3 bids on LOD-1002.** Compare Himalayan Cargo,
    Swift Transport and Everest Freight Lines, sorted by newest, price,
    rating or speed. No offer is labelled "best".
@@ -63,7 +63,7 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | Area | What's there |
 |---|---|
 | **Splash & session** | Brand splash while the saved session is restored; you stay signed in across restarts until you sign out. |
-| **Log in** | Google-style sign-in: large headline, Phone / Email segmented button, validation, show/hide password, loading state, clear errors, *Forgot password?*, and *Create account* / *Log in* actions pinned above the keyboard. |
+| **Log in** | Google-style sign-in: large headline, one *Email or phone number* field (the app works out which), validation, show/hide password, loading state, clear errors, *Forgot password?*, and *Create account* / *Log in* actions pinned above the keyboard. |
 | **Create account** | Two steps: shipper details (name, phone, email, optional company, password with strength meter, terms consent), then **verify email** (real verification email, resend with cooldown, "skip for now"). Duplicate phone or email is caught; an interrupted sign-up can be finished from *Finish setting up*. |
 | **Forgot password** | Email or phone → Firebase password-reset email. The response is the same whether or not the account exists. |
 | **Role check** | Only `shipper` accounts can use the app. Other roles are signed out with an explanation, and clients can't change their own role. |
@@ -80,7 +80,11 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | **Account** | Profile & company (edit; phone change re-indexes sign-in), email verification status, request usage, alert switches, help center (FAQ), send feedback (stored in Firestore), Terms and Privacy pages, sample data, sign out (keeps your draft). |
 
 Design: one component set used everywhere (cards, pills, pill tabs, choice
-chips, list groups, bottom sheets, toasts, skeletons). Typography is Inter.
+chips, list groups, bottom sheets, toasts, skeletons). The bottom bar shows
+Home, Shipments, Analytics and Account as icons (labels are tooltips and
+screen-reader names, and Shipments carries a count of offers waiting for a
+decision) with Post Load raised in the centre; content scrolls under the
+button. Typography is Inter.
 Status always shows an icon and text, never colour alone. Touch targets are
 44 px or larger, with semantic labels for screen readers, haptic feedback on
 key actions, Android 14-style page transitions, and an adaptive launcher
@@ -273,21 +277,21 @@ production:
 
 ## Screenshots
 
-Captured on a Pixel 7 emulator (Android 16) against the live Firebase
-project, except * (rendered from the app by the widget-test harness, so it
-has no status bar).
+Rendered from the app by the widget-test harness (`flutter test test/gallery
+--dart-define=GALLERY_DIR=…`) over the brief's sample data, so they have no
+status bar; the splash is a Pixel 7 emulator capture.
 
 | Splash | Log in | Create account | Forgot password |
 |---|---|---|---|
 | ![](docs/screenshots/01-splash.png) | ![](docs/screenshots/02-login.png) | ![](docs/screenshots/03-register.png) | ![](docs/screenshots/04-forgot-password.png) |
-| **Welcome (new account)*** | **Home** | **Notifications** | **Shipments** |
+| **Welcome (new account)** | **Home** | **Notifications** | **Shipments** |
 | ![](docs/screenshots/05-welcome.png) | ![](docs/screenshots/06-home.png) | ![](docs/screenshots/07-notifications.png) | ![](docs/screenshots/08-shipments.png) |
 | **Shipment details** | **Compare & accept bids** | **Offer details** | **Accept sheet** |
 | ![](docs/screenshots/09-details.png) | ![](docs/screenshots/10-bids.png) | ![](docs/screenshots/11-offer.png) | ![](docs/screenshots/12-accept-sheet.png) |
-| **Booked** | **Tracking** | **Post Load: route** | **Post Load: vehicle** |
-| ![](docs/screenshots/13-booked.png) | ![](docs/screenshots/14-tracking.png) | ![](docs/screenshots/15-post-route.png) | ![](docs/screenshots/16-post-vehicle.png) |
-| **Review** | **Limit reached** | **Load posted** | **New bids to compare** |
-| ![](docs/screenshots/17-review.png) | ![](docs/screenshots/18-limit.png) | ![](docs/screenshots/19-posted.png) | ![](docs/screenshots/20-bids-arrived.png) |
+| **Booked** | **Tracking** | **Post Load: route** | **Post Load: cargo** |
+| ![](docs/screenshots/13-booked.png) | ![](docs/screenshots/14-tracking.png) | ![](docs/screenshots/15-post-route.png) | ![](docs/screenshots/16-post-cargo.png) |
+| **Post Load: vehicle** | **Review** | **Limit reached** | **Load posted** |
+| ![](docs/screenshots/17-post-vehicle.png) | ![](docs/screenshots/18-review.png) | ![](docs/screenshots/19-limit.png) | ![](docs/screenshots/20-posted.png) |
 | **Analytics** | **Account** | **Help center** | **Edit profile** |
 | ![](docs/screenshots/21-analytics.png) | ![](docs/screenshots/22-account.png) | ![](docs/screenshots/23-help.png) | ![](docs/screenshots/24-edit-profile.png) |
 

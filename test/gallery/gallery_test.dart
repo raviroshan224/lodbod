@@ -1,4 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lodbod/core/widgets/dock_nav_bar.dart';
+import 'package:lodbod/features/create_shipment/domain/shipment_draft.dart';
+import 'package:lodbod/features/create_shipment/presentation/create_shipment_controller.dart';
+import 'package:lodbod/features/shipments/domain/cargo.dart';
 
 import '../app_harness.dart';
 import '../helpers.dart';
@@ -63,6 +67,43 @@ void main() {
     await app.tapText('Rating');
     await app.tapText('Accept');
     await app.capture('$_out/c8-accept-sheet.png');
+
+    // The other Post Load steps, with the form filled in.
+    final form = app.container.read(createShipmentProvider.notifier);
+    await app.go('/post-load');
+    await app.tapText('Tomorrow');
+    form
+      ..edit(
+        (d) => d.copyWith(
+          pickup: 'Pokhara',
+          destination: 'Butwal',
+          pickupTime: const PickupTime(8, 0),
+          category: CargoCategory.fmcg,
+          description: 'Biscuit cartons',
+          weightText: '6',
+        ),
+      )
+      ..goTo(DraftStep.cargo);
+    await app.settle();
+    await app.capture('$_out/c9-post-cargo.png');
+    form.goTo(DraftStep.vehicle);
+    await app.settle();
+    await app.capture('$_out/c10-post-vehicle.png');
+
+    // Post load at the limit: the prescribed message.
+    await app.go('/home');
+    await tester.tap(find.byKey(DockNavBar.actionKey));
+    await app.settle();
+    await app.capture('$_out/c11-limit.png');
+    await app.tapText('Got it');
+
+    // Accept an offer, then the booked shipment.
+    await app.go('/shipments/$lod1002/bids');
+    await app.tapText('Himalayan Cargo');
+    await app.tapText('Accept for Rs. 32,000');
+    await app.tapText('Accept for Rs. 32,000');
+    await app.go('/shipments/$lod1002');
+    await app.capture('$_out/c12-booked.png');
   });
 
   testWidgets('new account', skip: _out.isEmpty, (tester) async {

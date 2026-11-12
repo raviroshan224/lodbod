@@ -23,6 +23,15 @@ Future<void> loadInterFont() async {
     inter.addFont(rootBundle.load('assets/fonts/Inter-$w.ttf'));
   }
   await inter.load();
+  // The theme falls back to Roboto for glyphs Inter lacks (the route
+  // arrow). Tests have no system fonts, so lend a wide-coverage one.
+  final fallback = File('/System/Library/Fonts/Supplemental/Arial Unicode.ttf');
+  if (fallback.existsSync()) {
+    final bytes = fallback.readAsBytesSync();
+    await (FontLoader(
+      'Roboto',
+    )..addFont(Future.value(ByteData.view(bytes.buffer)))).load();
+  }
 }
 
 /// Loads the Material icon font from the Flutter SDK so rendered screens
