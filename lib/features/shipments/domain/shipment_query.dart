@@ -1,16 +1,22 @@
+import '../../../core/l10n/strings.dart';
 import 'shipment.dart';
 
 /// Status groups used by the dashboard tiles and the list filter chips, so a
 /// tile and the list it opens always count the same shipments.
 enum ShipmentFilter {
-  all('All'),
-  awaitingBids('Awaiting bids'),
-  active('Active'),
-  completed('Completed'),
-  closed('Cancelled / expired');
+  all,
+  awaitingBids,
+  active,
+  completed,
+  closed;
 
-  const ShipmentFilter(this.label);
-  final String label;
+  String get label => switch (this) {
+    all => l10n.filterAll,
+    awaitingBids => l10n.statusAwaitingBids,
+    active => l10n.filterActive,
+    completed => l10n.filterCompleted,
+    closed => l10n.filterClosed,
+  };
 
   bool matches(ShipmentStatus status) => switch (this) {
     all => true,
@@ -112,12 +118,15 @@ class ShipmentSummary {
 }
 
 enum ShipmentSort {
-  newest('Newest first'),
-  pickupSoonest('Pickup date'),
-  status('Status');
+  newest,
+  pickupSoonest,
+  status;
 
-  const ShipmentSort(this.label);
-  final String label;
+  String get label => switch (this) {
+    newest => l10n.sortNewest,
+    pickupSoonest => l10n.sortPickupDate,
+    status => l10n.sortStatus,
+  };
 
   List<Shipment> apply(List<Shipment> shipments) {
     final list = [...shipments];

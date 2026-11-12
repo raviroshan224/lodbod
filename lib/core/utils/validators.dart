@@ -1,3 +1,5 @@
+import '../l10n/strings.dart';
+
 /// Field-level validators shared by login and the shipment form. Each returns
 /// `null` when valid or a user-facing message otherwise, matching
 /// `FormField.validator`.
@@ -9,39 +11,39 @@ abstract final class Validators {
   static final _nepaliMobile = RegExp(r'^(?:\+?977)?(9[78]\d{8})$');
 
   static String? required(String? value, String label) {
-    if (value == null || value.trim().isEmpty) return '$label is required';
+    if (value == null || value.trim().isEmpty) return l10n.vRequired(label);
     return null;
   }
 
   static String? email(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Email is required';
+    if (v.isEmpty) return l10n.vEmailRequired;
     if (!_email.hasMatch(v)) {
-      return 'Enter a valid email, e.g. name@company.com';
+      return l10n.vEmailInvalid;
     }
     return null;
   }
 
   static String? phone(String? value, {bool isRequired = true}) {
     final v = normalizePhone(value ?? '');
-    if (v.isEmpty) return isRequired ? 'Phone number is required' : null;
+    if (v.isEmpty) return isRequired ? l10n.vPhoneRequired : null;
     if (!_nepaliMobile.hasMatch(v)) {
-      return 'Enter a 10-digit mobile number starting with 97 or 98';
+      return l10n.vPhoneInvalid;
     }
     return null;
   }
 
   static String? password(String? value) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Password is required';
-    if (v.length < 8) return 'Password must be at least 8 characters';
+    if (v.isEmpty) return l10n.vPasswordRequired;
+    if (v.length < 8) return l10n.vPasswordMin;
     return null;
   }
 
   static String? name(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Full name is required';
-    if (v.length < 2) return 'Enter your full name';
+    if (v.isEmpty) return l10n.vNameRequired;
+    if (v.length < 2) return l10n.vNameInvalid;
     return null;
   }
 
@@ -49,10 +51,10 @@ abstract final class Validators {
   /// number.
   static String? newPassword(String? value) {
     final v = value ?? '';
-    if (v.isEmpty) return 'Password is required';
-    if (v.length < 8) return 'Use at least 8 characters';
+    if (v.isEmpty) return l10n.vPasswordRequired;
+    if (v.length < 8) return l10n.vPasswordUseEight;
     if (!RegExp(r'[0-9]').hasMatch(v) || !RegExp(r'[A-Za-z]').hasMatch(v)) {
-      return 'Include at least one letter and one number';
+      return l10n.vPasswordLetterNumber;
     }
     return null;
   }
@@ -68,7 +70,7 @@ abstract final class Validators {
 
   static String? identifier(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return 'Enter your email or phone number';
+    if (v.isEmpty) return l10n.vIdentifierRequired;
     return v.contains('@') ? email(v) : phone(v);
   }
 

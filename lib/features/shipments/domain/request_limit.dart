@@ -1,4 +1,4 @@
-import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import 'shipment.dart';
 
 /// The mobile three-request rule.
@@ -16,7 +16,7 @@ abstract final class RequestLimit {
 
   /// Prescribed wording from the brief, shown whenever the limit blocks a
   /// request.
-  static const String message = RequestLimitReachedException.prescribedMessage;
+  static String get message => l10n.errRequestLimit;
 
   static int countQualifying(Iterable<Shipment> shipments) =>
       shipments.where((s) => s.status.countsTowardRequestLimit).length;

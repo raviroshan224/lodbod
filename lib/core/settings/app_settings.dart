@@ -14,6 +14,11 @@ enum AppLanguage {
 
   Locale get locale => Locale(code);
 
+  /// Language the app is showing right now. Set by the app when the
+  /// setting changes (the whole tree is rebuilt at the same time), and read
+  /// by code with no BuildContext, such as validators and status labels.
+  static AppLanguage current = english;
+
   static AppLanguage fromCode(String? code) =>
       values.where((l) => l.code == code).firstOrNull ?? english;
 }

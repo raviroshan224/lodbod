@@ -1,14 +1,17 @@
 import 'dart:async';
 
+import '../l10n/strings.dart';
+
 /// Every failure the UI can show. Repositories translate SDK errors into one
 /// of these (see `core/firebase/firebase_errors.dart`), so screens never
 /// depend on Firebase types and could keep working unchanged on top of a
 /// REST backend.
 sealed class AppException implements Exception {
-  const AppException(this.message);
+  const AppException();
 
-  /// Message that is safe to show to the user as-is.
-  final String message;
+  /// Message that is safe to show to the user as-is, in the current
+  /// language.
+  String get message;
 
   /// Whether retrying the same action could succeed.
   bool get isRetryable => false;
@@ -20,89 +23,102 @@ sealed class AppException implements Exception {
 /// The shipper already has the maximum number of qualifying requests (see
 /// `RequestLimit` in the shipments feature).
 class RequestLimitReachedException extends AppException {
-  const RequestLimitReachedException() : super(prescribedMessage);
+  const RequestLimitReachedException();
 
-  /// Prescribed wording from the brief. Do not paraphrase.
+  /// Prescribed wording from the brief (English). Do not paraphrase.
   static const prescribedMessage =
       'You have reached the mobile request limit of 3. Please use the LODBOD '
       'web platform to create additional requests.';
+
+  @override
+  String get message => l10n.errRequestLimit;
 }
 
 /// Another bid was accepted first (second tap, second device, or a retry
 /// after a lost response that targeted a different bid).
 class BidAlreadyAcceptedException extends AppException {
-  const BidAlreadyAcceptedException()
-    : super('A bid has already been accepted for this shipment.');
+  const BidAlreadyAcceptedException();
+  @override
+  String get message => l10n.errBidAlreadyAccepted;
 }
 
 /// The action does not apply to the shipment's current status, e.g. the
 /// shipment was cancelled on another device.
 class InvalidStateException extends AppException {
-  const InvalidStateException(super.message);
+  const InvalidStateException(this.message);
+  @override
+  final String message;
 }
 
 class NotFoundException extends AppException {
-  const NotFoundException(super.message);
+  const NotFoundException(this.message);
+  @override
+  final String message;
 }
 
 class InvalidCredentialsException extends AppException {
-  const InvalidCredentialsException()
-    : super('Incorrect phone/email or password. Please try again.');
+  const InvalidCredentialsException();
+  @override
+  String get message => l10n.errInvalidCredentials;
 }
 
 class EmailTakenException extends AppException {
-  const EmailTakenException()
-    : super(
-        'An account already exists with this email. Try logging in instead.',
-      );
+  const EmailTakenException();
+  @override
+  String get message => l10n.errEmailTaken;
 }
 
 class PhoneTakenException extends AppException {
-  const PhoneTakenException()
-    : super('This phone number is already linked to another account.');
+  const PhoneTakenException();
+  @override
+  String get message => l10n.errPhoneTaken;
 }
 
 class WeakPasswordException extends AppException {
-  const WeakPasswordException()
-    : super('Choose a stronger password: at least 8 characters with a number.');
+  const WeakPasswordException();
+  @override
+  String get message => l10n.errWeakPassword;
 }
 
 class TooManyAttemptsException extends AppException {
-  const TooManyAttemptsException()
-    : super('Too many attempts. Please wait a few minutes and try again.');
+  const TooManyAttemptsException();
+  @override
+  String get message => l10n.errTooManyAttempts;
 }
 
 class AccountDisabledException extends AppException {
-  const AccountDisabledException()
-    : super('This account has been disabled. Contact LODBOD support.');
+  const AccountDisabledException();
+  @override
+  String get message => l10n.errAccountDisabled;
 }
 
 /// Email/password sign-in is not enabled for the Firebase project.
 class AuthNotConfiguredException extends AppException {
-  const AuthNotConfiguredException()
-    : super("Sign-in isn't available right now. Please try again later.");
+  const AuthNotConfiguredException();
+  @override
+  String get message => l10n.errSignInUnavailable;
 }
 
 class NetworkException extends AppException {
-  const NetworkException()
-    : super(
-        "Couldn't reach LODBOD. Check your connection and try again. "
-        "Retrying is safe and won't create duplicates.",
-      );
-
+  const NetworkException();
+  @override
+  String get message => l10n.errOffline;
   @override
   bool get isRetryable => true;
 }
 
 class PermissionException extends AppException {
-  const PermissionException()
-    : super("You don't have access to this. Try signing out and in again.");
+  const PermissionException();
+  @override
+  String get message => l10n.errNoAccess;
+  @override
+  bool get isRetryable => true;
 }
 
 class UnexpectedException extends AppException {
-  const UnexpectedException()
-    : super('Something went wrong. Please try again.');
-
+  const UnexpectedException();
+  @override
+  String get message => l10n.errUnknown;
   @override
   bool get isRetryable => true;
 }

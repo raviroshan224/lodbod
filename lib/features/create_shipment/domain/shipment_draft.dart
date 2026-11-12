@@ -1,3 +1,4 @@
+import '../../../core/l10n/strings.dart';
 import '../../../core/utils/validators.dart';
 import '../../shipments/domain/shipment.dart';
 
@@ -19,13 +20,20 @@ enum DraftField {
 
 /// The three input steps of Post Load. Review is a separate screen.
 enum DraftStep {
-  route('Route', 'Route & schedule'),
-  cargo('Cargo', 'Cargo details'),
-  vehicle('Vehicle', 'Vehicle & contact');
+  route,
+  cargo,
+  vehicle;
 
-  const DraftStep(this.shortTitle, this.title);
-  final String shortTitle;
-  final String title;
+  String get shortTitle => switch (this) {
+    route => l10n.stepRoute,
+    cargo => l10n.stepCargo,
+    vehicle => l10n.stepVehicle,
+  };
+  String get title => switch (this) {
+    route => l10n.stepRouteTitle,
+    cargo => l10n.stepCargoTitle,
+    vehicle => l10n.stepVehicleTitle,
+  };
 
   Set<DraftField> get fields => switch (this) {
     route => const {
@@ -211,85 +219,81 @@ class ShipmentDraft {
     final from = pickup.trim();
     final to = destination.trim();
     if (from.isEmpty) {
-      errors[DraftField.pickup] = 'Pickup location is required';
+      errors[DraftField.pickup] = l10n.vPickupRequired;
     } else if (from.length < 2) {
-      errors[DraftField.pickup] = 'Enter a valid pickup location';
+      errors[DraftField.pickup] = l10n.vPickupInvalid;
     }
     if (to.isEmpty) {
-      errors[DraftField.destination] = 'Destination is required';
+      errors[DraftField.destination] = l10n.vDestinationRequired;
     } else if (to.length < 2) {
-      errors[DraftField.destination] = 'Enter a valid destination';
+      errors[DraftField.destination] = l10n.vDestinationInvalid;
     } else if (from.isNotEmpty && from.toLowerCase() == to.toLowerCase()) {
-      errors[DraftField.destination] =
-          'Destination must be different from the pickup location';
+      errors[DraftField.destination] = l10n.vDestinationSame;
     }
 
     final today = DateTime(now.year, now.month, now.day);
     final date = pickupDate;
     if (date == null) {
-      errors[DraftField.pickupDate] = 'Choose a pickup date';
+      errors[DraftField.pickupDate] = l10n.vPickupDateRequired;
     } else {
       final day = DateTime(date.year, date.month, date.day);
       if (day.isBefore(today)) {
-        errors[DraftField.pickupDate] = "Pickup date can't be in the past";
+        errors[DraftField.pickupDate] = l10n.vPickupDatePast;
       } else if (day.difference(today).inDays > maxDaysAhead) {
-        errors[DraftField.pickupDate] =
-            'Pickup must be within the next $maxDaysAhead days';
+        errors[DraftField.pickupDate] = l10n.vPickupDateTooFar(maxDaysAhead);
       }
     }
     if (pickupTime == null) {
-      errors[DraftField.pickupTime] = 'Choose a pickup time';
+      errors[DraftField.pickupTime] = l10n.vPickupTimeRequired;
     } else if (date != null &&
         !errors.containsKey(DraftField.pickupDate) &&
         !isOpen(date, pickupTime!, now: now)) {
-      errors[DraftField.pickupTime] = "Pickup time can't be in the past";
+      errors[DraftField.pickupTime] = l10n.vPickupTimePast;
     }
 
     if (category == null) {
-      errors[DraftField.category] = 'Choose a cargo category';
+      errors[DraftField.category] = l10n.vCategoryRequired;
     }
     final desc = description.trim();
     if (desc.isEmpty) {
-      errors[DraftField.description] = 'Describe the cargo, e.g. "Steel pipes"';
+      errors[DraftField.description] = l10n.vDescriptionRequired;
     } else if (desc.length > 80) {
-      errors[DraftField.description] =
-          'Keep the description under 80 characters';
+      errors[DraftField.description] = l10n.vDescriptionTooLong;
     }
 
     final w = weight;
     if (weightText.trim().isEmpty) {
-      errors[DraftField.weight] = 'Weight is required';
+      errors[DraftField.weight] = l10n.vWeightRequired;
     } else if (w == null || w.isNaN) {
-      errors[DraftField.weight] = 'Enter weight as a number';
+      errors[DraftField.weight] = l10n.vWeightNumber;
     } else if (w <= 0) {
-      errors[DraftField.weight] = 'Weight must be greater than 0';
+      errors[DraftField.weight] = l10n.vWeightPositive;
     } else if (weightUnit.toTonnes(w) > maxWeightTonnes) {
-      errors[DraftField.weight] =
-          'Maximum ${maxWeightTonnes.toInt()} t per request';
+      errors[DraftField.weight] = l10n.vWeightMax(maxWeightTonnes.toInt());
     }
 
     if (vehicleType == null) {
-      errors[DraftField.vehicle] = 'Choose a vehicle type';
+      errors[DraftField.vehicle] = l10n.vVehicleRequired;
     }
 
     if (fareText.trim().isNotEmpty) {
       final fare = expectedFare;
       if (fare == null) {
-        errors[DraftField.expectedFare] = 'Enter the fare in whole rupees';
+        errors[DraftField.expectedFare] = l10n.vFareWhole;
       } else if (fare <= 0) {
-        errors[DraftField.expectedFare] = 'Fare must be greater than 0';
+        errors[DraftField.expectedFare] = l10n.vFarePositive;
       } else if (fare > maxFare) {
-        errors[DraftField.expectedFare] = 'That fare looks too high';
+        errors[DraftField.expectedFare] = l10n.vFareTooHigh;
       }
     }
 
     if (contactName.trim().length > 60) {
-      errors[DraftField.contactName] = 'Keep the name under 60 characters';
+      errors[DraftField.contactName] = l10n.vContactNameTooLong;
     }
     final phoneError = Validators.phone(contactPhone, isRequired: false);
     if (phoneError != null) errors[DraftField.contactPhone] = phoneError;
     if (notes.trim().length > 300) {
-      errors[DraftField.notes] = 'Keep notes under 300 characters';
+      errors[DraftField.notes] = l10n.vNotesTooLong;
     }
 
     return errors;

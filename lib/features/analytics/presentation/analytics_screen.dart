@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -14,13 +15,18 @@ import '../../shipments/presentation/widgets/shipment_visuals.dart';
 import '../domain/shipment_analytics.dart';
 
 enum AnalyticsPeriod {
-  days30('30 days', 30),
-  days90('90 days', 90),
-  all('All time', null);
+  days30(30),
+  days90(90),
+  all(null);
 
-  const AnalyticsPeriod(this.label, this.days);
-  final String label;
+  const AnalyticsPeriod(this.days);
   final int? days;
+
+  String get label => switch (this) {
+    days30 => l10n.period30,
+    days90 => l10n.period90,
+    all => l10n.periodAll,
+  };
 
   List<Shipment> filter(List<Shipment> shipments, DateTime now) {
     final d = days;

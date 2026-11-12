@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/shipment.dart';
@@ -9,12 +10,12 @@ class LifecycleStepper extends StatelessWidget {
   const LifecycleStepper({super.key, required this.status});
   final ShipmentStatus status;
 
-  static const _labels = [
-    'Posted',
-    'Booked',
-    'Scheduled',
-    'On the way',
-    'Delivered',
+  static List<String> get _labels => [
+    l10n.timelinePostedStep,
+    l10n.timelineBookedStep,
+    l10n.statusScheduled,
+    l10n.onTheWay,
+    l10n.statusDelivered,
   ];
 
   @override
@@ -23,8 +24,8 @@ class LifecycleStepper extends StatelessWidget {
     final stopped = current < 0; // Cancelled or expired.
     return Semantics(
       label: stopped
-          ? 'Shipment ${status.label.toLowerCase()}'
-          : 'Step ${current + 1} of 5: ${_labels[current]}',
+          ? l10n.timelineA11y(status.label.toLowerCase())
+          : l10n.timelineStepA11y(current + 1, _labels[current]),
       excludeSemantics: true,
       child: Column(
         children: [

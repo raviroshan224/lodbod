@@ -1,3 +1,4 @@
+import '../../../core/l10n/strings.dart';
 import '../../../core/utils/formatters.dart';
 import '../../bids/domain/bid.dart';
 import '../../shipments/domain/shipment.dart';
@@ -47,9 +48,12 @@ List<ActivityItem> buildActivityFeed(List<Shipment> shipments, List<Bid> bids) {
         id: 'bid:${b.id}',
         kind: ActivityKind.bid,
         at: b.createdAt,
-        title: 'New bid on ${s.reference}',
-        body:
-            '${b.carrierName} offered ${Fmt.npr(b.fare)} · ${Fmt.days(b.estimatedDeliveryDays)} delivery',
+        title: l10n.notifNewBid(s.reference),
+        body: l10n.notifNewBidBody(
+          b.carrierName,
+          Fmt.npr(b.fare),
+          Fmt.days(b.estimatedDeliveryDays),
+        ),
         shipmentId: s.id,
         bidId: b.id,
       ),
@@ -62,38 +66,41 @@ List<ActivityItem> buildActivityFeed(List<Shipment> shipments, List<Bid> bids) {
       final (kind, title, body) = switch (e.status) {
         ShipmentStatus.awaitingBids => (
           ActivityKind.posted,
-          '${s.reference} is live',
-          '${s.routeLabel} · carriers can now bid',
+          l10n.notifLive(s.reference),
+          l10n.notifLiveBody(s.routeLabel),
         ),
         ShipmentStatus.confirmed => (
           ActivityKind.confirmed,
-          '${s.reference} confirmed',
-          e.note.isNotEmpty ? e.note : 'A carrier has been booked',
+          l10n.notifConfirmed(s.reference),
+          e.note.isNotEmpty ? e.note : l10n.notifConfirmedBody,
         ),
         ShipmentStatus.scheduled => (
           ActivityKind.scheduled,
-          'Pickup scheduled for ${s.reference}',
-          '${s.carrierName ?? 'Carrier'} · ${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+          l10n.notifScheduled(s.reference),
+          l10n.notifScheduledBody(
+            s.carrierName ?? l10n.theCarrier,
+            '${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+          ),
         ),
         ShipmentStatus.inTransit => (
           ActivityKind.pickedUp,
-          '${s.reference} is on the way',
-          e.note.isNotEmpty ? e.note : 'Picked up in ${s.pickup}',
+          l10n.notifOnTheWay(s.reference),
+          e.note.isNotEmpty ? e.note : l10n.notifPickedUpIn(s.pickup),
         ),
         ShipmentStatus.delivered => (
           ActivityKind.delivered,
-          '${s.reference} delivered',
-          'Delivered in ${s.destination}',
+          l10n.notifDelivered(s.reference),
+          l10n.notifDeliveredIn(s.destination),
         ),
         ShipmentStatus.cancelled => (
           ActivityKind.cancelled,
-          '${s.reference} cancelled',
+          l10n.notifCancelled(s.reference),
           s.routeLabel,
         ),
         ShipmentStatus.expired => (
           ActivityKind.expired,
-          '${s.reference} expired',
-          'No carrier was booked before pickup',
+          l10n.notifExpired(s.reference),
+          l10n.notifExpiredBody,
         ),
       };
       items.add(

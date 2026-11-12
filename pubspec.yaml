@@ -19,6 +19,9 @@ dependencies:
   firebase_auth: ^7.0.1 # Accounts, sessions, password reset
   url_launcher: ^6.3.3 # Call carrier / pickup contact
   shared_preferences: ^2.5.6
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +31,7 @@ dev_dependencies:
   fake_cloud_firestore: ^4.5.0
 
 flutter:
+  generate: true
   uses-material-design: true
   fonts:
     # Inter (SIL Open Font License, see assets/fonts/OFL.txt), Latin subset.

@@ -1,11 +1,10 @@
+import '../l10n/strings.dart';
+
 /// Display formatting used everywhere so currency, dates and units read the
 /// same on every screen. Implemented by hand to avoid pulling in `intl` for
 /// three small formats.
 abstract final class Fmt {
-  static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
+  static List<String> get _months => l10n.fmtMonthsShort.split(',');
 
   /// NPR with South Asian digit grouping: 18000 → "Rs. 18,000",
   /// 750000 → "Rs. 7,50,000".
@@ -48,19 +47,17 @@ abstract final class Fmt {
 
   /// "Sat, 14 Oct"
   static String weekdayDayMonth(DateTime d) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final days = l10n.fmtWeekdaysShort.split(',');
     return '${days[d.weekday - 1]}, ${dayMonth(d)}';
   }
 
   /// "Just now", "5 min ago", "3 h ago", "2 days ago", falling back to a date.
   static String relative(DateTime d, {DateTime? now}) {
     final diff = (now ?? DateTime.now()).difference(d);
-    if (diff.isNegative || diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return '${diff.inHours} h ago';
-    if (diff.inDays < 7) {
-      return diff.inDays == 1 ? '1 day ago' : '${diff.inDays} days ago';
-    }
+    if (diff.isNegative || diff.inMinutes < 1) return l10n.fmtJustNow;
+    if (diff.inMinutes < 60) return l10n.fmtMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.fmtHoursAgo(diff.inHours);
+    if (diff.inDays < 7) return l10n.fmtDaysAgo(diff.inDays);
     return date(d);
   }
 
@@ -70,7 +67,7 @@ abstract final class Fmt {
     return v.toStringAsFixed(v * 10 == (v * 10).roundToDouble() ? 1 : 2);
   }
 
-  static String days(int n) => n == 1 ? '1 day' : '$n days';
+  static String days(int n) => l10n.fmtDays(n);
 
   /// "AS" for "Aarav Shrestha".
   static String initials(String name) {

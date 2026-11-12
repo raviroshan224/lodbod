@@ -1,3 +1,5 @@
+import '../../../core/l10n/strings.dart';
+
 /// Lifecycle of a shipment request.
 ///
 /// ```
@@ -7,17 +9,23 @@
 ///      └── pickup passes with no accepted bid ──────▶ expired (server job)
 /// ```
 enum ShipmentStatus {
-  awaitingBids('Awaiting bids'),
-  confirmed('Confirmed'),
-  scheduled('Scheduled'),
-  inTransit('In transit'),
-  delivered('Delivered'),
-  cancelled('Cancelled'),
-  expired('Expired');
+  awaitingBids,
+  confirmed,
+  scheduled,
+  inTransit,
+  delivered,
+  cancelled,
+  expired;
 
-  const ShipmentStatus(this.label);
-
-  final String label;
+  String get label => switch (this) {
+    awaitingBids => l10n.statusAwaitingBids,
+    confirmed => l10n.statusConfirmed,
+    scheduled => l10n.statusScheduled,
+    inTransit => l10n.statusInTransit,
+    delivered => l10n.statusDelivered,
+    cancelled => l10n.statusCancelled,
+    expired => l10n.statusExpired,
+  };
 
   /// Statuses that occupy one of the shipper's three mobile request slots.
   bool get countsTowardRequestLimit => switch (this) {

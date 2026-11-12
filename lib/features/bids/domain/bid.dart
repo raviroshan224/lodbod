@@ -1,12 +1,16 @@
+import '../../../core/l10n/strings.dart';
 import '../../shipments/domain/cargo.dart';
 
 enum BidStatus {
-  pending('Open'),
-  accepted('Accepted'),
-  declined('Not selected');
+  pending,
+  accepted,
+  declined;
 
-  const BidStatus(this.label);
-  final String label;
+  String get label => switch (this) {
+    pending => l10n.bidPending,
+    accepted => l10n.bidAccepted,
+    declined => l10n.bidNotSelected,
+  };
 
   static BidStatus? tryParse(String? value) =>
       values.where((v) => v.name == value).firstOrNull;

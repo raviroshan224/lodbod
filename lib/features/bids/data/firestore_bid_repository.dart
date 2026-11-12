@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/firebase/firestore_guard.dart';
 import '../../../core/firebase/firestore_schema.dart';
+import '../../../core/l10n/strings.dart';
 import '../../shipments/data/demo_seed.dart';
 import '../../shipments/data/shipment_mapper.dart';
 import '../../shipments/domain/shipment.dart';
@@ -70,7 +71,7 @@ class FirestoreBidRepository implements BidRepository {
       final shipperId =
           (await shipmentRef.get()).data()?[Fields.shipperId] as String?;
       if (shipperId == null) {
-        throw const NotFoundException('This shipment no longer exists.');
+        throw NotFoundException(l10n.errShipmentGone);
       }
       final siblings = await _bids
           .where(Fields.shipmentId, isEqualTo: shipmentId)
@@ -88,10 +89,10 @@ class FirestoreBidRepository implements BidRepository {
         final shipment = shipmentSnap.data();
         final bid = bidSnap.data();
         if (shipment == null) {
-          throw const NotFoundException('This shipment no longer exists.');
+          throw NotFoundException(l10n.errShipmentGone);
         }
         if (bid == null || bid[Fields.shipmentId] != shipmentId) {
-          throw const NotFoundException('This bid is no longer available.');
+          throw NotFoundException(l10n.errBidGone);
         }
 
         final acceptedBidId = shipment['acceptedBidId'] as String?;
@@ -103,19 +104,17 @@ class FirestoreBidRepository implements BidRepository {
         );
         if (status != ShipmentStatus.awaitingBids) {
           throw InvalidStateException(
-            'This shipment is no longer accepting bids '
-            '(${status?.label.toLowerCase() ?? 'unknown status'}).',
+            l10n.errShipmentNotAcceptingBids(
+              status?.label.toLowerCase() ?? l10n.unknownStatus,
+            ),
           );
         }
         if (bid[Fields.status] != BidStatus.pending.name) {
-          throw const InvalidStateException('This bid is no longer available.');
+          throw InvalidStateException(l10n.errBidGone);
         }
         final now = _now();
         if (!(shipment['pickupAt'] as Timestamp).toDate().isAfter(now)) {
-          throw const InvalidStateException(
-            'The pickup time for this request has passed. '
-            'Post it again with a new date.',
-          );
+          throw InvalidStateException(l10n.errPickupPassedRepost);
         }
 
         final carrier = bid['carrierName'] as String;
@@ -167,16 +166,14 @@ class FirestoreBidRepository implements BidRepository {
         final snap = await tx.get(shipmentRef);
         final data = snap.data();
         if (data == null) {
-          throw const NotFoundException('This shipment no longer exists.');
+          throw NotFoundException(l10n.errShipmentGone);
         }
         final shipment = ShipmentMapper.fromMap(snap.id, data);
         if (shipment.status != ShipmentStatus.awaitingBids) {
-          throw const InvalidStateException(
-            'Only shipments awaiting bids can receive bids.',
-          );
+          throw InvalidStateException(l10n.errOnlyAwaitingBidsReceive);
         }
         if (shipment.bidCount > 0) {
-          throw const InvalidStateException('This shipment already has bids.');
+          throw InvalidStateException(l10n.errAlreadyHasBids);
         }
 
         final bids = DemoSeed.simulatedBidsFor(

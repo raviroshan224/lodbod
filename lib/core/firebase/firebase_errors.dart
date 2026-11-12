@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 
 import '../errors/app_exception.dart';
+import '../l10n/strings.dart';
 
 /// Translates Firebase SDK errors into the domain's [AppException]s, so no
 /// Firebase type ever reaches a screen. Anything else goes through
@@ -13,7 +14,7 @@ AppException mapFirebaseError(Object error) {
     'deadline-exceeded' ||
     'aborted' => const NetworkException(),
     'permission-denied' || 'unauthenticated' => const PermissionException(),
-    'not-found' => const NotFoundException('That record no longer exists.'),
+    'not-found' => NotFoundException(l10n.errRecordGone),
     _ => const UnexpectedException(),
   };
 }

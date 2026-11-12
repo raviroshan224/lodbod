@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/firebase/firestore_guard.dart';
 import '../../../core/firebase/firestore_schema.dart';
+import '../../../core/l10n/strings.dart';
 import '../../bids/domain/bid.dart';
 import '../domain/request_limit.dart';
 import '../domain/shipment.dart';
@@ -79,9 +80,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
         }
         final user = await tx.get(userRef);
         if (!user.exists) {
-          throw const NotFoundException(
-            'Your account is not set up yet. Sign out and sign in again.',
-          );
+          throw NotFoundException(l10n.errAccountNotSetUp);
         }
         final counters = await tx.get(_counters);
 
@@ -180,14 +179,16 @@ class FirestoreShipmentRepository implements ShipmentRepository {
         final snap = await tx.get(shipmentRef);
         final data = snap.data();
         if (data == null) {
-          throw const NotFoundException('This shipment no longer exists.');
+          throw NotFoundException(l10n.errShipmentGone);
         }
         final status = ShipmentStatus.tryParse(data[Fields.status] as String?);
         if (status == to) return; // Already done.
         if (status == null || !allowedFrom(status)) {
           throw InvalidStateException(
-            "This shipment can't be ${to.label.toLowerCase()} because it is "
-            '${status?.label.toLowerCase() ?? 'in an unknown state'}.',
+            l10n.errCannotTransition(
+              to.label.toLowerCase(),
+              status?.label.toLowerCase() ?? l10n.unknownState,
+            ),
           );
         }
         final userRef = _users.doc(data[Fields.shipperId] as String);
@@ -228,7 +229,7 @@ class FirestoreShipmentRepository implements ShipmentRepository {
     final next = from.nextCarrierStatus;
     if (next == null) {
       return Future.error(
-        InvalidStateException('No carrier update applies to "${from.label}".'),
+        InvalidStateException(l10n.errNoCarrierUpdate(from.label)),
       );
     }
     final shipmentRef = _shipments.doc(shipmentId);
@@ -238,14 +239,12 @@ class FirestoreShipmentRepository implements ShipmentRepository {
         final snap = await tx.get(shipmentRef);
         final data = snap.data();
         if (data == null) {
-          throw const NotFoundException('This shipment no longer exists.');
+          throw NotFoundException(l10n.errShipmentGone);
         }
         final current = ShipmentStatus.tryParse(data[Fields.status] as String?);
         if (current == next) return; // Retry of an update that committed.
         if (current != from) {
-          throw const InvalidStateException(
-            'This shipment was updated elsewhere. Review its latest status.',
-          );
+          throw InvalidStateException(l10n.errUpdatedElsewhere);
         }
         final userRef = _users.doc(data[Fields.shipperId] as String);
         final user = next.isTerminal ? await tx.get(userRef) : null;

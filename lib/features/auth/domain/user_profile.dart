@@ -1,3 +1,5 @@
+import '../../../core/l10n/strings.dart';
+
 /// The signed-in identity, independent of the auth SDK.
 class AuthUser {
   const AuthUser({
@@ -43,7 +45,8 @@ class UserProfile {
 
   bool get isShipper => role == 'shipper';
 
-  String get displayCompany => company.isEmpty ? 'Individual shipper' : company;
+  String get displayCompany =>
+      company.isEmpty ? l10n.individualShipper : company;
 
   UserProfile copyWith({
     String? name,
