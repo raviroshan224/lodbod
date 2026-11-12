@@ -34,14 +34,12 @@ final requestLimitUsageProvider = Provider<AsyncValue<RequestLimitUsage>>(
   (ref) => ref.watch(shipmentsProvider).whenData(RequestLimit.usageOf),
 );
 
-/// One shipment from the shared list (`null` if it doesn't exist).
 final shipmentByIdProvider = Provider.family<AsyncValue<Shipment?>, String>(
   (ref, id) => ref
       .watch(shipmentsProvider)
       .whenData((list) => list.where((s) => s.id == id).firstOrNull),
 );
 
-/// Bids for one shipment, live.
 final bidsProvider = StreamProvider.autoDispose.family<List<Bid>, String>((
   ref,
   shipmentId,
@@ -53,7 +51,6 @@ final bidsProvider = StreamProvider.autoDispose.family<List<Bid>, String>((
       .watchBids(shipmentId: shipmentId, shipperId: uid);
 });
 
-/// Every bid on the shipper's shipments.
 final shipperBidsProvider = StreamProvider<List<Bid>>((ref) {
   final uid = ref.watch(currentUidProvider);
   if (uid == null) return Stream.value(const []);

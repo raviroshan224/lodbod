@@ -18,7 +18,6 @@ class StepHeader extends StatelessWidget {
     this.onTapStep,
   });
 
-  /// Index of the current step in [titles].
   final int current;
   final List<String> titles;
   final ValueChanged<int>? onTapStep;

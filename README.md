@@ -303,3 +303,11 @@ status bar; the splash is a Pixel 7 emulator capture.
 - Packages: `material_ui`, `flutter_riverpod`, `go_router`, `firebase_core`,
   `firebase_auth`, `cloud_firestore`, `url_launcher`; dev: `flutter_lints`,
   `fake_cloud_firestore`. Font: Inter (SIL Open Font License,
+  `assets/fonts/OFL.txt`). No templates or copied snippets.
+- AI assistance: built with the help of **Claude Code** (Anthropic's AI
+  coding assistant) for scaffolding, UI iteration, tests and documentation.
+- What I personally implemented and decided: <!-- fill in: e.g. the data
+  model and Firestore layout, the request-limit and bid-acceptance rules,
+  the architecture choices (Riverpod, go_router, repository interfaces),
+  the Firebase project setup and security rules, the UX decisions, and
+  manual testing on a device -->

@@ -66,7 +66,6 @@ abstract final class Validators {
     return v.length >= 12 || RegExp(r'[^A-Za-z0-9]').hasMatch(v) ? 3 : 2;
   }
 
-  /// Email address or Nepali mobile number.
   static String? identifier(String? value) {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return 'Enter your email or phone number';

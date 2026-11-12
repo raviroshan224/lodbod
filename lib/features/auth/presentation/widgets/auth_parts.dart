@@ -159,7 +159,6 @@ class AuthScaffold extends StatelessWidget {
   }
 }
 
-/// Logo tile and wordmark side by side, for the top of entry screens.
 class AuthBrand extends StatelessWidget {
   const AuthBrand({super.key});
 
@@ -175,7 +174,6 @@ class AuthBrand extends StatelessWidget {
   }
 }
 
-/// Round icon above the title on confirmation screens ("Check your email").
 class AuthIconBadge extends StatelessWidget {
   const AuthIconBadge(this.icon, {super.key, this.success = false});
   final IconData icon;
@@ -201,8 +199,6 @@ class AuthIconBadge extends StatelessWidget {
   }
 }
 
-/// Centered "Don't have an account? Create account" line under the primary
-/// button.
 class AuthSwitchPrompt extends StatelessWidget {
   const AuthSwitchPrompt({
     super.key,
@@ -240,7 +236,6 @@ class AuthSwitchPrompt extends StatelessWidget {
   }
 }
 
-/// Password input with show/hide toggle and an optional strength meter.
 class PasswordField extends StatefulWidget {
   const PasswordField({
     super.key,
@@ -347,7 +342,6 @@ class _PasswordFieldState extends State<PasswordField> {
   }
 }
 
-/// "By continuing you agree to the Terms and Privacy Policy" with links.
 class LegalFootnote extends StatefulWidget {
   const LegalFootnote({
     super.key,

@@ -30,7 +30,6 @@ enum AnalyticsPeriod {
   }
 }
 
-/// Lightweight analytics computed from the live shipment list.
 class AnalyticsScreen extends ConsumerStatefulWidget {
   const AnalyticsScreen({super.key});
 

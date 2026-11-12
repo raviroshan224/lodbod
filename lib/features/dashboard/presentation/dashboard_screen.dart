@@ -417,7 +417,6 @@ class _ActionTile extends StatelessWidget {
   }
 }
 
-/// In-transit shipment with its (simulated) live progress.
 class _LiveCard extends ConsumerWidget {
   const _LiveCard({required this.shipment, required this.onTap});
   final Shipment shipment;
@@ -517,7 +516,6 @@ class _LiveCard extends ConsumerWidget {
   }
 }
 
-/// First-run state for a new account.
 class _Welcome extends ConsumerStatefulWidget {
   const _Welcome({required this.onPostLoad});
   final VoidCallback onPostLoad;

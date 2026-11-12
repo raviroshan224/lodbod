@@ -19,7 +19,6 @@ Future<void> showRequestLimitSheet(
   bool detailsSaved = true,
 }) {
   return showModalBottomSheet<void>(
-    // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
     useRootNavigator: true,
     context: context,
     isScrollControlled: true,

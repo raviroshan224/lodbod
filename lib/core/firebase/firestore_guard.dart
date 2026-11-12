@@ -20,7 +20,6 @@ Future<T> guarded<T>(Future<T> Function() action) async {
   }
 }
 
-/// Maps stream errors to [AppException]s.
 StreamTransformer<T, T> mapStreamErrors<T>() =>
     StreamTransformer<T, T>.fromHandlers(
       handleError: (error, stack, sink) =>
@@ -44,7 +43,6 @@ List<T> parseDocs<T>(
   return out;
 }
 
-/// Appends one entry to a shipment's stored timeline array.
 List<Map<String, dynamic>> appendTimeline(
   Map<String, dynamic> shipmentData,
   Map<String, dynamic> entry,

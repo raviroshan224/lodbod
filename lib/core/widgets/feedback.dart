@@ -58,7 +58,6 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
-/// Bottom-anchored action area used by detail and form screens.
 class BottomActionBar extends StatelessWidget {
   const BottomActionBar({super.key, required this.child, this.caption});
   final Widget child;

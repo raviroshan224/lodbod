@@ -36,7 +36,6 @@ class SessionProfileError extends Session {
   final AppException error;
 }
 
-/// Signed in as a non-shipper account.
 class SessionWrongRole extends Session {
   const SessionWrongRole();
 }

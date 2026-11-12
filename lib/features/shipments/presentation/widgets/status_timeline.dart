@@ -5,8 +5,6 @@ import '../../../../core/utils/formatters.dart';
 import '../../domain/shipment.dart';
 import 'shipment_visuals.dart';
 
-/// Horizontal lifecycle stepper: Posted → Booked → Scheduled → On the way →
-/// Delivered.
 class LifecycleStepper extends StatelessWidget {
   const LifecycleStepper({super.key, required this.status});
   final ShipmentStatus status;
@@ -124,7 +122,6 @@ class _Dot extends StatelessWidget {
   }
 }
 
-/// Vertical activity log from the shipment's stored history.
 class StatusTimeline extends StatelessWidget {
   const StatusTimeline({super.key, required this.shipment});
   final Shipment shipment;

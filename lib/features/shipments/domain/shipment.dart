@@ -5,7 +5,6 @@ import 'shipment_status.dart';
 export 'cargo.dart';
 export 'shipment_status.dart';
 
-/// One step in a shipment's history.
 class TimelineEntry {
   const TimelineEntry({required this.status, required this.at, this.note = ''});
 

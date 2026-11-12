@@ -31,9 +31,7 @@ abstract final class Routes {
   static const editProfile = '/account/profile';
   static const help = '/account/help';
 
-  /// Screens for signed-out users.
   static const signedOutRoutes = {login, register, forgotPassword};
 
-  /// Screens anyone can open regardless of session.
   static const publicRoutes = {terms, privacy};
 }

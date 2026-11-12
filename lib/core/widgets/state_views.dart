@@ -180,7 +180,6 @@ class _SkeletonBoxState extends State<SkeletonBox>
   }
 }
 
-/// Inline banner for warnings, info and errors inside forms/screens.
 class InlineBanner extends StatelessWidget {
   const InlineBanner({
     super.key,

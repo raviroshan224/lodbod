@@ -4,8 +4,6 @@ import '../../../../core/widgets/common.dart';
 import '../../domain/shipment.dart';
 import 'shipment_visuals.dart';
 
-/// Compact pill showing a shipment status with icon + text (never colour
-/// alone).
 class StatusBadge extends StatelessWidget {
   const StatusBadge(this.status, {super.key, this.dense = false});
   final ShipmentStatus status;

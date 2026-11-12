@@ -41,7 +41,6 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
   Future<void> _showSortSheet() async {
     final current = ref.read(shipmentListQueryProvider).sort;
     final picked = await showModalBottomSheet<ShipmentSort>(
-      // Above the tab bar, so it's dimmed and can't be tapped meanwhile.
       useRootNavigator: true,
       context: context,
       builder: (context) => SafeArea(

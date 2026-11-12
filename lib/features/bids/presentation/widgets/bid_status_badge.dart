@@ -4,7 +4,6 @@ import '../../../../core/widgets/common.dart';
 import '../../domain/bid.dart';
 import 'bid_visuals.dart';
 
-/// Compact pill showing a bid status with icon + text.
 class BidStatusBadge extends StatelessWidget {
   const BidStatusBadge(this.status, {super.key});
   final BidStatus status;

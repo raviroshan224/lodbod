@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_colors.dart';
 
-/// One tab in [DockNavBar].
 class DockItem {
   const DockItem({
     required this.icon,
@@ -139,7 +138,6 @@ class DockNavBar extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Soft brand-coloured glow under the button.
             Positioned(
               left: -18,
               right: -18,
@@ -217,7 +215,6 @@ class _BarPainter extends CustomPainter {
   bool shouldRepaint(_BarPainter old) => old.corner != corner;
 }
 
-/// Tab icon with an optional count badge in its top-right corner.
 class _BadgedIcon extends StatelessWidget {
   const _BadgedIcon({
     required this.icon,

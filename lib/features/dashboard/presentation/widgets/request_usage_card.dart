@@ -112,7 +112,6 @@ class RequestUsageCard extends StatelessWidget {
   }
 }
 
-/// One short segment per mobile request: filled when in use.
 class _SlotMeter extends StatelessWidget {
   const _SlotMeter({required this.used, required this.limit});
   final int used;

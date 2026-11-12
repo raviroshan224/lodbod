@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Spacing and radius scale used across the app.
 abstract final class Gap {
   static const double xs = 4;
   static const double sm = 8;
@@ -29,7 +28,6 @@ abstract final class Radii {
   static const sheet = BorderRadius.vertical(top: Radius.circular(xl));
 }
 
-/// Shorthand spacers.
 abstract final class Space {
   static const v2 = SizedBox(height: 2);
   static const v4 = SizedBox(height: 4);

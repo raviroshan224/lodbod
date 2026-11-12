@@ -111,7 +111,6 @@ class ShipmentSummary {
   };
 }
 
-/// List orderings offered in the Shipments filter sheet.
 enum ShipmentSort {
   newest('Newest first'),
   pickupSoonest('Pickup date'),

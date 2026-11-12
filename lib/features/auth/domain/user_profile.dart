@@ -38,7 +38,6 @@ class UserProfile {
   /// Activity newer than this is shown as unread.
   final DateTime? notificationsSeenAt;
 
-  /// In-app alert preferences.
   final bool bidAlerts;
   final bool statusAlerts;
 
@@ -67,7 +66,6 @@ class UserProfile {
   }
 }
 
-/// Input collected by the registration form.
 class Registration {
   const Registration({
     required this.name,

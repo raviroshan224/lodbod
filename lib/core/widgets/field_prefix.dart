@@ -28,7 +28,6 @@ class FieldPrefix extends StatelessWidget {
   final IconData? icon;
   final String text;
 
-  /// A thin rule between the prefix and what the user types.
   final bool divider;
 
   @override

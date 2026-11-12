@@ -94,7 +94,6 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Card with a title row, used to group related details.
 class SectionCard extends StatelessWidget {
   const SectionCard({
     super.key,
@@ -137,7 +136,6 @@ class SectionCard extends StatelessWidget {
   }
 }
 
-/// Section title with an optional action ("See all").
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.title, {super.key, this.action, this.top = Gap.xl});
   final String title;
@@ -295,7 +293,6 @@ class RouteStack extends StatelessWidget {
   }
 }
 
-/// Small icon + text pair used for metadata lines.
 class IconText extends StatelessWidget {
   const IconText(
     this.icon,
@@ -333,7 +330,6 @@ class IconText extends StatelessWidget {
   }
 }
 
-/// Label/value row for detail screens.
 class InfoRow extends StatelessWidget {
   const InfoRow(this.label, this.value, {super.key, this.icon, this.trailing});
   final String label;
@@ -382,7 +378,6 @@ class InfoRow extends StatelessWidget {
   }
 }
 
-/// Circle with initials.
 class InitialsAvatar extends StatelessWidget {
   const InitialsAvatar(
     this.initials, {
@@ -416,7 +411,6 @@ class InitialsAvatar extends StatelessWidget {
   }
 }
 
-/// Rounded icon tile, e.g. leading icons in lists.
 class IconTile extends StatelessWidget {
   const IconTile(
     this.icon, {
@@ -444,7 +438,6 @@ class IconTile extends StatelessWidget {
   }
 }
 
-/// Tonal circular icon button (bell, sort), with an optional count badge.
 class CircleIconButton extends StatelessWidget {
   const CircleIconButton({
     super.key,
@@ -584,7 +577,6 @@ class BrandMark extends StatelessWidget {
 class BrandWordmark extends StatelessWidget {
   const BrandWordmark({super.key, this.size = 32});
 
-  /// Font size of the letters.
   final double size;
 
   @override

@@ -253,7 +253,6 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   }
 }
 
-/// Collapsed summary of a completed step with an Edit action.
 class _DoneStep extends StatelessWidget {
   const _DoneStep({
     required this.step,
@@ -865,7 +864,6 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
   }
 }
 
-/// "Tonnes | kg" switch on the weight field's label row.
 class _UnitToggle extends StatelessWidget {
   const _UnitToggle({required this.selected, required this.onChanged});
   final WeightUnit selected;
