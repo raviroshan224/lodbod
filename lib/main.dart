@@ -38,7 +38,15 @@ Future<void> main() async {
     runApp(const StartupErrorApp());
     return;
   }
-  final prefs = await SharedPreferences.getInstance();
+  // Device settings (language, appearance). If the plugin can't be reached,
+  // for example on a build that predates it, start with defaults rather
+  // than not starting at all; settings then just don't persist.
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (error) {
+    debugPrint('Preferences unavailable, using defaults: $error');
+  }
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
