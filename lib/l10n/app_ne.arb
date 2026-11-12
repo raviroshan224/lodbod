@@ -1,6 +1,13 @@
 {
   "@@locale": "ne",
 
+  "back": "पछाडि",
+  "close": "बन्द",
+  "more": "थप",
+  "matches": "मिल्छ",
+  "shipmentTitle": "ढुवानी",
+  "carrier": "ढुवानीकर्ता",
+  "arrived": "पुग्यो",
   "appTitle": "LODBOD शिपर",
   "appShipper": "शिपर",
   "appCouldNotStart": "LODBOD सुरु हुन सकेन",
@@ -345,7 +352,7 @@
   "detailsCompareN": "{n, plural, =1{१ बिड हेर्नुहोस्} other{{n} बिड तुलना गर्नुहोस्}}",
   "detailsCancelTitle": "{reference} रद्द गर्ने?",
   "detailsCancelOpenBody": "ढुवानीकर्ताले अब बिड गर्न पाउने छैनन्, र खुला बिड अस्वीकार हुनेछन्।",
-  "detailsCancelBookedBody": "{carrier} सँगको बुकिङ रद्द हुनेछ।",
+  "detailsCancelBookedBody": "{carrier} सँगको बुकिङ रद्द हुनेछ। यसले तपाईंको एउटा मोबाइल अनुरोध खाली गर्छ।",
   "theCarrier": "ढुवानीकर्ता",
   "detailsCancelled": "{reference} रद्द गरियो।",
   "detailsCopied": "{reference} कपी भयो",

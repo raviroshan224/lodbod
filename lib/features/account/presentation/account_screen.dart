@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -53,7 +54,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     try {
       await ref.read(authRepositoryProvider).sendEmailVerification();
       if (mounted) {
-        showMessage(context, 'Verification link sent. Check your inbox.');
+        showMessage(context, l10n.verifyLinkSent);
       }
     } catch (e) {
       if (mounted) showMessage(context, mapError(e).message, isError: true);
@@ -65,11 +66,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Future<void> _loadSamples() async {
     final ok = await confirmAction(
       context,
-      title: 'Load sample shipments?',
-      message:
-          'Your shipments and bids will be replaced with a sample set (LOD-1001 to LOD-1004) so you can explore every feature. '
-          'New references continue from the last one used.',
-      confirmLabel: 'Load samples',
+      title: l10n.accountLoadSamplesTitle,
+      message: l10n.accountLoadSamplesBody,
+      confirmLabel: l10n.accountLoadSamplesConfirm,
       destructive: true,
       icon: Icons.auto_awesome_outlined,
     );
@@ -80,7 +79,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           .read(accountRepositoryProvider)
           .loadSampleData(ref.read(currentUserProvider).id);
       ref.read(shipmentListQueryProvider.notifier).clear();
-      if (mounted) showMessage(context, 'Sample shipments loaded.');
+      if (mounted) showMessage(context, l10n.accountSamplesLoaded);
     } catch (e) {
       if (mounted) showMessage(context, mapError(e).message, isError: true);
     } finally {
@@ -92,11 +91,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     final hasDraft = ref.read(createShipmentProvider.notifier).hasUserInput;
     final ok = await confirmAction(
       context,
-      title: 'Sign out?',
-      message: hasDraft
-          ? 'Your unfinished load will be kept as a saved draft for next time.'
-          : "You'll need to log in again to manage your shipments.",
-      confirmLabel: 'Sign out',
+      title: l10n.accountSignOutTitle,
+      message: hasDraft ? l10n.accountSignOutDraft : l10n.accountSignOutBody,
+      confirmLabel: l10n.actionSignOut,
       icon: Icons.logout_rounded,
     );
     if (!ok || !mounted) return;
@@ -140,7 +137,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             Gap.xl + MediaQuery.paddingOf(context).bottom,
           ),
           children: [
-            const TabHeader(title: 'Account', inset: false),
+            TabHeader(title: l10n.navAccount, inset: false),
             AppCard(
               onTap: () => context.push(Routes.editProfile),
               child: Row(
@@ -157,7 +154,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         ),
                         Space.v2,
                         Text(
-                          '${user.displayCompany} · Shipper',
+                          l10n.accountShipperLine(user.displayCompany),
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
@@ -171,45 +168,47 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               ),
             ),
             ListGroup(
-              title: 'Account',
+              title: l10n.navAccount,
               children: [
                 ListRow(
                   icon: Icons.person_outline_rounded,
-                  title: 'Profile & company',
+                  title: l10n.accountProfile,
                   onTap: () => context.push(Routes.editProfile),
                 ),
                 ListRow(
                   icon: Icons.mail_outline_rounded,
-                  title: 'Email',
+                  title: l10n.fieldEmail,
                   value: verified ? null : user.email,
                   trailing: verified
-                      ? Pill(label: 'Verified', style: _verifiedStyle)
+                      ? Pill(label: l10n.accountVerified, style: _verifiedStyle)
                       : TextButton(
                           onPressed: _sendingVerification ? null : _verifyEmail,
                           child: Text(
-                            _sendingVerification ? 'Sending…' : 'Verify',
+                            _sendingVerification
+                                ? l10n.accountSending
+                                : l10n.accountVerify,
                           ),
                         ),
                 ),
                 ListRow(
                   icon: Icons.layers_outlined,
-                  title: 'Mobile requests',
-                  value: '${usage.used} of ${usage.limit} in use',
+                  title: l10n.accountMobileRequests,
+                  value: l10n.homeUsedOfInUse(usage.used, usage.limit),
                   onTap: () => showRequestLimitSheet(context, usage),
                 ),
               ],
             ),
             ListGroup(
-              title: 'Preferences',
+              title: l10n.accountPreferences,
               children: [
                 ListRow(
                   icon: Icons.translate_rounded,
-                  title: 'Language',
+                  title: l10n.accountLanguage,
                   value: settings.language.nativeName,
                   onTap: () async {
                     final choice = await showChoiceSheet<AppLanguage>(
                       context,
-                      title: 'Language',
+                      title: l10n.accountLanguage,
                       selected: settings.language,
                       options: [
                         for (final l in AppLanguage.values)
@@ -225,12 +224,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ),
                 ListRow(
                   icon: Icons.brightness_6_outlined,
-                  title: 'Appearance',
+                  title: l10n.accountAppearance,
                   value: _appearanceLabel(settings.appearance),
                   onTap: () async {
                     final choice = await showChoiceSheet<Appearance>(
                       context,
-                      title: 'Appearance',
+                      title: l10n.accountAppearance,
                       selected: settings.appearance,
                       options: [
                         for (final a in Appearance.values)
@@ -255,7 +254,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ),
                 ListRow(
                   icon: Icons.notifications_none_rounded,
-                  title: 'Notifications',
+                  title: l10n.notifTitle,
                   trailing: _CompactSwitch(
                     value: alertsOn,
                     onChanged: (v) => _setAlerts(bids: v, status: v),
@@ -264,7 +263,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 if (alertsOn) ...[
                   ListRow(
                     icon: Icons.gavel_rounded,
-                    title: 'New bid alerts',
+                    title: l10n.accountNewBidAlerts,
                     trailing: _CompactSwitch(
                       value: user.bidAlerts,
                       onChanged: (v) => _setAlerts(bids: v),
@@ -272,7 +271,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                   ),
                   ListRow(
                     icon: Icons.local_shipping_outlined,
-                    title: 'Delivery updates',
+                    title: l10n.accountDeliveryUpdates,
                     trailing: _CompactSwitch(
                       value: user.statusAlerts,
                       onChanged: (v) => _setAlerts(status: v),
@@ -282,41 +281,41 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               ],
             ),
             ListGroup(
-              title: 'Support & feedback',
+              title: l10n.accountSupport,
               children: [
                 ListRow(
                   icon: Icons.help_outline_rounded,
-                  title: 'Help center',
+                  title: l10n.accountHelpCenter,
                   onTap: () => context.push(Routes.help),
                 ),
                 ListRow(
                   icon: Icons.chat_bubble_outline_rounded,
-                  title: 'Send feedback',
+                  title: l10n.accountSendFeedback,
                   onTap: () => showFeedbackSheet(context),
                 ),
               ],
             ),
             ListGroup(
-              title: 'Legal',
+              title: l10n.accountLegal,
               children: [
                 ListRow(
                   icon: Icons.description_outlined,
-                  title: 'Terms of Service',
+                  title: l10n.legalTerms,
                   onTap: () => context.push(Routes.terms),
                 ),
                 ListRow(
                   icon: Icons.shield_outlined,
-                  title: 'Privacy Policy',
+                  title: l10n.legalPrivacy,
                   onTap: () => context.push(Routes.privacy),
                 ),
               ],
             ),
             ListGroup(
-              title: 'Demo',
+              title: l10n.accountDemo,
               children: [
                 ListRow(
                   icon: Icons.auto_awesome_outlined,
-                  title: 'Load sample shipments',
+                  title: l10n.accountLoadSamples,
                   trailing: _loadingSamples
                       ? const SizedBox(
                           width: 20,
@@ -333,12 +332,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               onPressed: _signingOut ? null : _signOut,
               style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
               icon: const Icon(Icons.logout_rounded, size: 20),
-              label: const Text('Sign out'),
+              label: Text(l10n.actionSignOut),
             ),
             Space.v16,
             Center(
               child: Text(
-                'LODBOD Shipper · version 1.0.0',
+                l10n.appVersionLine('1.0.0'),
                 style: TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             ),
@@ -377,7 +376,7 @@ class _CompactSwitch extends StatelessWidget {
 }
 
 String _appearanceLabel(Appearance a) => switch (a) {
-  Appearance.system => 'System',
-  Appearance.light => 'Light',
-  Appearance.dark => 'Dark',
+  Appearance.system => l10n.appearanceSystem,
+  Appearance.light => l10n.appearanceLight,
+  Appearance.dark => l10n.appearanceDark,
 };

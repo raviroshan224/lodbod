@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -52,13 +53,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget build(BuildContext context) {
     final feed = ref.watch(activityFeedProvider);
     return Scaffold(
-      appBar: const DetailAppBar(title: 'Notifications'),
+      appBar: DetailAppBar(title: l10n.notifTitle),
       body: switch (feed) {
-        AsyncData(:final value) when value.isEmpty => const Center(
+        AsyncData(:final value) when value.isEmpty => Center(
           child: EmptyView(
             icon: Icons.notifications_none_rounded,
-            title: "You're all caught up",
-            message: 'Bids, bookings and delivery updates will show up here.',
+            title: l10n.notifCaughtUp,
+            message: l10n.notifCaughtUpBody,
           ),
         ),
         AsyncData(:final value) => _list(value),
@@ -86,10 +87,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final groups = <String, List<ActivityItem>>{};
     for (final a in items) {
       final label = !a.at.isBefore(today)
-          ? 'Today'
+          ? l10n.postToday
           : !a.at.isBefore(today.subtract(const Duration(days: 1)))
-          ? 'Yesterday'
-          : 'Earlier';
+          ? l10n.notifYesterday
+          : l10n.notifEarlier;
       (groups[label] ??= []).add(a);
     }
     return ListView(

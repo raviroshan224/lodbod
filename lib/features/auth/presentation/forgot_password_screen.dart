@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/feedback.dart';
@@ -62,17 +63,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           Icons.mark_email_read_outlined,
           success: true,
         ),
-        title: 'Check your email',
-        subtitle:
-            'If an account exists for ${_identifier.text.trim()}, a link to '
-            "reset your password is on its way. It may take a minute; if it "
-            "doesn't arrive, check your spam folder.",
+        title: l10n.forgotSentTitle,
+        subtitle: l10n.forgotSentBody(_identifier.text.trim()),
         children: [
-          PrimaryButton(label: 'Back to log in', onPressed: backToLogin),
+          PrimaryButton(label: l10n.actionBackToLogIn, onPressed: backToLogin),
           Space.v8,
           TextButton(
             onPressed: () => setState(() => _sent = false),
-            child: const Text('Use a different email or phone'),
+            child: Text(l10n.forgotUseDifferent),
           ),
         ],
       );
@@ -80,17 +78,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     return AuthScaffold(
       showBack: true,
-      title: 'Reset your password',
-      subtitle:
-          'Enter the email or phone number on your account and we will '
-          'email you a link to set a new password.',
+      title: l10n.forgotTitle,
+      subtitle: l10n.forgotSubtitle,
       children: [
         Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const FieldLabel.plain('Email or phone number'),
+              FieldLabel.plain(l10n.fieldEmailOrPhone),
               TextFormField(
                 controller: _identifier,
                 enabled: !_sending,
@@ -98,9 +94,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 autocorrect: false,
                 textInputAction: TextInputAction.send,
                 autofillHints: const [AutofillHints.email],
-                decoration: const InputDecoration(
-                  hintText: 'you@company.com or 98XXXXXXXX',
-                ),
+                decoration: InputDecoration(hintText: l10n.hintEmailOrPhone),
                 validator: Validators.identifier,
                 onFieldSubmitted: (_) => _send(),
               ),
@@ -110,14 +104,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         Space.v24,
         if (_error != null) ...[InlineBanner(message: _error!), Space.v16],
         PrimaryButton(
-          label: 'Send reset link',
+          label: l10n.forgotSend,
           loading: _sending,
           onPressed: _send,
         ),
         Space.v16,
         AuthSwitchPrompt(
-          prompt: 'Remembered it?',
-          action: 'Log in',
+          prompt: l10n.forgotRemembered,
+          action: l10n.actionLogIn,
           onPressed: _sending ? null : backToLogin,
         ),
       ],

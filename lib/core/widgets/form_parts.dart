@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 
 /// Label above a field. Required fields get an orange asterisk; optional
@@ -35,7 +36,7 @@ class FieldLabel extends StatelessWidget {
               )
             else
               TextSpan(
-                text: '  (optional)',
+                text: '  ${l10n.optional}',
                 style: TextStyle(
                   color: AppColors.textMuted,
                   fontWeight: FontWeight.w400,

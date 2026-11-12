@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/feedback.dart';
@@ -71,8 +72,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return AuthScaffold(
       showBrand: true,
-      title: 'Welcome back',
-      subtitle: 'Log in to manage your loads and shipments.',
+      title: l10n.loginTitle,
+      subtitle: l10n.loginSubtitle,
       footer: const LegalFootnote(),
       children: [
         Form(
@@ -84,7 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const FieldLabel.plain('Email or phone number'),
+                FieldLabel.plain(l10n.fieldEmailOrPhone),
                 TextFormField(
                   key: const ValueKey('identifier'),
                   controller: _identifier,
@@ -96,20 +97,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     AutofillHints.email,
                     AutofillHints.telephoneNumber,
                   ],
-                  decoration: const InputDecoration(
-                    hintText: 'you@company.com or 98XXXXXXXX',
-                  ),
+                  decoration: InputDecoration(hintText: l10n.hintEmailOrPhone),
                   validator: Validators.identifier,
                   onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
                 ),
                 Space.v20,
-                const FieldLabel.plain('Password'),
+                FieldLabel.plain(l10n.fieldPassword),
                 PasswordField(
                   controller: _password,
                   focusNode: _passwordFocus,
                   enabled: !_submitting,
                   validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Password is required' : null,
+                      (v == null || v.isEmpty) ? l10n.vPasswordRequired : null,
                   onSubmitted: (_) => _submit(),
                 ),
               ],
@@ -125,13 +124,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 4),
             ),
-            child: const Text('Forgot password?'),
+            child: Text(l10n.loginForgot),
           ),
         ),
         Space.v12,
         if (message != null) ...[InlineBanner(message: message), Space.v16],
         PrimaryButton(
-          label: 'Log in',
+          label: l10n.actionLogIn,
           loading: _submitting,
           onPressed: _submit,
         ),
@@ -139,8 +138,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // `go`, not `push`: the router must see /register as the current
         // location to continue to email verification after sign-up.
         AuthSwitchPrompt(
-          prompt: "Don't have an account?",
-          action: 'Create account',
+          prompt: l10n.loginNoAccount,
+          action: l10n.actionCreateAccount,
           onPressed: _submitting ? null : () => context.go(Routes.register),
         ),
       ],

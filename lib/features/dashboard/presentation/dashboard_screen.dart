@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -136,7 +137,7 @@ class DashboardScreen extends ConsumerWidget {
                 icon: Icons.local_shipping_outlined,
                 color: const Color(0xFFB93C0B),
                 count: summary.active,
-                label: 'Active',
+                label: l10n.filterActive,
                 onTap: () => openFiltered(ShipmentFilter.active),
               ),
             ),
@@ -146,7 +147,7 @@ class DashboardScreen extends ConsumerWidget {
                 icon: Icons.gavel_rounded,
                 color: AppColors.info,
                 count: summary.awaitingBids,
-                label: 'Awaiting bids',
+                label: l10n.statusAwaitingBids,
                 onTap: () => openFiltered(ShipmentFilter.awaitingBids),
               ),
             ),
@@ -156,7 +157,7 @@ class DashboardScreen extends ConsumerWidget {
                 icon: Icons.check_circle_outline_rounded,
                 color: AppColors.success,
                 count: summary.completed,
-                label: 'Completed',
+                label: l10n.filterCompleted,
                 onTap: () => openFiltered(ShipmentFilter.completed),
               ),
             ),
@@ -164,28 +165,30 @@ class DashboardScreen extends ConsumerWidget {
         ),
       ),
       if (needsAction.isNotEmpty) ...[
-        const SectionHeader('Needs your action'),
+        SectionHeader(l10n.homeNeedsAction),
         for (final s in needsAction) ...[
           _ActionTile(
             icon: Icons.gavel_rounded,
             iconColor: AppColors.info,
-            title:
-                '${s.bidCount} ${s.bidCount == 1 ? 'bid' : 'bids'} on ${s.reference}',
-            subtitle: '${s.routeLabel} · Pickup ${Fmt.dayMonth(s.pickupAt)}',
+            title: l10n.homeBidsOn(s.bidCount, s.reference),
+            subtitle: l10n.homeRoutePickup(
+              s.routeLabel,
+              Fmt.dayMonth(s.pickupAt),
+            ),
             onTap: () => context.push(Routes.bids(s.id)),
           ),
           Space.v8,
         ],
       ],
       if (onTheRoad.isNotEmpty) ...[
-        const SectionHeader('On the road'),
+        SectionHeader(l10n.homeOnTheRoad),
         for (final s in onTheRoad) ...[
           _LiveCard(shipment: s, onTap: () => context.push(Routes.track(s.id))),
           Space.v8,
         ],
       ],
       if (upcoming.isNotEmpty) ...[
-        const SectionHeader('Next pickup'),
+        SectionHeader(l10n.homeNextPickup),
         _ActionTile(
           icon: Icons.event_available_outlined,
           iconColor: AppColors.violet,
@@ -209,16 +212,16 @@ class DashboardScreen extends ConsumerWidget {
             Space.v24,
             OutlinedButton(
               onPressed: () => openFiltered(ShipmentFilter.all),
-              child: Text('See all ${all.length} shipments'),
+              child: Text(l10n.homeSeeAllN(all.length)),
             ),
           ];
         }
         return [
           SectionHeader(
-            'Other shipments',
+            l10n.homeOtherShipments,
             action: TextButton(
               onPressed: () => openFiltered(ShipmentFilter.all),
-              child: const Text('See all'),
+              child: Text(l10n.actionSeeAll),
             ),
           ),
           for (final s in recent) ...[
@@ -248,9 +251,9 @@ class _Header extends StatelessWidget {
 
   String get _greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning,';
-    if (h < 17) return 'Good afternoon,';
-    return 'Good evening,';
+    if (h < 12) return l10n.homeGoodMorning;
+    if (h < 17) return l10n.homeGoodAfternoon;
+    return l10n.homeGoodEvening;
   }
 
   @override
@@ -261,7 +264,7 @@ class _Header extends StatelessWidget {
         children: [
           Semantics(
             button: true,
-            label: 'Account',
+            label: l10n.navAccount,
             child: GestureDetector(
               onTap: onAvatar,
               child: InitialsAvatar(Fmt.initials(name), size: 44),
@@ -293,7 +296,7 @@ class _Header extends StatelessWidget {
           ),
           CircleIconButton(
             icon: Icons.notifications_none_rounded,
-            tooltip: 'Notifications',
+            tooltip: l10n.notifTitle,
             badge: unread,
             onPressed: onBell,
           ),
@@ -323,7 +326,7 @@ class _StatTile extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.fromLTRB(10, Gap.md, 10, 10),
-      semanticLabel: '$count $label. Show these shipments',
+      semanticLabel: l10n.homeStatA11y(count, label),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -347,7 +350,7 @@ class _StatTile extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             // The count scales fully; the caption is capped so a single
-            // word ("Completed") still fits a third of a 320dp screen.
+            // word (l10n.filterCompleted) still fits a third of a 320dp screen.
             textScaler: MediaQuery.textScalerOf(context)
                 .clamp(maxScaleFactor: 1.15),
             style: TextStyle(
@@ -431,8 +434,8 @@ class _LiveCard extends ConsumerWidget {
       live: ref.watch(livePositionProvider(s.id)).value,
     );
     final where = t.lastPassed == null
-        ? 'Left ${s.pickup}'
-        : 'Passed ${t.lastPassed!.name}';
+        ? l10n.homeLeft(s.pickup)
+        : l10n.homePassed(t.lastPassed!.name);
     return AppCard(
       onTap: onTap,
       child: Column(
@@ -466,12 +469,12 @@ class _LiveCard extends ConsumerWidget {
               Expanded(
                 child: IconText(
                   Icons.near_me_outlined,
-                  '$where · ${t.remainingKm} km left',
+                  l10n.homeKmLeft(where, t.remainingKm),
                 ),
               ),
               if (t.eta != null)
                 Text(
-                  t.isLate ? 'Running late' : 'ETA ${Fmt.time(t.eta!)}',
+                  t.isLate ? l10n.runningLate : l10n.etaTime(Fmt.time(t.eta!)),
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
@@ -485,15 +488,15 @@ class _LiveCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Simulated tracking',
+                  l10n.simulatedTracking,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
                 ),
               ),
-              const Flexible(
+              Flexible(
                 child: Text(
-                  'Track shipment',
+                  l10n.actionTrackShipment,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -534,15 +537,11 @@ class _WelcomeState extends ConsumerState<_Welcome> {
           .read(accountRepositoryProvider)
           .loadSampleData(ref.read(currentUserProvider).id);
       if (mounted) {
-        showMessage(context, 'Sample shipments added. Have a look around!');
+        showMessage(context, l10n.homeSamplesAdded);
       }
     } catch (e) {
       if (mounted) {
-        showMessage(
-          context,
-          "Couldn't add sample shipments. Try again.",
-          isError: true,
-        );
+        showMessage(context, l10n.homeSamplesFailed, isError: true);
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -552,21 +551,9 @@ class _WelcomeState extends ConsumerState<_Welcome> {
   @override
   Widget build(BuildContext context) {
     final steps = [
-      (
-        Icons.edit_note_rounded,
-        'Post a load',
-        'Route, cargo and truck in under a minute.',
-      ),
-      (
-        Icons.gavel_rounded,
-        'Compare bids',
-        'Verified carriers send offers you can compare.',
-      ),
-      (
-        Icons.local_shipping_outlined,
-        'Track delivery',
-        'Follow every step until it is delivered.',
-      ),
+      (Icons.edit_note_rounded, l10n.actionPostALoad, l10n.homeStep1Body),
+      (Icons.gavel_rounded, l10n.actionCompareBids, l10n.homeStep2Body),
+      (Icons.local_shipping_outlined, l10n.homeStep3, l10n.homeStep3Body),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -579,12 +566,12 @@ class _WelcomeState extends ConsumerState<_Welcome> {
               const BrandMark(size: 44),
               Space.v16,
               Text(
-                'Welcome to LODBOD',
+                l10n.homeWelcome,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Space.v6,
               Text(
-                'Move goods across Nepal with trusted carriers. Here is how it works:',
+                l10n.homeWelcomeBody,
                 style: TextStyle(color: AppColors.textSecondary, height: 1.45),
               ),
               Space.v16,
@@ -617,7 +604,7 @@ class _WelcomeState extends ConsumerState<_Welcome> {
               ],
               Space.v8,
               PrimaryButton(
-                label: 'Post your first load',
+                label: l10n.homePostFirst,
                 icon: Icons.add_rounded,
                 onPressed: widget.onPostLoad,
               ),
@@ -631,7 +618,7 @@ class _WelcomeState extends ConsumerState<_Welcome> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text('Explore with sample shipments'),
+                      : Text(l10n.homeExploreSamples),
                 ),
               ),
             ],
@@ -648,7 +635,7 @@ class _DashboardSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Loading your shipments',
+      label: l10n.homeLoading,
       child: const Padding(
         padding: EdgeInsets.symmetric(horizontal: Gap.page),
         child: Column(

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -20,13 +21,17 @@ import 'widgets/bid_card.dart';
 /// Neutral sort orders. The default is arrival order so no offer is
 /// promoted; the shipper chooses what matters to them.
 enum BidSort {
-  received('Newest'),
-  fare('Price'),
-  rating('Rating'),
-  delivery('Fastest');
+  received,
+  fare,
+  rating,
+  delivery;
 
-  const BidSort(this.label);
-  final String label;
+  String get label => switch (this) {
+    received => l10n.bidsSortNewest,
+    fare => l10n.bidsSortPrice,
+    rating => l10n.bidsSortRating,
+    delivery => l10n.bidsSortFastest,
+  };
 
   List<Bid> apply(List<Bid> bids) {
     final sorted = [...bids];
@@ -83,10 +88,10 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
 
     return Scaffold(
       appBar: DetailAppBar(
-        title: 'Bids',
+        title: l10n.bidsTitle,
         subtitle: shipment == null
             ? null
-            : '${shipment.reference} · ${shipment.routeLabel}',
+            : l10n.bidsRefRoute(shipment.reference, shipment.routeLabel),
       ),
       body: switch ((shipmentAsync, bidsAsync)) {
         (AsyncError(:final error), _) ||
@@ -101,11 +106,11 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
           s,
           bids,
         ),
-        (AsyncData(value: null), _) => const Center(
+        (AsyncData(value: null), _) => Center(
           child: EmptyView(
             icon: Icons.search_off_rounded,
-            title: 'Shipment not found',
-            message: 'It may have been removed.',
+            title: l10n.detailsNotFound,
+            message: l10n.detailsRemoved,
           ),
         ),
         _ => ListView(
@@ -142,13 +147,18 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${s.cargoDescription} · ${s.weightLabel}',
+                      l10n.bidsCargoWeight(s.cargoDescription, s.weightLabel),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     Space.v2,
                     Text(
-                      'Pickup ${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)} · ${s.vehicleType.label}'
-                      '${s.expectedFare == null ? '' : ' · Budget ${Fmt.npr(s.expectedFare!)}'}',
+                      l10n.bidsPickupVehicle(
+                            '${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+                            s.vehicleType.label,
+                          ) +
+                          (s.expectedFare == null
+                              ? ''
+                              : ' · ${l10n.bidsBudgetLine(Fmt.npr(s.expectedFare!))}'),
                       style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
@@ -164,15 +174,17 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
         if (accepted != null)
           InlineBanner(
             tone: BannerTone.success,
-            title: 'Booked with ${accepted.carrierName}',
-            message:
-                '${Fmt.npr(accepted.fare)} · ${s.reference} is ${s.status.label.toLowerCase()}.',
+            title: l10n.bidsBookedWith(accepted.carrierName),
+            message: l10n.bidsBookedBody(
+              Fmt.npr(accepted.fare),
+              s.reference,
+              s.status.label.toLowerCase(),
+            ),
           )
         else if (s.status != ShipmentStatus.awaitingBids)
           InlineBanner(
             tone: BannerTone.info,
-            message:
-                'This shipment is ${s.status.label.toLowerCase()} and no longer accepting bids.',
+            message: l10n.bidsClosedBody(s.status.label.toLowerCase()),
           ),
         if (bids.isEmpty)
           _NoBids(shipment: s)
@@ -182,12 +194,12 @@ class _BidsScreenState extends ConsumerState<BidsScreen> {
           Row(
             children: [
               Text(
-                '${bids.length} ${bids.length == 1 ? 'offer' : 'offers'}',
+                l10n.bidsOffers(bids.length),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const Spacer(),
               Text(
-                'Sort by',
+                l10n.bidsSortBy,
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),
             ],
@@ -246,10 +258,8 @@ class _NoBids extends ConsumerWidget {
 
     return EmptyView(
       icon: Icons.gavel_rounded,
-      title: waiting ? 'Waiting for carriers' : 'No bids',
-      message: waiting
-          ? 'Your load is visible to carriers. Offers usually arrive within minutes, and we will notify you.'
-          : 'This shipment did not receive any bids.',
+      title: waiting ? l10n.bidsWaiting : l10n.bidsNone,
+      message: waiting ? l10n.bidsWaitingBody : l10n.bidsNoneBody,
       action: waiting
           ? TextButton.icon(
               onPressed: running != null
@@ -263,7 +273,7 @@ class _NoBids extends ConsumerWidget {
                       }
                     },
               icon: const Icon(Icons.science_outlined, size: 18),
-              label: const Text('Simulate bids now (demo)'),
+              label: Text(l10n.simBidsNowDemo),
             )
           : null,
     );

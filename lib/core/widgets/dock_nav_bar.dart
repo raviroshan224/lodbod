@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 
 class DockItem {
@@ -19,7 +20,7 @@ class DockItem {
 }
 
 /// Bottom navigation after the brief's reference screens: labelled tabs,
-/// the active one on a soft orange tile, and a round "Post Load" action
+/// the active one on a soft orange tile, and a round l10n.navPostLoad action
 /// raised half above the bar with its label beneath it.
 class DockNavBar extends StatelessWidget {
   const DockNavBar({
@@ -118,7 +119,7 @@ class DockNavBar extends StatelessWidget {
           button: true,
           selected: active,
           label: item.badgeCount > 0
-              ? '${item.label}, ${item.badgeCount} need attention'
+              ? l10n.navNeedAttention(item.label, item.badgeCount)
               : item.label,
           excludeSemantics: true,
           child: InkWell(

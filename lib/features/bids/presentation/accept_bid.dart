@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/common.dart';
@@ -25,22 +26,25 @@ Future<bool> confirmAndAcceptBid(
 }) async {
   final confirmed = await confirmAction(
     context,
-    title: 'Book ${bid.carrierName}?',
-    message:
-        'This confirms ${shipment.reference} with this carrier. '
-        '${otherBids > 0 ? 'The other $otherBids ${otherBids == 1 ? 'offer' : 'offers'} will be declined. ' : ''}'
-        "This can't be undone from the app.",
-    confirmLabel: 'Accept for ${Fmt.npr(bid.fare)}',
-    cancelLabel: 'Go back',
+    title: l10n.acceptTitle(bid.carrierName),
+    message: l10n.acceptBody(
+      shipment.reference,
+      otherBids > 0 ? l10n.acceptOthersDeclined(otherBids) : '',
+    ),
+    confirmLabel: l10n.acceptFor(Fmt.npr(bid.fare)),
+    cancelLabel: l10n.actionGoBack,
     icon: Icons.handshake_outlined,
     details: AppCard(
       color: const Color(0xFFFBF5F2),
       padding: const EdgeInsets.symmetric(horizontal: Gap.lg, vertical: Gap.sm),
       child: Column(
         children: [
-          InfoRow('Route', shipment.routeLabel),
-          InfoRow('Fare', Fmt.npr(bid.fare)),
-          InfoRow('Delivery', 'About ${Fmt.days(bid.estimatedDeliveryDays)}'),
+          InfoRow(l10n.stepRoute, shipment.routeLabel),
+          InfoRow(l10n.acceptFare, Fmt.npr(bid.fare)),
+          InfoRow(
+            l10n.bidDelivery,
+            l10n.acceptAbout(Fmt.days(bid.estimatedDeliveryDays)),
+          ),
         ],
       ),
     ),
@@ -55,9 +59,7 @@ Future<bool> confirmAndAcceptBid(
     HapticFeedback.mediumImpact();
     showMessage(
       context,
-      Fmt.sentence(
-        'Booked! ${shipment.reference} is confirmed with ${bid.carrierName}',
-      ),
+      Fmt.sentence(l10n.acceptBooked(shipment.reference, bid.carrierName)),
     );
     context.go(Routes.shipment(shipment.id));
     return true;
@@ -65,11 +67,7 @@ Future<bool> confirmAndAcceptBid(
   if (error is BidAlreadyAcceptedException || error is InvalidStateException) {
     showMessage(context, error.message, isError: true);
   } else {
-    showMessage(
-      context,
-      "${error.message} The offer hasn't been accepted yet.",
-      isError: true,
-    );
+    showMessage(context, l10n.acceptFailed(error.message), isError: true);
   }
   return false;
 }

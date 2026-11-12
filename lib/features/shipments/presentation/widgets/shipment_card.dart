@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
@@ -21,8 +22,12 @@ class ShipmentCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.fromLTRB(Gap.lg, 14, Gap.lg, 12),
-      semanticLabel:
-          '${s.reference}, ${s.status.label}, ${s.pickup} to ${s.destination}',
+      semanticLabel: l10n.cardA11y(
+        s.reference,
+        s.status.label,
+        s.pickup,
+        s.destination,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -51,7 +56,7 @@ class ShipmentCard extends StatelessWidget {
             children: [
               IconText(
                 cargoIcon(s.cargoCategory),
-                '${s.cargoDescription} · ${s.weightLabel}',
+                l10n.bidsCargoWeight(s.cargoDescription, s.weightLabel),
               ),
               IconText(Icons.calendar_today_outlined, Fmt.dayMonth(s.pickupAt)),
             ],
@@ -79,15 +84,15 @@ class _Footer extends StatelessWidget {
         IconText(
           s.bidCount > 0 ? Icons.schedule_rounded : Icons.hourglass_top_rounded,
           s.bidCount > 0
-              ? 'Posted ${Fmt.relative(s.createdAt)}'
-              : 'Waiting for bids',
+              ? l10n.cardPosted(Fmt.relative(s.createdAt))
+              : l10n.cardWaitingForBids,
         ),
         s.bidCount > 0
             ? Text.rich(
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '${s.bidCount} ${s.bidCount == 1 ? 'bid' : 'bids'}',
+                      text: l10n.cardBids(s.bidCount),
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w800,
@@ -95,8 +100,8 @@ class _Footer extends StatelessWidget {
                     ),
                     TextSpan(
                       text: s.expectedFare == null
-                          ? '  ·  Fare pending'
-                          : '  ·  Budget ${Fmt.npr(s.expectedFare!)}',
+                          ? '  ·  ${l10n.cardFarePending}'
+                          : '  ·  ${l10n.cardBudget(Fmt.npr(s.expectedFare!))}',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
@@ -110,8 +115,8 @@ class _Footer extends StatelessWidget {
               )
             : Text(
                 s.expectedFare == null
-                    ? 'Fare pending'
-                    : 'Budget ${Fmt.npr(s.expectedFare!)}',
+                    ? l10n.cardFarePending
+                    : l10n.cardBudget(Fmt.npr(s.expectedFare!)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -124,14 +129,19 @@ class _Footer extends StatelessWidget {
       ShipmentStatus.cancelled || ShipmentStatus.expired => (
         IconText(
           Icons.history_rounded,
-          '${s.status.label} ${Fmt.relative(s.updatedAt).toLowerCase()}',
+          l10n.cardStatusWhen(
+            s.status.label,
+            Fmt.relative(s.updatedAt).toLowerCase(),
+          ),
         ),
         const SizedBox.shrink(),
       ),
       ShipmentStatus.delivered => (
         IconText(
           Icons.check_circle_outline_rounded,
-          'Delivered ${Fmt.dayMonth(s.reachedAt(ShipmentStatus.delivered) ?? s.updatedAt)}',
+          l10n.cardDeliveredOn(
+            Fmt.dayMonth(s.reachedAt(ShipmentStatus.delivered) ?? s.updatedAt),
+          ),
         ),
         _Amount(s.agreedFare),
       ),
@@ -144,7 +154,10 @@ class _Footer extends StatelessWidget {
         _Amount(s.agreedFare),
       ),
       _ => (
-        IconText(Icons.badge_outlined, s.carrierName ?? 'Carrier assigned'),
+        IconText(
+          Icons.badge_outlined,
+          s.carrierName ?? l10n.cardCarrierAssigned,
+        ),
         _Amount(s.agreedFare),
       ),
     };
@@ -164,8 +177,8 @@ class _Footer extends StatelessWidget {
   static String _lastUpdate(Shipment s) {
     final at = s.reachedAt(ShipmentStatus.inTransit);
     return at == null
-        ? 'On the way'
-        : 'Picked up ${Fmt.relative(at).toLowerCase()}';
+        ? l10n.onTheWay
+        : l10n.cardPickedUp(Fmt.relative(at).toLowerCase());
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
@@ -32,7 +33,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       toolbarHeight: 64,
       leading: IconButton(
         icon: Icon(closeIcon ? Icons.close_rounded : Icons.arrow_back_rounded),
-        tooltip: closeIcon ? 'Close' : 'Back',
+        tooltip: closeIcon ? l10n.close : l10n.back,
         onPressed:
             onBack ??
             () => context.canPop() ? context.pop() : context.go('/home'),

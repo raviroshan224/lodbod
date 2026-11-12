@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/feedback.dart';
@@ -27,8 +28,7 @@ class _FeedbackSheet extends ConsumerStatefulWidget {
 }
 
 class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
-  static const _topics = ['Problem', 'Idea', 'Question'];
-  String _topic = _topics.first;
+  _Topic _topic = _Topic.problem;
   final _message = TextEditingController();
   bool _sending = false;
   String? _error;
@@ -41,9 +41,7 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
 
   Future<void> _send() async {
     if (_message.text.trim().length < 10) {
-      setState(
-        () => _error = 'Tell us a little more (at least 10 characters).',
-      );
+      setState(() => _error = l10n.feedbackMin);
       return;
     }
     setState(() {
@@ -55,12 +53,12 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
           .read(accountRepositoryProvider)
           .sendFeedback(
             ref.read(currentUserProvider).id,
-            topic: _topic,
+            topic: _topic.name,
             message: _message.text,
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      showMessage(context, 'Thanks! Your feedback has been sent.');
+      showMessage(context, l10n.feedbackSent);
     } catch (e) {
       if (mounted) setState(() => _error = mapError(e).message);
     } finally {
@@ -79,19 +77,19 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Send feedback',
+                l10n.accountSendFeedback,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               Space.v4,
               Text(
-                'We read every message.',
+                l10n.feedbackSubtitle,
                 style: TextStyle(color: AppColors.textSecondary),
               ),
               Space.v16,
-              PillTabs<String>(
-                values: _topics,
+              PillTabs<_Topic>(
+                values: _Topic.values,
                 selected: _topic,
-                labelOf: (t) => t,
+                labelOf: (t) => t.label,
                 onChanged: _sending ? null : (t) => setState(() => _topic = t),
               ),
               Space.v12,
@@ -103,18 +101,12 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
                 maxLines: 6,
                 maxLength: 1000,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  hintText: switch (_topic) {
-                    'Problem' => 'What happened, and what did you expect?',
-                    'Idea' => 'What would make LODBOD better for you?',
-                    _ => 'What would you like to know?',
-                  },
-                ),
+                decoration: InputDecoration(hintText: _topic.hint),
               ),
               if (_error != null) ...[Space.v4, InlineBanner(message: _error!)],
               Space.v12,
               PrimaryButton(
-                label: 'Send',
+                label: l10n.feedbackSend,
                 icon: Icons.send_rounded,
                 loading: _sending,
                 onPressed: _send,
@@ -125,4 +117,22 @@ class _FeedbackSheetState extends ConsumerState<_FeedbackSheet> {
       ),
     );
   }
+}
+
+enum _Topic {
+  problem,
+  idea,
+  question;
+
+  String get label => switch (this) {
+    problem => l10n.feedbackProblem,
+    idea => l10n.feedbackIdea,
+    question => l10n.feedbackQuestion,
+  };
+
+  String get hint => switch (this) {
+    problem => l10n.feedbackProblemHint,
+    idea => l10n.feedbackIdeaHint,
+    question => l10n.feedbackQuestionHint,
+  };
 }

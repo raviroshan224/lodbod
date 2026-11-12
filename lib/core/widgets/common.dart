@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'visuals.dart';
@@ -20,7 +21,7 @@ class Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Status: $label',
+      label: l10n.statusLabelA11y(label),
       excludeSemantics: true,
       child: Container(
         padding: EdgeInsets.symmetric(
@@ -182,7 +183,7 @@ class RouteText extends StatelessWidget {
           letterSpacing: -0.2,
         );
     return Semantics(
-      label: '$pickup to $destination',
+      label: l10n.routeAtoB(pickup, destination),
       excludeSemantics: true,
       child: Text.rich(
         TextSpan(
@@ -457,7 +458,9 @@ class CircleIconButton extends StatelessWidget {
       message: tooltip,
       child: Semantics(
         button: true,
-        label: badge != null && badge! > 0 ? '$tooltip, $badge new' : tooltip,
+        label: badge != null && badge! > 0
+            ? l10n.badgeNew(tooltip, badge!)
+            : tooltip,
         excludeSemantics: true,
         child: Stack(
           clipBehavior: Clip.none,
@@ -556,7 +559,7 @@ class BrandMark extends StatelessWidget {
         const BrandWordmark(size: 32),
         Space.v4,
         Text(
-          'SHIPPER',
+          l10n.appShipper,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,

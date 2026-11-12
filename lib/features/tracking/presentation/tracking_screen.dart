@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/platform/launch.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -35,11 +36,11 @@ class TrackingScreen extends ConsumerWidget {
     return Scaffold(
       body: switch (shipment) {
         AsyncData(value: final s?) => _Tracking(shipment: s),
-        AsyncData() => const Center(
+        AsyncData() => Center(
           child: EmptyView(
             icon: Icons.search_off_rounded,
-            title: 'Shipment not found',
-            message: 'It may have been removed.',
+            title: l10n.detailsNotFound,
+            message: l10n.detailsRemoved,
           ),
         ),
         AsyncError(:final error) => ErrorView(
@@ -92,7 +93,7 @@ class _Tracking extends ConsumerWidget {
                   children: [
                     CircleIconButton(
                       icon: Icons.arrow_back_rounded,
-                      tooltip: 'Back',
+                      tooltip: l10n.back,
                       size: 42,
                       onPressed: () => context.pop(),
                     ),
@@ -218,8 +219,8 @@ class _TrackingBadgeState extends State<_TrackingBadge> {
     final Widget leading;
     if (live == null) {
       text = widget.unavailable
-          ? 'Estimated from schedule · live updates unavailable'
-          : 'Simulated tracking · sample route';
+          ? l10n.trackEstimatedUnavailable
+          : l10n.trackSimulatedSample;
       color = AppColors.warning;
       background = AppColors.warningSoft;
       leading = Icon(
@@ -229,9 +230,11 @@ class _TrackingBadgeState extends State<_TrackingBadge> {
       );
     } else {
       final seconds = DateTime.now().difference(live.reportedAt).inSeconds;
-      final age = seconds < 2 ? 'just now' : '${seconds}s ago';
+      final age = seconds < 2
+          ? l10n.trackJustNow
+          : l10n.trackSecondsAgo(seconds);
       text = [
-        'Live · simulated driver · $age',
+        l10n.trackLiveLine(age),
         if (live.speedFactor > 1) '×${live.speedFactor}',
       ].join(' · ');
       color = AppColors.success;
@@ -283,31 +286,41 @@ class _Panel extends StatelessWidget {
     final speed = live == null
         ? ''
         : live.speedKmh < 1
-        ? ' · Stopped'
-        : ' · ${live.speedKmh.round()} km/h';
+        ? l10n.trackStopped
+        : l10n.trackSpeed(live.speedKmh.round());
     final (headline, sub) = switch (s.status) {
       ShipmentStatus.inTransit when t.arrived => (
-        'Arrived',
-        'At ${s.destination} · waiting for the carrier to confirm delivery',
+        l10n.arrived,
+        l10n.trackAtDestination(s.destination),
       ),
       ShipmentStatus.inTransit when t.isLate => (
-        'Running late',
-        'Expected ${Fmt.weekdayDayMonth(eta!)}, ${Fmt.time(eta)} · ${t.remainingKm} km remaining',
+        l10n.runningLate,
+        l10n.trackExpectedLate(
+          '${Fmt.weekdayDayMonth(eta!)}, ${Fmt.time(eta)}',
+          t.remainingKm,
+        ),
       ),
       ShipmentStatus.inTransit => (
-        eta == null ? 'On the way' : 'ETA ${Fmt.time(eta)}',
-        '${eta == null ? '' : '${Fmt.weekdayDayMonth(eta)} · '}${t.remainingKm} km remaining$speed',
+        eta == null ? l10n.onTheWay : l10n.etaTime(Fmt.time(eta)),
+        l10n.trackRemaining(
+          eta == null ? '' : '${Fmt.weekdayDayMonth(eta)} · ',
+          t.remainingKm,
+          speed,
+        ),
       ),
       ShipmentStatus.delivered => (
-        'Delivered',
+        l10n.statusDelivered,
         Fmt.dateTime(s.reachedAt(ShipmentStatus.delivered) ?? s.updatedAt),
       ),
       _ => (
-        'Awaiting pickup',
-        'Pickup ${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)} · ${t.distanceKm} km trip',
+        l10n.trackAwaitingPickup,
+        l10n.trackPickupTrip(
+          '${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+          t.distanceKm,
+        ),
       ),
     };
-    final carrier = s.carrierName ?? 'Carrier';
+    final carrier = s.carrierName ?? l10n.carrier;
 
     return Container(
       decoration: BoxDecoration(
@@ -372,7 +385,10 @@ class _Panel extends StatelessWidget {
               Expanded(
                 child: Text(
                   s.status == ShipmentStatus.inTransit && t.lastPassed != null
-                      ? '${t.lastPassed!.name} · ${(t.progress * 100).round()}%'
+                      ? l10n.trackProgress(
+                          t.lastPassed!.name,
+                          (t.progress * 100).round(),
+                        )
                       : '',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -422,7 +438,7 @@ class _Panel extends StatelessWidget {
                 ),
                 if ((s.carrierPhone ?? '').isNotEmpty)
                   IconButton.filledTonal(
-                    tooltip: 'Call $carrier',
+                    tooltip: l10n.detailsCall(carrier),
                     onPressed: () => callNumber(context, s.carrierPhone!),
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.primarySoft,
@@ -434,33 +450,36 @@ class _Panel extends StatelessWidget {
             ),
           ),
           Space.v20,
-          const Text(
-            'Route',
+          Text(
+            l10n.stepRoute,
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
           ),
           Space.v12,
           _Stop(
             name: s.pickup,
-            caption:
-                'Pickup · ${Fmt.dateTime(s.reachedAt(ShipmentStatus.inTransit) ?? s.pickupAt)}',
+            caption: l10n.trackPickupLine(
+              Fmt.dateTime(s.reachedAt(ShipmentStatus.inTransit) ?? s.pickupAt),
+            ),
             reached: t.progress > 0,
             first: true,
           ),
           for (final c in t.checkpoints)
             _Stop(
               name: c.name,
-              caption: c.fraction <= t.progress ? 'Passed' : 'Upcoming',
+              caption: c.fraction <= t.progress
+                  ? l10n.trackPassed
+                  : l10n.trackUpcoming,
               reached: c.fraction <= t.progress,
             ),
           _Stop(
             name: s.destination,
             caption: s.status == ShipmentStatus.delivered
-                ? 'Delivered'
+                ? l10n.statusDelivered
                 : t.arrived
-                ? 'Arrived'
+                ? l10n.arrived
                 : eta == null
-                ? 'Drop-off'
-                : 'Estimated ${Fmt.dateTime(eta)}',
+                ? l10n.detailsDropOff
+                : l10n.trackEstimated(Fmt.dateTime(eta)),
             reached: t.progress >= 1,
             last: true,
           ),
@@ -504,7 +523,7 @@ class _FastForward extends ConsumerWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Simulate: fast-forward ×${SimulatedDriver.fastForward}',
+            l10n.trackFastForward(SimulatedDriver.fastForward),
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/platform/launch.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -33,17 +34,17 @@ class ShipmentDetailsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: DetailAppBar(
-        title: s?.reference ?? 'Shipment',
-        subtitle: s == null ? null : 'Posted ${Fmt.date(s.createdAt)}',
+        title: s?.reference ?? l10n.shipmentTitle,
+        subtitle: s == null ? null : l10n.detailsPosted(Fmt.date(s.createdAt)),
         actions: [if (s != null) _MoreMenu(shipment: s)],
       ),
       body: switch (shipment) {
         AsyncData(value: final s?) => _Body(shipment: s),
-        AsyncData() => const Center(
+        AsyncData() => Center(
           child: EmptyView(
             icon: Icons.search_off_rounded,
-            title: 'Shipment not found',
-            message: 'It may have been removed. Go back to your shipments.',
+            title: l10n.detailsNotFound,
+            message: l10n.detailsNotFoundBody,
           ),
         ),
         AsyncError(:final error) => ErrorView(
@@ -85,13 +86,18 @@ class _Body extends StatelessWidget {
               RouteStack(
                 pickup: s.pickup,
                 destination: s.destination,
-                pickupCaption:
-                    'Pickup · ${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+                pickupCaption: l10n.detailsPickupLine(
+                  '${Fmt.weekdayDayMonth(s.pickupAt)}, ${Fmt.time(s.pickupAt)}',
+                ),
                 destinationCaption: s.etaAt == null
-                    ? 'Drop-off'
+                    ? l10n.detailsDropOff
                     : s.status == ShipmentStatus.delivered
-                    ? 'Delivered · ${Fmt.weekdayDayMonth(s.reachedAt(ShipmentStatus.delivered) ?? s.etaAt!)}'
-                    : 'Estimated arrival · ${Fmt.weekdayDayMonth(s.etaAt!)}',
+                    ? l10n.detailsDeliveredLine(
+                        Fmt.weekdayDayMonth(
+                          s.reachedAt(ShipmentStatus.delivered) ?? s.etaAt!,
+                        ),
+                      )
+                    : l10n.detailsEtaLine(Fmt.weekdayDayMonth(s.etaAt!)),
               ),
               Space.v20,
               LifecycleStepper(status: s.status),
@@ -102,27 +108,34 @@ class _Body extends StatelessWidget {
         _ContextCard(shipment: s),
         Space.v12,
         SectionCard(
-          title: 'Shipment details',
+          title: l10n.detailsSection,
           child: Column(
             children: [
               InfoRow(
-                'Cargo',
+                l10n.stepCargo,
                 s.cargoDescription.toLowerCase() ==
                         s.cargoCategory.label.toLowerCase()
                     ? s.cargoDescription
-                    : '${s.cargoDescription} · ${s.cargoCategory.label}',
+                    : l10n.bidsCargoWeight(
+                        s.cargoDescription,
+                        s.cargoCategory.label,
+                      ),
                 icon: cargoIcon(s.cargoCategory),
               ),
-              InfoRow('Weight', s.weightLabel, icon: Icons.scale_outlined),
               InfoRow(
-                'Vehicle',
+                l10n.detailsWeight,
+                s.weightLabel,
+                icon: Icons.scale_outlined,
+              ),
+              InfoRow(
+                l10n.stepVehicle,
                 s.vehicleType.label,
                 icon: vehicleIcon(s.vehicleType),
               ),
               InfoRow(
-                'Your budget',
+                l10n.detailsYourBudget,
                 s.expectedFare == null
-                    ? 'Open to bids'
+                    ? l10n.openToBids
                     : Fmt.npr(s.expectedFare!),
                 icon: Icons.account_balance_wallet_outlined,
               ),
@@ -134,36 +147,41 @@ class _Body extends StatelessWidget {
             s.notes.isNotEmpty) ...[
           Space.v12,
           SectionCard(
-            title: 'Pickup contact & notes',
+            title: l10n.detailsContactSection,
             child: Column(
               children: [
                 if (s.contactName.isNotEmpty)
                   InfoRow(
-                    'Contact',
+                    l10n.detailsContact,
                     s.contactName,
                     icon: Icons.person_outline_rounded,
                   ),
                 if (s.contactPhone.isNotEmpty)
                   InfoRow(
-                    'Phone',
+                    l10n.detailsPhone,
                     '+977 ${s.contactPhone}',
                     icon: Icons.phone_outlined,
                     trailing: _SmallIconButton(
                       icon: Icons.call_rounded,
-                      tooltip:
-                          'Call ${s.contactName.isEmpty ? 'contact' : s.contactName}',
+                      tooltip: l10n.detailsCall(
+                        s.contactName.isEmpty ? l10n.contact : s.contactName,
+                      ),
                       onPressed: () => callNumber(context, s.contactPhone),
                     ),
                   ),
                 if (s.notes.isNotEmpty)
-                  InfoRow('Notes', s.notes, icon: Icons.sticky_note_2_outlined),
+                  InfoRow(
+                    l10n.detailsNotes,
+                    s.notes,
+                    icon: Icons.sticky_note_2_outlined,
+                  ),
               ],
             ),
           ),
         ],
         Space.v12,
         SectionCard(
-          title: 'Activity',
+          title: l10n.detailsActivity,
           child: StatusTimeline(shipment: s),
         ),
       ],
@@ -209,8 +227,8 @@ class _ContextCard extends ConsumerWidget {
                   children: [
                     Text(
                       hasBids
-                          ? '${s.bidCount} ${s.bidCount == 1 ? 'carrier has' : 'carriers have'} bid'
-                          : 'Finding carriers…',
+                          ? l10n.detailsCarriersHaveBid(s.bidCount)
+                          : l10n.detailsFindingCarriers,
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -219,8 +237,8 @@ class _ContextCard extends ConsumerWidget {
                     Space.v2,
                     Text(
                       hasBids
-                          ? 'Compare price, rating and delivery time, then book one.'
-                          : 'Your load is visible to carriers. Bids usually arrive within minutes.',
+                          ? l10n.detailsCompareBody
+                          : l10n.detailsVisibleBody,
                       style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
@@ -240,9 +258,9 @@ class _ContextCard extends ConsumerWidget {
         return InlineBanner(
           tone: BannerTone.info,
           title: s.status == ShipmentStatus.cancelled
-              ? 'This request was cancelled'
-              : 'This request expired',
-          message: 'It no longer counts toward your mobile request limit. You can post it again in a tap.',
+              ? l10n.detailsCancelledTitle
+              : l10n.detailsExpiredTitle,
+          message: l10n.detailsClosedBody,
         );
       default:
         return _CarrierCard(shipment: s);
@@ -262,7 +280,7 @@ class _CarrierCard extends ConsumerWidget {
       now: DateTime.now(),
       live: ref.watch(livePositionProvider(s.id)).value,
     );
-    final carrier = s.carrierName ?? 'Carrier';
+    final carrier = s.carrierName ?? l10n.carrier;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +318,7 @@ class _CarrierCard extends ConsumerWidget {
               if ((s.carrierPhone ?? '').isNotEmpty)
                 _SmallIconButton(
                   icon: Icons.call_rounded,
-                  tooltip: 'Call $carrier',
+                  tooltip: l10n.detailsCall(carrier),
                   onPressed: () => callNumber(context, s.carrierPhone!),
                 ),
             ],
@@ -313,15 +331,15 @@ class _CarrierCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _Metric(
-                  label: 'Agreed fare',
+                  label: l10n.detailsAgreedFare,
                   value: s.agreedFare == null ? '—' : Fmt.npr(s.agreedFare!),
                 ),
               ),
               Expanded(
                 child: _Metric(
                   label: s.status == ShipmentStatus.delivered
-                      ? 'Delivered'
-                      : 'Estimated arrival',
+                      ? l10n.statusDelivered
+                      : l10n.detailsEstimatedArrival,
                   value: s.status == ShipmentStatus.delivered
                       ? Fmt.dayMonth(
                           s.reachedAt(ShipmentStatus.delivered) ?? s.updatedAt,
@@ -341,7 +359,12 @@ class _CarrierCard extends ConsumerWidget {
             ),
             Space.v8,
             Text(
-              '${t.lastPassed == null ? 'Left ${s.pickup}' : 'Passed ${t.lastPassed!.name}'} · ${t.remainingKm} km to go · simulated',
+              l10n.detailsKmToGo(
+                t.lastPassed == null
+                    ? l10n.homeLeft(s.pickup)
+                    : l10n.homePassed(t.lastPassed!.name),
+                t.remainingKm,
+              ),
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
@@ -425,11 +448,10 @@ class _ActionBar extends ConsumerWidget {
       if (controller.hasUserInput) {
         final replace = await confirmAction(
           context,
-          title: 'Replace your unfinished load?',
-          message:
-              'You have a load you were still filling in. Starting from ${s.reference} will replace it.',
-          confirmLabel: 'Replace it',
-          cancelLabel: 'Keep it',
+          title: l10n.detailsReplaceTitle,
+          message: l10n.detailsReplaceBody(s.reference),
+          confirmLabel: l10n.detailsReplaceIt,
+          cancelLabel: l10n.actionKeepIt,
           icon: Icons.edit_note_rounded,
         );
         if (!replace || !context.mounted) return;
@@ -440,14 +462,14 @@ class _ActionBar extends ConsumerWidget {
 
     final Widget child = switch (s.status) {
       ShipmentStatus.awaitingBids when s.bidCount > 0 => PrimaryButton(
-        label: 'Compare ${s.bidCount} ${s.bidCount == 1 ? 'bid' : 'bids'}',
+        label: l10n.detailsCompareN(s.bidCount),
         icon: Icons.gavel_rounded,
         onPressed: busy ? null : () => context.push(Routes.bids(s.id)),
       ),
       ShipmentStatus.awaitingBids => OutlinedButton(
         onPressed: busy ? null : () => _cancel(context, ref, s),
         style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
-        child: const Text('Cancel request'),
+        child: Text(l10n.actionCancelRequest),
       ),
       ShipmentStatus.confirmed ||
       ShipmentStatus.scheduled ||
@@ -456,14 +478,14 @@ class _ActionBar extends ConsumerWidget {
           Expanded(
             child: OutlinedButton(
               onPressed: () => context.push(Routes.bids(s.id)),
-              child: const Text('View bids'),
+              child: Text(l10n.actionViewBids),
             ),
           ),
           Space.h12,
           Expanded(
             flex: 2,
             child: PrimaryButton(
-              label: 'Track shipment',
+              label: l10n.actionTrackShipment,
               icon: Icons.near_me_outlined,
               onPressed: () => context.push(Routes.track(s.id)),
             ),
@@ -471,7 +493,7 @@ class _ActionBar extends ConsumerWidget {
         ],
       ),
       _ => PrimaryButton(
-        label: 'Post a similar load',
+        label: l10n.actionPostSimilar,
         icon: Icons.replay_rounded,
         onPressed: postSimilar,
       ),
@@ -483,12 +505,12 @@ class _ActionBar extends ConsumerWidget {
 Future<void> _cancel(BuildContext context, WidgetRef ref, Shipment s) async {
   final confirmed = await confirmAction(
     context,
-    title: 'Cancel ${s.reference}?',
+    title: l10n.detailsCancelTitle(s.reference),
     message: s.status == ShipmentStatus.awaitingBids
-        ? 'Carriers will no longer be able to bid, and any open bids will be declined.'
-        : 'Your booking with ${s.carrierName ?? 'the carrier'} will be cancelled. This frees up one of your mobile requests.',
-    confirmLabel: 'Cancel shipment',
-    cancelLabel: 'Keep it',
+        ? l10n.detailsCancelOpenBody
+        : l10n.detailsCancelBookedBody(s.carrierName ?? l10n.theCarrier),
+    confirmLabel: l10n.actionCancelShipment,
+    cancelLabel: l10n.actionKeepIt,
     destructive: true,
     icon: Icons.cancel_outlined,
   );
@@ -497,7 +519,7 @@ Future<void> _cancel(BuildContext context, WidgetRef ref, Shipment s) async {
   if (!context.mounted) return;
   showMessage(
     context,
-    error?.message ?? '${s.reference} cancelled.',
+    error?.message ?? l10n.detailsCancelled(s.reference),
     isError: error != null,
   );
 }
@@ -520,16 +542,17 @@ class _MoreMenu extends ConsumerWidget {
       switch (a) {
         case _MenuAction.copy:
           await Clipboard.setData(ClipboardData(text: s.reference));
-          if (context.mounted) showMessage(context, '${s.reference} copied');
+          if (context.mounted) {
+            showMessage(context, l10n.detailsCopied(s.reference));
+          }
         case _MenuAction.cancel:
           await _cancel(context, ref, s);
         case _MenuAction.carrierUpdate:
           final ok = await confirmAction(
             context,
-            title: 'Simulate carrier update',
-            message:
-                'Mark ${s.reference} as "${next!.label}". In the live service this update comes from the carrier.',
-            confirmLabel: 'Mark ${next.label.toLowerCase()}',
+            title: l10n.simCarrierUpdate,
+            message: l10n.simCarrierUpdateBody(s.reference, next!.label),
+            confirmLabel: l10n.simMark(next.label.toLowerCase()),
             icon: Icons.science_outlined,
           );
           if (!ok || !context.mounted) return;
@@ -538,7 +561,7 @@ class _MoreMenu extends ConsumerWidget {
             showMessage(
               context,
               error?.message ??
-                  '${s.reference} is now ${next.label.toLowerCase()}.',
+                  l10n.simNowStatus(s.reference, next.label.toLowerCase()),
               isError: error != null,
             );
           }
@@ -551,16 +574,16 @@ class _MoreMenu extends ConsumerWidget {
     }
 
     return PopupMenuButton<_MenuAction>(
-      tooltip: 'More actions',
+      tooltip: l10n.actionMoreActions,
       icon: const Icon(Icons.more_vert_rounded),
       position: PopupMenuPosition.under,
       onSelected: onSelected,
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: _MenuAction.copy,
           child: ListTile(
             leading: Icon(Icons.copy_rounded),
-            title: Text('Copy reference'),
+            title: Text(l10n.actionCopyReference),
             contentPadding: EdgeInsets.zero,
           ),
         ),
@@ -570,7 +593,7 @@ class _MoreMenu extends ConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.cancel_outlined, color: AppColors.error),
               title: Text(
-                'Cancel shipment',
+                l10n.actionCancelShipment,
                 style: TextStyle(color: AppColors.error),
               ),
               contentPadding: EdgeInsets.zero,
@@ -584,18 +607,18 @@ class _MoreMenu extends ConsumerWidget {
               value: _MenuAction.carrierUpdate,
               child: ListTile(
                 leading: Icon(shipmentStatusStyle(next).icon),
-                title: Text('Simulate: mark ${next.label.toLowerCase()}'),
-                subtitle: const Text('Demo carrier update'),
+                title: Text(l10n.simMenuMark(next.label.toLowerCase())),
+                subtitle: Text(l10n.simDemoCarrierUpdate),
                 contentPadding: EdgeInsets.zero,
               ),
             ),
           if (s.status == ShipmentStatus.awaitingBids && s.bidCount == 0)
-            const PopupMenuItem(
+            PopupMenuItem(
               value: _MenuAction.bidsNow,
               child: ListTile(
                 leading: Icon(Icons.gavel_rounded),
-                title: Text('Simulate: bids arrive now'),
-                subtitle: Text('Demo carrier bids'),
+                title: Text(l10n.simBidsNow),
+                subtitle: Text(l10n.simDemoBids),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

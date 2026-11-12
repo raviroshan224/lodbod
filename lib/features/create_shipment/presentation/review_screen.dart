@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -43,10 +44,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
       try {
         await controller.saveDraft();
         if (context.mounted) {
-          showMessage(
-            context,
-            'Draft saved. Finish it any time from Post Load.',
-          );
+          showMessage(context, l10n.postDraftSaved);
         }
       } catch (e) {
         if (context.mounted) {
@@ -64,11 +62,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
           context.go(Routes.posted(shipment.id));
         case SubmitInvalid():
           context.pop();
-          showMessage(
-            context,
-            'A few details need attention before posting.',
-            isError: true,
-          );
+          showMessage(context, l10n.reviewNeedsAttention, isError: true);
         case SubmitFailed(error: RequestLimitReachedException()):
           HapticFeedback.heavyImpact();
           await showRequestLimitSheet(
@@ -92,8 +86,8 @@ class ReviewShipmentScreen extends ConsumerWidget {
       canPop: !state.submitting,
       child: Scaffold(
         appBar: DetailAppBar(
-          title: 'Post a load',
-          subtitle: 'Check everything before posting',
+          title: l10n.actionPostALoad,
+          subtitle: l10n.reviewSubtitle,
           onBack: state.submitting ? () {} : null,
         ),
         body: Column(
@@ -102,7 +96,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
               current: DraftStep.values.length,
               titles: [
                 for (final s in DraftStep.values) s.shortTitle,
-                'Review',
+                l10n.stepReview,
               ],
             ),
             Expanded(
@@ -117,22 +111,22 @@ class ReviewShipmentScreen extends ConsumerWidget {
                   if (error != null) ...[
                     InlineBanner(
                       title: error is RequestLimitReachedException
-                          ? 'Request limit reached'
-                          : "Couldn't post your load",
+                          ? l10n.reviewLimitReached
+                          : l10n.reviewCouldNotPost,
                       message: error is RequestLimitReachedException
-                          ? '${RequestLimit.message} Your details are saved.'
-                          : '${error.message} Your details are saved.',
+                          ? l10n.reviewDetailsSaved(RequestLimit.message)
+                          : l10n.reviewDetailsSaved(error.message),
                     ),
                     Space.v12,
                   ] else if (usage.isAtLimit) ...[
                     InlineBanner(
                       tone: BannerTone.warning,
-                      title: 'All 3 mobile requests are in use',
-                      message: 'You can post this load once one of your requests is delivered or cancelled.',
+                      title: l10n.postAllInUse,
+                      message: l10n.postAllInUseReviewBody,
                       action: GestureDetector(
                         onTap: () => showRequestLimitSheet(context, usage),
                         child: Text(
-                          'How it works',
+                          l10n.actionHowItWorks,
                           style: TextStyle(
                             color: AppColors.warning,
                             fontWeight: FontWeight.w800,
@@ -145,7 +139,7 @@ class ReviewShipmentScreen extends ConsumerWidget {
                     Space.v12,
                   ],
                   SectionCard(
-                    title: 'Route & schedule',
+                    title: l10n.stepRouteTitle,
                     trailing: _EditButton(
                       onPressed: state.submitting
                           ? null
@@ -156,21 +150,23 @@ class ReviewShipmentScreen extends ConsumerWidget {
                       destination: d.destination.trim(),
                       pickupCaption: at == null
                           ? null
-                          : 'Pickup · ${Fmt.weekdayDayMonth(at)}, ${Fmt.time(at)}',
-                      destinationCaption: 'Drop-off',
+                          : l10n.detailsPickupLine(
+                              '${Fmt.weekdayDayMonth(at)}, ${Fmt.time(at)}',
+                            ),
+                      destinationCaption: l10n.detailsDropOff,
                     ),
                   ),
                   Space.v12,
                   _ReviewSection(
-                    title: 'Cargo',
+                    title: l10n.stepCargo,
                     onEdit: state.submitting
                         ? null
                         : () => edit(DraftStep.cargo),
                     rows: [
-                      ('Material', d.category?.label ?? '—'),
-                      ('Description', d.description.trim()),
+                      (l10n.postMaterial, d.category?.label ?? '—'),
+                      (l10n.reviewDescription, d.description.trim()),
                       (
-                        'Weight',
+                        l10n.detailsWeight,
                         d.weight == null
                             ? '—'
                             : '${Fmt.number(d.weight!)} ${d.weightUnit.symbol}',
@@ -179,34 +175,37 @@ class ReviewShipmentScreen extends ConsumerWidget {
                   ),
                   Space.v12,
                   _ReviewSection(
-                    title: 'Vehicle & contact',
+                    title: l10n.stepVehicleTitle,
                     onEdit: state.submitting
                         ? null
                         : () => edit(DraftStep.vehicle),
                     rows: [
-                      ('Vehicle', d.vehicleType?.label ?? '—'),
+                      (l10n.stepVehicle, d.vehicleType?.label ?? '—'),
                       (
-                        'Budget',
+                        l10n.reviewBudget,
                         d.expectedFare == null
-                            ? 'Open to bids'
+                            ? l10n.openToBids
                             : Fmt.npr(d.expectedFare!),
                       ),
                       if (d.contactName.trim().isNotEmpty)
-                        ('Contact', d.contactName.trim()),
+                        (l10n.detailsContact, d.contactName.trim()),
                       if (d.contactPhone.trim().isNotEmpty)
                         (
-                          'Phone',
+                          l10n.reviewPhone,
                           '+977 ${Validators.normalizePhone(d.contactPhone)}',
                         ),
-                      if (d.notes.trim().isNotEmpty) ('Notes', d.notes.trim()),
+                      if (d.notes.trim().isNotEmpty)
+                        (l10n.detailsNotes, d.notes.trim()),
                     ],
                   ),
                   Space.v16,
                   if (!usage.isAtLimit)
                     InlineBanner(
                       tone: BannerTone.info,
-                      message:
-                          'Posting uses mobile request ${usage.used + 1} of ${usage.limit}. Carriers can start bidding straight away.',
+                      message: l10n.reviewUsesRequest(
+                        usage.used + 1,
+                        usage.limit,
+                      ),
                     ),
                 ],
               ),
@@ -219,8 +218,8 @@ class ReviewShipmentScreen extends ConsumerWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: state.submitting ? null : saveDraft,
-                  child: const Text(
-                    'Save draft',
+                  child: Text(
+                    l10n.actionSaveDraft,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -231,8 +230,8 @@ class ReviewShipmentScreen extends ConsumerWidget {
                 flex: 2,
                 child: PrimaryButton(
                   label: error != null && error.isRetryable
-                      ? 'Try again'
-                      : 'Post load',
+                      ? l10n.actionTryAgain
+                      : l10n.actionPostLoad,
                   icon: Icons.send_rounded,
                   loading: state.submitting,
                   onPressed: submit,
@@ -259,7 +258,7 @@ class _EditButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
       ),
       icon: const Icon(Icons.edit_outlined, size: 16),
-      label: const Text('Edit'),
+      label: Text(l10n.actionEdit),
     );
   }
 }

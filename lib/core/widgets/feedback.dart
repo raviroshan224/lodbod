@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
@@ -97,7 +98,7 @@ Future<bool> confirmAction(
   required String title,
   required String message,
   required String confirmLabel,
-  String cancelLabel = 'Not now',
+  String? cancelLabel,
   bool destructive = false,
   IconData? icon,
   Widget? details,
@@ -165,7 +166,7 @@ Future<bool> confirmAction(
                 foregroundColor: AppColors.textSecondary,
                 minimumSize: const Size.fromHeight(48),
               ),
-              child: Text(cancelLabel),
+              child: Text(cancelLabel ?? l10n.actionNotNow),
             ),
           ],
         ),

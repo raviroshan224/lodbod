@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../errors/app_exception.dart';
+import '../l10n/strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
@@ -36,7 +37,7 @@ class ErrorView extends StatelessWidget {
             ),
             Space.v16,
             Text(
-              "Couldn't load this",
+              l10n.errCouldNotLoad,
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -54,7 +55,7 @@ class ErrorView extends StatelessWidget {
                   minimumSize: const Size(150, 46),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 20),
-                label: const Text('Try again'),
+                label: Text(l10n.actionTryAgain),
               ),
             ],
           ],

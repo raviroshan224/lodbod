@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../../core/l10n/strings.dart';
 import '../../shipments/domain/shipment.dart';
 
 class Checkpoint {
@@ -143,7 +144,7 @@ const _knownRoutes = <String, (int, List<Checkpoint>)>{
       d,
       [for (final p in c.reversed) Checkpoint(p.name, 1 - p.fraction)],
     ),
-    _ => (150, const [Checkpoint('En route', 0.5)]),
+    _ => (150, [Checkpoint(l10n.trackEnRoute, 0.5)]),
   };
 }
 

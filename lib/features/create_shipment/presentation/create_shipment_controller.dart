@@ -149,7 +149,7 @@ class CreateShipmentController extends Notifier<CreateShipmentState> {
     await ref.read(accountRepositoryProvider).saveDraft(uid, state.draft);
   }
 
-  /// Starts a new form from an earlier shipment ("Post a similar load").
+  /// Starts a new form from an earlier shipment (l10n.actionPostSimilar).
   /// The schedule is left empty because it must be in the future.
   void prefillFrom(Shipment s) {
     final session = ref.read(sessionProvider);

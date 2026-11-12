@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/validators.dart';
@@ -67,28 +68,25 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
   Widget build(BuildContext context) {
     return AuthScaffold(
       showBrand: true,
-      title: 'Finish setting up',
-      subtitle:
-          'Tell us who you are so carriers know who they are working with.',
+      title: l10n.completeTitle,
+      subtitle: l10n.completeSubtitle,
       children: [
         Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const FieldLabel.plain('Full name'),
+              FieldLabel.plain(l10n.fieldFullName),
               TextFormField(
                 controller: _name,
                 enabled: !_saving,
                 textCapitalization: TextCapitalization.words,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  hintText: 'e.g. Aarav Shrestha',
-                ),
+                decoration: InputDecoration(hintText: l10n.hintName),
                 validator: Validators.name,
               ),
               Space.v20,
-              const FieldLabel.plain('Phone number'),
+              FieldLabel.plain(l10n.fieldPhone),
               TextFormField(
                 controller: _phone,
                 enabled: !_saving,
@@ -105,14 +103,12 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
                 validator: (v) => Validators.phone(v),
               ),
               Space.v20,
-              const FieldLabel('Company name', isRequired: false),
+              FieldLabel(l10n.fieldCompany, isRequired: false),
               TextFormField(
                 controller: _company,
                 enabled: !_saving,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  hintText: 'e.g. Himal Traders Pvt. Ltd.',
-                ),
+                decoration: InputDecoration(hintText: l10n.hintCompany),
                 onFieldSubmitted: (_) => _save(),
               ),
             ],
@@ -120,14 +116,18 @@ class _CompleteProfileScreenState extends ConsumerState<CompleteProfileScreen> {
         ),
         Space.v24,
         if (_error != null) ...[InlineBanner(message: _error!), Space.v16],
-        PrimaryButton(label: 'Continue', loading: _saving, onPressed: _save),
+        PrimaryButton(
+          label: l10n.actionContinue,
+          loading: _saving,
+          onPressed: _save,
+        ),
         Space.v8,
         TextButton(
           onPressed: _saving
               ? null
               : () => ref.read(authActionsProvider).signOut(),
           style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
-          child: const Text('Sign out'),
+          child: Text(l10n.actionSignOut),
         ),
       ],
     );

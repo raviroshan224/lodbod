@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
@@ -22,7 +23,7 @@ class StepHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Step ${current + 1} of ${titles.length}: ${titles[current]}',
+      label: l10n.stepOfA11y(current + 1, titles.length, titles[current]),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(Gap.page, 2, Gap.page, Gap.md),
@@ -50,7 +51,7 @@ class StepHeader extends StatelessWidget {
     return Semantics(
       button: tappable,
       selected: active,
-      label: '${titles[i]}${done ? ', completed' : ''}',
+      label: done ? '${titles[i]}, ${l10n.completed}' : titles[i],
       excludeSemantics: true,
       child: Material(
         color: active ? AppColors.primary : AppColors.surface,

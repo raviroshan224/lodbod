@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/l10n/strings.dart';
 import '../core/widgets/dock_nav_bar.dart';
 import '../features/bids/presentation/bid_simulator.dart';
 import '../features/create_shipment/presentation/open_post_load.dart';
@@ -55,33 +56,33 @@ class AppShell extends ConsumerWidget {
             HapticFeedback.selectionClick();
             _goBranch(branch);
           },
-          actionLabel: 'Post Load',
-          actionSemanticLabel: 'Post a new load',
+          actionLabel: l10n.navPostLoad,
+          actionSemanticLabel: l10n.navPostNewLoad,
           onAction: () {
             HapticFeedback.mediumImpact();
             openPostLoad(context, ref);
           },
           items: [
-            const DockItem(
+            DockItem(
               icon: Icons.home_outlined,
               selectedIcon: Icons.home_rounded,
-              label: 'Home',
+              label: l10n.navHome,
             ),
             DockItem(
               icon: Icons.local_shipping_outlined,
               selectedIcon: Icons.local_shipping_rounded,
-              label: 'Shipments',
+              label: l10n.navShipments,
               badgeCount: offersToReview,
             ),
-            const DockItem(
+            DockItem(
               icon: Icons.insert_chart_outlined_rounded,
               selectedIcon: Icons.insert_chart_rounded,
-              label: 'Analytics',
+              label: l10n.navAnalytics,
             ),
-            const DockItem(
+            DockItem(
               icon: Icons.person_outline_rounded,
               selectedIcon: Icons.person_rounded,
-              label: 'Account',
+              label: l10n.navAccount,
             ),
           ],
         ),

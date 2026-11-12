@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/common.dart';
@@ -50,7 +51,7 @@ class SplashScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Checking your session…',
+                          l10n.splashChecking,
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textMuted,
@@ -92,8 +93,8 @@ class _ProfileLoadFailed extends ConsumerWidget {
               children: [
                 const BrandMark(size: 56),
                 Space.v24,
-                const Text(
-                  "We couldn't load your account",
+                Text(
+                  l10n.splashLoadFailed,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                 ),
@@ -106,12 +107,12 @@ class _ProfileLoadFailed extends ConsumerWidget {
                 Space.v24,
                 FilledButton(
                   onPressed: () => ref.invalidate(profileProvider),
-                  child: const Text('Try again'),
+                  child: Text(l10n.actionTryAgain),
                 ),
                 Space.v8,
                 TextButton(
                   onPressed: () => ref.read(authActionsProvider).signOut(),
-                  child: const Text('Sign out'),
+                  child: Text(l10n.actionSignOut),
                 ),
               ],
             ),

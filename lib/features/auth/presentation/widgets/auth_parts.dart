@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/validators.dart';
@@ -76,7 +77,7 @@ class AuthScaffold extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_rounded),
-                      tooltip: 'Back',
+                      tooltip: l10n.back,
                       onPressed: () => context.canPop()
                           ? context.pop()
                           : context.go(Routes.login),
@@ -275,7 +276,7 @@ class _PasswordFieldState extends State<PasswordField> {
       decoration: InputDecoration(
         hintText: widget.hint,
         suffixIcon: IconButton(
-          tooltip: _obscure ? 'Show password' : 'Hide password',
+          tooltip: _obscure ? l10n.showPassword : l10n.hidePassword,
           icon: Icon(
             _obscure
                 ? Icons.visibility_outlined
@@ -292,13 +293,10 @@ class _PasswordFieldState extends State<PasswordField> {
 
     final strength = Validators.passwordStrength(widget.controller.text);
     final (label, color) = switch (strength) {
-      0 => (
-        'At least 8 characters, with a letter and a number',
-        AppColors.textMuted,
-      ),
-      1 => ('Weak password', AppColors.error),
-      2 => ('Good password', AppColors.warning),
-      _ => ('Strong password', AppColors.success),
+      0 => (l10n.passwordHint, AppColors.textMuted),
+      1 => (l10n.passwordWeak, AppColors.error),
+      2 => (l10n.passwordGood, AppColors.warning),
+      _ => (l10n.passwordStrong, AppColors.success),
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -337,11 +335,10 @@ class _PasswordFieldState extends State<PasswordField> {
 }
 
 class LegalFootnote extends StatefulWidget {
-  const LegalFootnote({
-    super.key,
-    this.prefix = 'By continuing you agree to the ',
-  });
-  final String prefix;
+  const LegalFootnote({super.key, this.prefix});
+
+  /// Defaults to "By continuing you agree to the ".
+  final String? prefix;
 
   @override
   State<LegalFootnote> createState() => _LegalFootnoteState();
@@ -370,11 +367,11 @@ class _LegalFootnoteState extends State<LegalFootnote> {
     );
     return Text.rich(
       TextSpan(
-        text: widget.prefix,
+        text: widget.prefix ?? l10n.legalByContinuing,
         children: [
-          TextSpan(text: 'Terms of Service', style: link, recognizer: _terms),
-          const TextSpan(text: ' and '),
-          TextSpan(text: 'Privacy Policy', style: link, recognizer: _privacy),
+          TextSpan(text: l10n.legalTerms, style: link, recognizer: _terms),
+          TextSpan(text: l10n.legalAnd),
+          TextSpan(text: l10n.legalPrivacy, style: link, recognizer: _privacy),
           const TextSpan(text: '.'),
         ],
       ),

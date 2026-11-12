@@ -10,6 +10,27 @@ class AppLocalizationsNe extends AppLocalizations {
   AppLocalizationsNe([String locale = 'ne']) : super(locale);
 
   @override
+  String get back => 'पछाडि';
+
+  @override
+  String get close => 'बन्द';
+
+  @override
+  String get more => 'थप';
+
+  @override
+  String get matches => 'मिल्छ';
+
+  @override
+  String get shipmentTitle => 'ढुवानी';
+
+  @override
+  String get carrier => 'ढुवानीकर्ता';
+
+  @override
+  String get arrived => 'पुग्यो';
+
+  @override
   String get appTitle => 'LODBOD शिपर';
 
   @override
@@ -1185,7 +1206,7 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String detailsCancelBookedBody(String carrier) {
-    return '$carrier सँगको बुकिङ रद्द हुनेछ।';
+    return '$carrier सँगको बुकिङ रद्द हुनेछ। यसले तपाईंको एउटा मोबाइल अनुरोध खाली गर्छ।';
   }
 
   @override

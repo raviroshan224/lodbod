@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/common.dart';
@@ -53,7 +54,7 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(Gap.sm, 0, Gap.sm, Gap.sm),
                 child: Text(
-                  'Sort shipments',
+                  l10n.shipmentsSort,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
@@ -96,11 +97,11 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
         child: Column(
           children: [
             TabHeader(
-              title: 'Shipments',
+              title: l10n.navShipments,
               actions: [
                 CircleIconButton(
                   icon: Icons.swap_vert_rounded,
-                  tooltip: 'Sort: ${query.sort.label}',
+                  tooltip: l10n.shipmentsSortBy(query.sort.label),
                   onPressed: _showSortSheet,
                 ),
               ],
@@ -112,12 +113,12 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
                 onChanged: controller.setSearch,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'Search reference, route or cargo',
+                  hintText: l10n.shipmentsSearchHint,
                   prefixIcon: const Icon(Icons.search_rounded, size: 21),
                   suffixIcon: query.search.isEmpty
                       ? null
                       : IconButton(
-                          tooltip: 'Clear search',
+                          tooltip: l10n.actionClearSearch,
                           icon: const Icon(Icons.close_rounded, size: 20),
                           onPressed: () => controller.setSearch(''),
                         ),
@@ -178,7 +179,10 @@ class _ShipmentsScreenState extends ConsumerState<ShipmentsScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(left: 2),
                           child: Text(
-                            '${value.length} ${value.length == 1 ? 'shipment' : 'shipments'} · ${query.sort.label.toLowerCase()}',
+                            l10n.shipmentsCount(
+                              value.length,
+                              query.sort.label.toLowerCase(),
+                            ),
                             style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12.5,
@@ -233,23 +237,23 @@ class _EmptyResults extends StatelessWidget {
     return hasAnyShipments
         ? EmptyView(
             icon: Icons.search_off_rounded,
-            title: 'No matching shipments',
-            message: 'Try a different reference, city or status.',
+            title: l10n.shipmentsNoMatch,
+            message: l10n.shipmentsNoMatchBody,
             action: OutlinedButton(
               onPressed: onClear,
               style: OutlinedButton.styleFrom(minimumSize: const Size(210, 46)),
-              child: const Text('Clear search and filters'),
+              child: Text(l10n.actionClearSearchFilters),
             ),
           )
         : EmptyView(
             icon: Icons.inventory_2_outlined,
-            title: 'No shipments yet',
-            message: 'Post a load and carriers will start bidding on it.',
+            title: l10n.shipmentsEmpty,
+            message: l10n.shipmentsEmptyBody,
             action: FilledButton.icon(
               onPressed: onPostLoad,
               style: FilledButton.styleFrom(minimumSize: const Size(180, 48)),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Post a load'),
+              label: Text(l10n.actionPostALoad),
             ),
           );
   }

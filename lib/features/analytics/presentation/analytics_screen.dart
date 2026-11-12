@@ -54,9 +54,9 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         bottom: false,
         child: Column(
           children: [
-            const TabHeader(
-              title: 'Analytics',
-              subtitle: 'How your shipping is going',
+            TabHeader(
+              title: l10n.navAnalytics,
+              subtitle: l10n.analyticsSubtitle,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(Gap.page, 0, Gap.page, Gap.sm),
@@ -90,17 +90,19 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         children: [
           EmptyView(
             icon: Icons.insert_chart_outlined_rounded,
-            title: all.isEmpty ? 'No data yet' : 'Nothing in this period',
+            title: all.isEmpty
+                ? l10n.analyticsNoData
+                : l10n.analyticsNothingPeriod,
             message: all.isEmpty
-                ? 'Your stats appear once you post a load.'
-                : 'Try a longer period to see your activity.',
+                ? l10n.analyticsNoDataBody
+                : l10n.analyticsNothingPeriodBody,
             action: all.isEmpty
                 ? FilledButton(
                     onPressed: () => openPostLoad(context, ref),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(170, 48),
                     ),
-                    child: const Text('Post a load'),
+                    child: Text(l10n.actionPostALoad),
                   )
                 : null,
           ),
@@ -144,7 +146,7 @@ class _Content extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Booked spend · ${period.label.toLowerCase()}',
+                l10n.analyticsBookedSpend(period.label.toLowerCase()),
                 style: TextStyle(
                   color: AppColors.onPrimaryContainer,
                   fontSize: 14,
@@ -163,8 +165,10 @@ class _Content extends StatelessWidget {
               ),
               Space.v4,
               Text(
-                '${a.bookedCount} booked ${a.bookedCount == 1 ? 'load' : 'loads'}'
-                '${a.averageFare == null ? '' : ' · avg ${Fmt.npr(a.averageFare!)} per load'}',
+                l10n.analyticsBookedLoads(a.bookedCount) +
+                    (a.averageFare == null
+                        ? ''
+                        : l10n.analyticsAvgPerLoad(Fmt.npr(a.averageFare!))),
                 style: TextStyle(
                   color: AppColors.onPrimaryContainer,
                   fontSize: 14,
@@ -178,18 +182,21 @@ class _Content extends StatelessWidget {
           children: [
             Expanded(
               child: _StatTile(
-                label: 'Loads posted',
+                label: l10n.analyticsLoadsPosted,
                 value: '${a.total}',
-                caption: '$open open now',
+                caption: l10n.analyticsOpenNow(open),
               ),
             ),
             Space.h8,
             Expanded(
               child: _StatTile(
-                label: 'Delivered',
+                label: l10n.statusDelivered,
                 value: '${a.byStatus[ShipmentStatus.delivered]}',
-                caption:
-                    '${Fmt.number(double.parse(a.deliveredTonnes.toStringAsFixed(1)))} t moved',
+                caption: l10n.analyticsTonnesMoved(
+                  Fmt.number(
+                    double.parse(a.deliveredTonnes.toStringAsFixed(1)),
+                  ),
+                ),
               ),
             ),
           ],
@@ -199,26 +206,26 @@ class _Content extends StatelessWidget {
           children: [
             Expanded(
               child: _StatTile(
-                label: 'Bids received',
+                label: l10n.analyticsBidsReceived,
                 value: '${a.totalBids}',
-                caption: 'across ${a.biddedRequests} loads',
+                caption: l10n.analyticsAcrossLoads(a.biddedRequests),
               ),
             ),
             Space.h8,
             Expanded(
               child: _StatTile(
-                label: 'Avg. bids per load',
+                label: l10n.analyticsAvgBids,
                 value: a.averageBids == null
                     ? '—'
                     : a.averageBids!.toStringAsFixed(1),
-                caption: 'per posted load',
+                caption: l10n.analyticsPerPostedLoad,
               ),
             ),
           ],
         ),
         Space.v12,
         SectionCard(
-          title: 'Shipments by status',
+          title: l10n.analyticsByStatus,
           child: Column(
             children: [
               for (final e in ranked)
@@ -228,7 +235,7 @@ class _Content extends StatelessWidget {
         ),
         Space.v12,
         SectionCard(
-          title: 'Top routes',
+          title: l10n.analyticsTopRoutes,
           child: Column(
             children: [
               for (final (i, r) in a.topRoutes.indexed)
@@ -261,7 +268,7 @@ class _Content extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${r.count} ${r.count == 1 ? 'load' : 'loads'}',
+                        l10n.analyticsLoads(r.count),
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
@@ -339,7 +346,7 @@ class _StatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '${status.label}: $count',
+      label: l10n.analyticsStatusA11y(status.label, count),
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/common.dart';
@@ -38,15 +39,14 @@ Future<void> showRequestLimitSheet(
             ),
             Space.v16,
             Text(
-              blocked ? 'Request limit reached' : 'Mobile request limit',
+              blocked ? l10n.reviewLimitReached : l10n.limitTitle,
               style: Theme.of(sheetContext).textTheme.headlineSmall,
             ),
             Space.v8,
             Text(
               blocked
                   ? RequestLimit.message
-                  : 'You can have up to ${RequestLimit.max} open requests from the mobile app at a time. '
-                        'You are using ${usage.used} of ${usage.limit}.',
+                  : l10n.limitBody(RequestLimit.max, usage.used, usage.limit),
               style: TextStyle(
                 fontSize: 14.5,
                 height: 1.45,
@@ -56,9 +56,7 @@ Future<void> showRequestLimitSheet(
             if (blocked) ...[
               Space.v8,
               Text(
-                detailsSaved
-                    ? 'Your details are saved. You can submit as soon as a request is delivered, cancelled or expires.'
-                    : 'You can post a new load as soon as a request is delivered, cancelled or expires.',
+                detailsSaved ? l10n.limitDetailsSaved : l10n.limitCanPost,
                 style: TextStyle(
                   fontSize: 13.5,
                   height: 1.45,
@@ -77,15 +75,15 @@ Future<void> showRequestLimitSheet(
             ),
             Space.v6,
             Text(
-              '${usage.used} of ${usage.limit} in use',
+              l10n.homeUsedOfInUse(usage.used, usage.limit),
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
               ),
             ),
             Space.v20,
-            const Text(
-              'Counts toward the limit',
+            Text(
+              l10n.limitCounts,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Space.v8,
@@ -100,8 +98,8 @@ Future<void> showRequestLimitSheet(
               ],
             ),
             Space.v16,
-            const Text(
-              "Doesn't count",
+            Text(
+              l10n.limitDoesNotCount,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             Space.v8,
@@ -121,7 +119,7 @@ Future<void> showRequestLimitSheet(
                 Navigator.of(sheetContext).pop();
                 context.go(Routes.shipments);
               },
-              child: const Text('View my requests'),
+              child: Text(l10n.actionViewMyRequests),
             ),
             Space.v8,
             TextButton(
@@ -130,7 +128,7 @@ Future<void> showRequestLimitSheet(
                 foregroundColor: AppColors.textSecondary,
                 minimumSize: const Size.fromHeight(46),
               ),
-              child: const Text('Got it'),
+              child: Text(l10n.actionGotIt),
             ),
           ],
         ),

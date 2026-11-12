@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/common.dart';
@@ -10,46 +11,23 @@ import 'feedback_sheet.dart';
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
-  static const _faqs = [
-    (
-      'How do I post a load?',
-      'Tap Post Load, enter the route and pickup time, describe the cargo and choose a vehicle. '
-          'Review it and post. Carriers can bid straight away.',
-    ),
-    (
-      'Why can I only have 3 open requests?',
-      'From the mobile app you can have up to ${RequestLimit.max} requests that are awaiting bids, confirmed, scheduled '
-          'or in transit at once. Delivered, cancelled and expired requests free up a slot. '
-          'For more volume, use the LODBOD web platform.',
-    ),
-    (
-      'How do I choose a bid?',
-      'Open your shipment and tap Compare bids. You can sort by price, rating or delivery time and open any offer '
-          'for details. Nothing is booked until you confirm.',
-    ),
-    (
-      'Can I cancel a shipment?',
-      'Yes, until pickup. Open the shipment, tap the ⋮ menu and choose Cancel shipment. Open bids are declined.',
-    ),
-    (
-      'Where is my truck?',
-      'Booked shipments have a Track shipment screen with the route, checkpoints and estimated arrival. '
-          'In this version tracking is simulated from the schedule.',
-    ),
-    (
-      'Will I lose an unfinished load?',
-      'No. Drafts are saved to your account when you close Post Load or tap Save draft, so you can finish them later.',
-    ),
+  static final _faqs = [
+    (l10n.helpQ1, l10n.helpA1),
+    (l10n.helpQ2, l10n.helpA2(RequestLimit.max)),
+    (l10n.helpQ3, l10n.helpA3),
+    (l10n.helpQ4, l10n.helpA4),
+    (l10n.helpQ5, l10n.helpA5),
+    (l10n.helpQ6, l10n.helpA6),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const DetailAppBar(title: 'Help center'),
+      appBar: DetailAppBar(title: l10n.accountHelpCenter),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(Gap.page, Gap.sm, Gap.page, Gap.xl),
         children: [
-          const SectionHeader('Frequently asked', top: 0),
+          SectionHeader(l10n.helpFaq, top: 0),
           AppCard(
             padding: EdgeInsets.zero,
             child: Column(
@@ -105,11 +83,11 @@ class HelpScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Still need help?',
+                        l10n.helpStillNeed,
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        'Send us a message and the team will get back to you.',
+                        l10n.helpStillNeedBody,
                         style: TextStyle(
                           fontSize: 12.5,
                           color: AppColors.textSecondary,
@@ -120,7 +98,7 @@ class HelpScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () => showFeedbackSheet(context),
-                  child: const Text('Message'),
+                  child: Text(l10n.helpMessage),
                 ),
               ],
             ),

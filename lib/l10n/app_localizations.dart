@@ -98,6 +98,48 @@ abstract class AppLocalizations {
     Locale('ne'),
   ];
 
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @matches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get matches;
+
+  /// No description provided for @shipmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipment'**
+  String get shipmentTitle;
+
+  /// No description provided for @carrier.
+  ///
+  /// In en, this message translates to:
+  /// **'Carrier'**
+  String get carrier;
+
+  /// No description provided for @arrived.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrived'**
+  String get arrived;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
@@ -2069,7 +2111,7 @@ abstract class AppLocalizations {
   /// No description provided for @detailsCancelBookedBody.
   ///
   /// In en, this message translates to:
-  /// **'Your booking with {carrier} will be cancelled.'**
+  /// **'Your booking with {carrier} will be cancelled. This frees up one of your mobile requests.'**
   String detailsCancelBookedBody(String carrier);
 
   /// No description provided for @theCarrier.
@@ -2423,13 +2465,13 @@ abstract class AppLocalizations {
   /// No description provided for @over.
   ///
   /// In en, this message translates to:
-  /// **'over'**
+  /// **'above'**
   String get over;
 
   /// No description provided for @under.
   ///
   /// In en, this message translates to:
-  /// **'under'**
+  /// **'below'**
   String get under;
 
   /// No description provided for @offerConfirmNote.

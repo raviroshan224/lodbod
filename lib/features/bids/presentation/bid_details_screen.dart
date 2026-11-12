@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -44,11 +45,11 @@ class BidDetailsScreen extends ConsumerWidget {
       case (AsyncData(value: final s?), AsyncData(value: final bids)):
         final bid = bids.where((b) => b.id == bidId).firstOrNull;
         if (bid == null) {
-          body = const Center(
+          body = Center(
             child: EmptyView(
               icon: Icons.search_off_rounded,
-              title: 'Bid not found',
-              message: 'This bid may have been withdrawn.',
+              title: l10n.offerNotFound,
+              message: l10n.offerNotFoundBody,
             ),
           );
         } else {
@@ -72,11 +73,11 @@ class BidDetailsScreen extends ConsumerWidget {
           );
         }
       case (AsyncData(value: null), _):
-        body = const Center(
+        body = Center(
           child: EmptyView(
             icon: Icons.search_off_rounded,
-            title: 'Shipment not found',
-            message: 'It may have been removed.',
+            title: l10n.detailsNotFound,
+            message: l10n.detailsRemoved,
           ),
         );
       default:
@@ -85,7 +86,7 @@ class BidDetailsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: DetailAppBar(
-        title: 'Offer details',
+        title: l10n.offerTitle,
         subtitle: shipmentAsync.value?.reference,
       ),
       body: body,
@@ -117,9 +118,13 @@ class _Details extends StatelessWidget {
         if (status == BidStatus.accepted) ...[
           InlineBanner(
             tone: BannerTone.success,
-            title: 'You booked this carrier',
+            title: l10n.offerBooked,
             message: Fmt.sentence(
-              '${s.reference} is ${s.status.label.toLowerCase()} with ${bid.carrierName}',
+              l10n.offerBookedBody(
+                s.reference,
+                s.status.label.toLowerCase(),
+                bid.carrierName,
+              ),
             ),
           ),
           Space.v12,
@@ -127,8 +132,11 @@ class _Details extends StatelessWidget {
           InlineBanner(
             tone: BannerTone.info,
             message: s.acceptedBidId != null
-                ? 'Not selected: you booked another carrier for ${s.reference}.'
-                : '${s.reference} is ${s.status.label.toLowerCase()}, so this offer can no longer be accepted.',
+                ? l10n.offerNotSelectedBody(s.reference)
+                : l10n.offerClosedBody(
+                    s.reference,
+                    s.status.label.toLowerCase(),
+                  ),
           ),
           Space.v12,
         ],
@@ -151,7 +159,7 @@ class _Details extends StatelessWidget {
               RatingText(rating: bid.carrierRating, trips: bid.completedTrips),
               Space.v20,
               Text(
-                'Offered fare',
+                l10n.offerFare,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               Text(
@@ -167,32 +175,32 @@ class _Details extends StatelessWidget {
         ),
         Space.v12,
         SectionCard(
-          title: 'Offer',
+          title: l10n.offerSection,
           child: Column(
             children: [
               InfoRow(
-                'Delivery',
-                '${Fmt.days(bid.estimatedDeliveryDays)} after pickup',
+                l10n.bidDelivery,
+                l10n.offerAfterPickup(Fmt.days(bid.estimatedDeliveryDays)),
                 icon: Icons.timer_outlined,
               ),
               InfoRow(
-                'Arrives by',
-                '${Fmt.weekdayDayMonth(eta)} (estimate)',
+                l10n.offerArrivesBy,
+                l10n.offerEstimate(Fmt.weekdayDayMonth(eta)),
                 icon: Icons.flag_outlined,
               ),
               InfoRow(
-                'Vehicle',
+                l10n.stepVehicle,
                 bid.vehicleType.label,
                 icon: vehicleIcon(bid.vehicleType),
               ),
               InfoRow(
-                'Received',
+                l10n.offerReceived,
                 Fmt.relative(bid.createdAt),
                 icon: Icons.schedule_rounded,
               ),
               if (bid.note.isNotEmpty)
                 InfoRow(
-                  'Note',
+                  l10n.offerNote,
                   bid.note,
                   icon: Icons.chat_bubble_outline_rounded,
                 ),
@@ -201,15 +209,18 @@ class _Details extends StatelessWidget {
         ),
         Space.v12,
         SectionCard(
-          title: 'Your load',
+          title: l10n.offerYourLoad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               RouteText(s.pickup, s.destination),
               Space.v8,
-              InfoRow('Cargo', '${s.cargoDescription} · ${s.weightLabel}'),
-              InfoRow('Pickup', Fmt.dateTime(s.pickupAt)),
-              InfoRow('Requested', s.vehicleType.label),
+              InfoRow(
+                l10n.stepCargo,
+                l10n.bidsCargoWeight(s.cargoDescription, s.weightLabel),
+              ),
+              InfoRow(l10n.offerPickup, Fmt.dateTime(s.pickupAt)),
+              InfoRow(l10n.offerRequested, s.vehicleType.label),
             ],
           ),
         ),
@@ -227,8 +238,11 @@ class _BudgetDelta extends StatelessWidget {
   Widget build(BuildContext context) {
     final diff = fare - budget;
     final text = diff == 0
-        ? 'Matches your budget'
-        : '${Fmt.npr(diff.abs())} ${diff > 0 ? 'above' : 'below'} your budget';
+        ? l10n.offerMatchesBudget
+        : l10n.offerDiffBudget(
+            Fmt.npr(diff.abs()),
+            diff > 0 ? l10n.over : l10n.under,
+          );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -287,7 +301,7 @@ class _AcceptBar extends ConsumerWidget {
           SizedBox(width: 6),
           Flexible(
             child: Text(
-              'You confirm before anything is booked',
+              l10n.offerConfirmNote,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: AppColors.textMuted),
             ),
@@ -295,7 +309,7 @@ class _AcceptBar extends ConsumerWidget {
         ],
       ),
       child: PrimaryButton(
-        label: 'Accept for ${Fmt.npr(bid.fare)}',
+        label: l10n.acceptFor(Fmt.npr(bid.fare)),
         icon: Icons.check_rounded,
         loading: running == ShipmentAction.acceptBid,
         onPressed: running == null ? accept : null,

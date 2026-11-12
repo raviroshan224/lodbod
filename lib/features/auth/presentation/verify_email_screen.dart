@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/feedback.dart';
@@ -61,11 +62,11 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       final user = await ref.read(authRepositoryProvider).reload();
       if (!mounted) return;
       if (user?.emailVerified ?? false) {
-        showMessage(context, 'Email verified. Welcome to LODBOD!');
+        showMessage(context, l10n.verifySuccess);
         context.go(Routes.home);
       } else {
         setState(() {
-          _message = "We couldn't confirm it yet. Open the link in the email, then try again.";
+          _message = l10n.verifyNotYet;
           _messageIsError = true;
         });
       }
@@ -87,7 +88,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       if (!mounted) return;
       _startCooldown();
       setState(() {
-        _message = 'Verification email sent again.';
+        _message = l10n.verifyResent;
         _messageIsError = false;
       });
     } catch (e) {
@@ -106,11 +107,11 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final email = session is SessionReady ? session.user.email : '';
 
     return AuthScaffold(
-      step: 'Step 2 of 2',
+      step: l10n.stepOf(2, 2),
       badge: const AuthIconBadge(Icons.mark_email_unread_outlined),
-      title: 'Verify your email',
+      title: l10n.verifyTitle,
       subtitleSpan: TextSpan(
-        text: 'We sent a verification link to ',
+        text: l10n.verifySentTo,
         children: [
           TextSpan(
             text: email,
@@ -119,7 +120,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               color: AppColors.textPrimary,
             ),
           ),
-          const TextSpan(text: '. Open it to activate your account.'),
+          TextSpan(text: l10n.verifyOpenIt),
         ],
       ),
       children: [
@@ -131,7 +132,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           Space.v16,
         ],
         PrimaryButton(
-          label: "I've verified my email",
+          label: l10n.verifyDone,
           loading: _checking,
           onPressed: _check,
         ),
@@ -141,7 +142,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              "Didn't get it?",
+              l10n.verifyDidntGet,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
             ),
             TextButton(
@@ -151,8 +152,10 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               ),
               child: Text(
                 _secondsLeft > 0
-                    ? 'Resend in 0:${_secondsLeft.toString().padLeft(2, '0')}'
-                    : 'Resend email',
+                    ? l10n.verifyResendIn(
+                        _secondsLeft.toString().padLeft(2, '0'),
+                      )
+                    : l10n.actionResendEmail,
               ),
             ),
           ],
@@ -161,7 +164,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
         TextButton(
           onPressed: () => context.go(Routes.home),
           style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
-          child: const Text('Skip for now'),
+          child: Text(l10n.actionSkipForNow),
         ),
       ],
     );

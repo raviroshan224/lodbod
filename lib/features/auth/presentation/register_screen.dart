@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/validators.dart';
@@ -96,9 +97,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return AuthScaffold(
       showBack: true,
-      step: 'Step 1 of 2',
-      title: 'Create your account',
-      subtitle: 'Post loads and compare carrier bids in minutes.',
+      step: l10n.stepOf(1, 2),
+      title: l10n.registerTitle,
+      subtitle: l10n.registerSubtitle,
       children: [
         Form(
           key: _formKey,
@@ -109,20 +110,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const FieldLabel.plain('Full name'),
+                FieldLabel.plain(l10n.fieldFullName),
                 TextFormField(
                   controller: _name,
                   enabled: !_submitting,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Aarav Shrestha',
-                  ),
+                  decoration: InputDecoration(hintText: l10n.hintName),
                   validator: Validators.name,
                 ),
                 Space.v20,
-                const FieldLabel.plain('Phone number'),
+                FieldLabel.plain(l10n.fieldPhone),
                 TextFormField(
                   controller: _phone,
                   enabled: !_submitting,
@@ -140,7 +139,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (v) => Validators.phone(v),
                 ),
                 Space.v20,
-                const FieldLabel.plain('Email'),
+                FieldLabel.plain(l10n.fieldEmail),
                 TextFormField(
                   controller: _email,
                   enabled: !_submitting,
@@ -148,26 +147,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textInputAction: TextInputAction.next,
                   autocorrect: false,
                   autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                    hintText: 'you@company.com',
-                    helperText: "We'll send a verification link here.",
+                  decoration: InputDecoration(
+                    hintText: l10n.hintEmail,
+                    helperText: l10n.registerVerifyHelper,
                   ),
                   validator: Validators.email,
                 ),
                 Space.v20,
-                const FieldLabel('Company name', isRequired: false),
+                FieldLabel(l10n.fieldCompany, isRequired: false),
                 TextFormField(
                   controller: _company,
                   enabled: !_submitting,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.organizationName],
-                  decoration: const InputDecoration(
-                    hintText: 'e.g. Himal Traders Pvt. Ltd.',
-                  ),
+                  decoration: InputDecoration(hintText: l10n.hintCompany),
                 ),
                 Space.v20,
-                const FieldLabel.plain('Password'),
+                FieldLabel.plain(l10n.fieldPassword),
                 PasswordField(
                   controller: _password,
                   enabled: !_submitting,
@@ -204,16 +201,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   padding: const EdgeInsets.only(top: 6, bottom: 6),
                   child: Text.rich(
                     TextSpan(
-                      text: 'I agree to the ',
+                      text: l10n.legalIAgree,
                       children: [
                         TextSpan(
-                          text: 'Terms of Service',
+                          text: l10n.legalTerms,
                           style: link,
                           recognizer: _terms,
                         ),
-                        const TextSpan(text: ' and '),
+                        TextSpan(text: l10n.legalAnd),
                         TextSpan(
-                          text: 'Privacy Policy',
+                          text: l10n.legalPrivacy,
                           style: link,
                           recognizer: _privacy,
                         ),
@@ -231,18 +228,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
         ),
         if (_submittedOnce && !_accepted)
-          const FieldErrorText('Please accept the terms to create an account'),
+          FieldErrorText(l10n.registerAcceptTerms),
         Space.v24,
         if (_error != null) ...[InlineBanner(message: _error!), Space.v16],
         PrimaryButton(
-          label: 'Create account',
+          label: l10n.actionCreateAccount,
           loading: _submitting,
           onPressed: _submit,
         ),
         Space.v16,
         AuthSwitchPrompt(
-          prompt: 'Already have an account?',
-          action: 'Log in',
+          prompt: l10n.registerHaveAccount,
+          action: l10n.actionLogIn,
           onPressed: _submitting ? null : () => context.go(Routes.login),
         ),
       ],

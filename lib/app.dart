@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'core/l10n/strings.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_spacing.dart';
@@ -33,23 +34,23 @@ class _LodbodAppState extends ConsumerState<LodbodApp>
     super.dispose();
   }
 
-  /// "System" appearance follows the phone.
+  /// l10n.appearanceSystem appearance follows the phone.
   @override
   void didChangePlatformBrightness() => _applyPalette();
 
   Brightness get _platformBrightness =>
       WidgetsBinding.instance.platformDispatcher.platformBrightness;
 
-  /// Switches the static palette and rebuilds every widget. Widgets read
+  /// Switches the static palette and language, then rebuilds every widget. Widgets read
   /// `AppColors` directly rather than through an inherited theme, so no
   /// dependency tells them it changed; marking the tree dirty once does.
   void _applyPalette() {
-    final next = ref
-        .read(settingsProvider)
-        .appearance
-        .resolve(_platformBrightness);
-    if (next == AppColors.brightness) return;
+    final settings = ref.read(settingsProvider);
+    final next = settings.appearance.resolve(_platformBrightness);
+    final languageChanged = settings.language != AppLanguage.current;
+    if (next == AppColors.brightness && !languageChanged) return;
     AppColors.brightness = next;
+    AppLanguage.current = settings.language;
     void rebuild(Element e) {
       e.markNeedsBuild();
       e.visitChildren(rebuild);
@@ -62,11 +63,10 @@ class _LodbodAppState extends ConsumerState<LodbodApp>
   @override
   Widget build(BuildContext context) {
     ref.listen(settingsProvider, (_, _) => _applyPalette());
-    final brightness = ref
-        .watch(settingsProvider)
-        .appearance
-        .resolve(_platformBrightness);
+    final settings = ref.watch(settingsProvider);
+    final brightness = settings.appearance.resolve(_platformBrightness);
     AppColors.brightness = brightness;
+    AppLanguage.current = settings.language;
     final theme = AppTheme.build(brightness);
     SystemChrome.setSystemUIOverlayStyle(AppTheme.systemBars);
 
@@ -74,11 +74,7 @@ class _LodbodAppState extends ConsumerState<LodbodApp>
       switch (next) {
         case SessionWrongRole():
           // Role-based access: only shipper accounts may use this app.
-          ref
-              .read(authNoticeProvider.notifier)
-              .show(
-                'This app is for shipper accounts. Carriers use the LODBOD Carrier app.',
-              );
+          ref.read(authNoticeProvider.notifier).show(l10n.appShipperOnly);
           ref.read(authActionsProvider).signOut().ignore();
         case SessionReady(:final profile) when previous is! SessionReady:
           // Once per sign-in: bring untouched sample data up to date, expire
@@ -99,10 +95,18 @@ class _LodbodAppState extends ConsumerState<LodbodApp>
     });
 
     return MaterialApp.router(
-      title: 'LODBOD Shipper',
+      title: l10n.appTitle,
       debugShowCheckedModeBanner: false,
       theme: theme,
       routerConfig: ref.watch(routerProvider),
+      locale: settings.language.locale,
+      // material_ui has its own MaterialLocalizations type, so its global
+      // delegates (not flutter_localizations') must supply Nepali.
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       // Screens without an AppBar inherit this, so the system bars stay
       // readable whatever the phone's own theme is.
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
@@ -133,12 +137,12 @@ class StartupErrorApp extends StatelessWidget {
                 BrandMark(size: 64),
                 Space.v24,
                 Text(
-                  "LODBOD couldn't start",
+                  l10n.appCouldNotStart,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 Space.v8,
                 Text(
-                  'Please check your connection and restart the app.',
+                  l10n.appCheckConnectionRestart,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textSecondary),
                 ),

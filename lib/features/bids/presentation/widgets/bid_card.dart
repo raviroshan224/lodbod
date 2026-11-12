@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
@@ -41,8 +42,10 @@ class BidCard extends StatelessWidget {
   /// ranked: a cheaper offer is not automatically the better one.
   static String budgetDelta(int fare, int budget) {
     final diff = fare - budget;
-    if (diff == 0) return 'Matches';
-    return diff < 0 ? '${Fmt.npr(-diff)} under' : '${Fmt.npr(diff)} over';
+    if (diff == 0) return l10n.matches;
+    return diff < 0
+        ? l10n.bidUnder(Fmt.npr(-diff))
+        : l10n.bidOver(Fmt.npr(diff));
   }
 
   @override
@@ -57,8 +60,12 @@ class BidCard extends StatelessWidget {
         onTap: onTap,
         borderColor: accepted ? AppColors.success : null,
         padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.lg, Gap.lg, Gap.md),
-        semanticLabel:
-            '${bid.carrierName}, ${Fmt.npr(bid.fare)}, ${Fmt.days(bid.estimatedDeliveryDays)}, rated ${bid.carrierRating}',
+        semanticLabel: l10n.bidA11y(
+          bid.carrierName,
+          Fmt.npr(bid.fare),
+          Fmt.days(bid.estimatedDeliveryDays),
+          '${bid.carrierRating}',
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -119,26 +126,30 @@ class BidCard extends StatelessWidget {
                   // the status badge takes that spot, show it here instead.
                   if (!pending)
                     Expanded(
-                      child: _Metric(label: 'Fare', value: Fmt.npr(bid.fare)),
+                      child: _Metric(
+                        label: l10n.acceptFare,
+                        value: Fmt.npr(bid.fare),
+                      ),
                     )
                   else if (budget != null)
                     Expanded(
                       child: _Metric(
-                        label: 'Budget',
+                        label: l10n.reviewBudget,
                         value: budgetDelta(bid.fare, budget!),
                       ),
                     ),
                   Expanded(
                     child: _Metric(
-                      label: 'Delivery',
+                      label: l10n.bidDelivery,
                       value: Fmt.days(bid.estimatedDeliveryDays),
-                      caption:
-                          'by ${Fmt.dayMonth(bid.estimatedDeliveryFrom(pickupAt))}',
+                      caption: l10n.bidBy(
+                        Fmt.dayMonth(bid.estimatedDeliveryFrom(pickupAt)),
+                      ),
                     ),
                   ),
                   Expanded(
                     child: _Metric(
-                      label: 'Vehicle',
+                      label: l10n.stepVehicle,
                       value: bid.vehicleType.label,
                     ),
                   ),
@@ -148,7 +159,7 @@ class BidCard extends StatelessWidget {
             Space.v12,
             if (showActions) ...[
               Text(
-                'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
+                l10n.bidReceived(Fmt.relative(bid.createdAt).toLowerCase()),
                 style: TextStyle(color: AppColors.textMuted, fontSize: 12.5),
               ),
               Space.v12,
@@ -160,7 +171,7 @@ class BidCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(44),
                       ),
-                      child: const Text('Details'),
+                      child: Text(l10n.actionDetails),
                     ),
                   ),
                   Space.h8,
@@ -178,7 +189,7 @@ class BidCard extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.check_rounded, size: 20),
-                      label: const Text('Accept'),
+                      label: Text(l10n.actionAccept),
                     ),
                   ),
                 ],
@@ -188,15 +199,17 @@ class BidCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Received ${Fmt.relative(bid.createdAt).toLowerCase()}',
+                      l10n.bidReceived(
+                        Fmt.relative(bid.createdAt).toLowerCase(),
+                      ),
                       style: TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12.5,
                       ),
                     ),
                   ),
-                  const Text(
-                    'Details',
+                  Text(
+                    l10n.actionDetails,
                     style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.w600,
@@ -225,7 +238,7 @@ class RatingText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Rated ${rating.toStringAsFixed(1)} out of 5 from $trips trips',
+      label: l10n.bidRatedA11y(rating.toStringAsFixed(1), trips),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -238,7 +251,7 @@ class RatingText extends StatelessWidget {
           ),
           Flexible(
             child: Text(
-              '  ·  $trips trips',
+              l10n.bidTrips(trips),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),

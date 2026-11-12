@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -93,14 +94,14 @@ class ShipmentPostedScreen extends ConsumerWidget {
                           ),
                           Space.v24,
                           Text(
-                            'Load posted',
+                            l10n.postedTitle,
                             style: Theme.of(context).textTheme.headlineMedium,
                           ),
                           Space.v8,
                           Text(
                             shipment == null
-                                ? 'Your request is live.'
-                                : "${shipment.reference} is live. We'll let you know as soon as the first bid arrives.",
+                                ? l10n.postedLive
+                                : l10n.postedLiveBody(shipment.reference),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -115,7 +116,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'REQUEST CREATED',
+                                    l10n.postedRequestCreated,
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
@@ -145,15 +146,18 @@ class ShipmentPostedScreen extends ConsumerWidget {
                                   ),
                                   Space.v8,
                                   InfoRow(
-                                    'Pickup',
+                                    l10n.offerPickup,
                                     '${Fmt.weekdayDayMonth(shipment.pickupAt)}, ${Fmt.time(shipment.pickupAt)}',
                                   ),
                                   InfoRow(
-                                    'Cargo',
-                                    '${shipment.cargoDescription} · ${shipment.weightLabel}',
+                                    l10n.stepCargo,
+                                    l10n.bidsCargoWeight(
+                                      shipment.cargoDescription,
+                                      shipment.weightLabel,
+                                    ),
                                   ),
                                   InfoRow(
-                                    'Vehicle',
+                                    l10n.stepVehicle,
                                     shipment.vehicleType.label,
                                   ),
                                 ],
@@ -174,7 +178,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         PrimaryButton(
-                          label: 'View request & bids',
+                          label: l10n.postedViewRequest,
                           onPressed: () =>
                               context.go(Routes.shipment(shipmentId)),
                         ),
@@ -187,7 +191,7 @@ class ShipmentPostedScreen extends ConsumerWidget {
                           style: TextButton.styleFrom(
                             minimumSize: const Size.fromHeight(46),
                           ),
-                          child: const Text('Post another load'),
+                          child: Text(l10n.postedPostAnother),
                         ),
                       ],
                     ),

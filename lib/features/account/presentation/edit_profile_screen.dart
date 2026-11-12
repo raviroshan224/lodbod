@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -66,7 +67,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             previousPhone: user.phone,
           );
       if (!mounted) return;
-      showMessage(context, 'Profile updated');
+      showMessage(context, l10n.profileUpdated);
       context.pop();
     } catch (e) {
       if (mounted) setState(() => _error = mapError(e).message);
@@ -79,7 +80,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     return Scaffold(
-      appBar: const DetailAppBar(title: 'Profile & company'),
+      appBar: DetailAppBar(title: l10n.accountProfile),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -98,12 +99,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             Space.v8,
             Text(
-              'Carriers see your name and company on the loads you post.',
+              l10n.profileNote,
               style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             Space.v24,
-            const FieldLabel.plain('Full name'),
+            FieldLabel.plain(l10n.fieldFullName),
             TextFormField(
               controller: _name,
               enabled: !_saving,
@@ -113,7 +114,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               validator: Validators.name,
             ),
             Space.v20,
-            const FieldLabel('Company name', isRequired: false),
+            FieldLabel(l10n.fieldCompany, isRequired: false),
             TextFormField(
               controller: _company,
               enabled: !_saving,
@@ -121,7 +122,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               textInputAction: TextInputAction.next,
             ),
             Space.v20,
-            const FieldLabel.plain('Phone number'),
+            FieldLabel.plain(l10n.fieldPhone),
             TextFormField(
               controller: _phone,
               enabled: !_saving,
@@ -130,21 +131,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]')),
                 LengthLimitingTextInputFormatter(16),
               ],
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: FieldPrefix.dialCode(),
-                helperText: 'You can log in with this number.',
+                helperText: l10n.profilePhoneHelper,
               ),
               validator: (v) => Validators.phone(v),
             ),
             Space.v20,
-            const FieldLabel.plain('Email'),
+            FieldLabel.plain(l10n.fieldEmail),
             TextFormField(
               initialValue: user.email,
               enabled: false,
               style: TextStyle(color: AppColors.textSecondary),
-              decoration: const InputDecoration(
-                helperText: 'Your sign-in email. Contact support to change it.',
-              ),
+              decoration: InputDecoration(helperText: l10n.profileEmailHelper),
             ),
             if (_error != null) ...[Space.v16, InlineBanner(message: _error!)],
           ],
@@ -152,7 +151,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       ),
       bottomNavigationBar: BottomActionBar(
         child: PrimaryButton(
-          label: 'Save changes',
+          label: l10n.actionSaveChanges,
           loading: _saving,
           onPressed: _save,
         ),

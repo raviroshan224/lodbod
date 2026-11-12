@@ -10,6 +10,27 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get back => 'Back';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get matches => 'Matches';
+
+  @override
+  String get shipmentTitle => 'Shipment';
+
+  @override
+  String get carrier => 'Carrier';
+
+  @override
+  String get arrived => 'Arrived';
+
+  @override
   String get appTitle => 'LODBOD Shipper';
 
   @override
@@ -1185,7 +1206,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String detailsCancelBookedBody(String carrier) {
-    return 'Your booking with $carrier will be cancelled.';
+    return 'Your booking with $carrier will be cancelled. This frees up one of your mobile requests.';
   }
 
   @override
@@ -1424,10 +1445,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get over => 'over';
+  String get over => 'above';
 
   @override
-  String get under => 'under';
+  String get under => 'below';
 
   @override
   String get offerConfirmNote => 'You confirm before anything is booked';

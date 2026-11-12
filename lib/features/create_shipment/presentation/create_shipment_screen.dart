@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/constants/locations.dart';
 import '../../../core/errors/app_exception.dart';
+import '../../../core/l10n/strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
@@ -45,7 +46,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
           .read(createShipmentProvider.notifier)
           .restoreSavedDraft();
       if (restored && mounted) {
-        showMessage(context, 'Picked up where you left off');
+        showMessage(context, l10n.postResumed);
       }
     });
   }
@@ -56,7 +57,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     try {
       await ref.read(createShipmentProvider.notifier).saveDraft();
       if (mounted && !quiet) {
-        showMessage(context, 'Draft saved. Finish it any time from Post Load.');
+        showMessage(context, l10n.postDraftSaved);
       }
     } catch (e) {
       if (mounted) showMessage(context, mapError(e).message, isError: true);
@@ -70,7 +71,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
     if (controller.hasUserInput) {
       // Never lose what was typed: keep it on the account too.
       controller.saveDraft().ignore();
-      showMessage(context, 'Draft saved');
+      showMessage(context, l10n.postDraftSavedShort);
     }
     context.canPop() ? context.pop() : context.go(Routes.home);
   }
@@ -78,10 +79,10 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
   Future<void> _clear() async {
     final ok = await confirmAction(
       context,
-      title: 'Start over?',
-      message: 'Everything you entered for this load will be cleared, including the saved draft.',
-      confirmLabel: 'Clear form',
-      cancelLabel: 'Keep editing',
+      title: l10n.postStartOverTitle,
+      message: l10n.postStartOverBody,
+      confirmLabel: l10n.actionClearForm,
+      cancelLabel: l10n.actionKeepEditing,
       destructive: true,
       icon: Icons.restart_alt_rounded,
     );
@@ -119,8 +120,8 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
       },
       child: Scaffold(
         appBar: DetailAppBar(
-          title: 'Post a load',
-          subtitle: 'Posting as ${user.displayCompany}',
+          title: l10n.actionPostALoad,
+          subtitle: l10n.postPostingAs(user.displayCompany),
           closeIcon: true,
           onBack: _close,
           actions: [
@@ -133,19 +134,19 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.bookmark_border_rounded, size: 18),
-              label: const Text('Save draft'),
+              label: Text(l10n.actionSaveDraft),
             ),
             PopupMenuButton<String>(
-              tooltip: 'More',
+              tooltip: l10n.more,
               icon: const Icon(Icons.more_vert_rounded),
               position: PopupMenuPosition.under,
               onSelected: (_) => _clear(),
-              itemBuilder: (_) => const [
+              itemBuilder: (_) => [
                 PopupMenuItem(
                   value: 'clear',
                   child: ListTile(
                     leading: Icon(Icons.restart_alt_rounded),
-                    title: Text('Start over'),
+                    title: Text(l10n.actionStartOver),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
@@ -159,7 +160,7 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
               current: state.step.index,
               titles: [
                 for (final s in DraftStep.values) s.shortTitle,
-                'Review',
+                l10n.stepReview,
               ],
               onTapStep: (i) => controller.goTo(DraftStep.values[i]),
             ),
@@ -193,12 +194,12 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
                         state.step == DraftStep.route) ...[
                       InlineBanner(
                         tone: BannerTone.warning,
-                        title: 'All 3 mobile requests are in use',
-                        message: 'Prepare it now and post it once one of your requests is delivered or cancelled.',
+                        title: l10n.postAllInUse,
+                        message: l10n.postAllInUseBody,
                         action: GestureDetector(
                           onTap: () => showRequestLimitSheet(context, usage),
                           child: Text(
-                            'How it works',
+                            l10n.actionHowItWorks,
                             style: TextStyle(
                               color: AppColors.warning,
                               fontWeight: FontWeight.w800,
@@ -242,8 +243,11 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
         bottomNavigationBar: BottomActionBar(
           child: PrimaryButton(
             label: isLast
-                ? 'Review request'
-                : 'Continue to ${DraftStep.values[state.step.index + 1].shortTitle.toLowerCase()}',
+                ? l10n.actionReviewRequest
+                : l10n.actionContinueTo(
+                    DraftStep.values[state.step.index + 1].shortTitle
+                        .toLowerCase(),
+                  ),
             trailingIcon: Icons.arrow_forward_rounded,
             onPressed: _continue,
           ),
@@ -285,7 +289,7 @@ class _DoneStep extends StatelessWidget {
     return AppCard(
       onTap: onEdit,
       padding: const EdgeInsets.fromLTRB(Gap.lg, 12, Gap.sm, 12),
-      semanticLabel: '${step.title}: $_summary. Edit',
+      semanticLabel: l10n.postDoneA11y(step.title, _summary),
       child: Row(
         children: [
           Container(
@@ -325,7 +329,7 @@ class _DoneStep extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(onPressed: onEdit, child: const Text('Edit')),
+          TextButton(onPressed: onEdit, child: Text(l10n.actionEdit)),
         ],
       ),
     );
@@ -395,7 +399,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
       initialDate: initial,
       firstDate: today,
       lastDate: today.add(const Duration(days: ShipmentDraft.maxDaysAhead)),
-      helpText: 'Pickup date',
+      helpText: l10n.sortPickupDate,
     );
     if (picked != null) _controller.selectPickupDate(picked);
   }
@@ -414,18 +418,14 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
-      helpText: 'Pickup time',
+      helpText: l10n.postPickupTime,
     );
     if (picked == null || !mounted) return;
     final accepted = _controller.selectPickupTime(
       PickupTime(picked.hour, picked.minute),
     );
     if (!accepted) {
-      showMessage(
-        context,
-        'That time has already passed today. Choose a later time.',
-        isError: true,
-      );
+      showMessage(context, l10n.postTimePassed, isError: true);
     }
   }
 
@@ -446,20 +446,20 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
     final now = ref.read(clockProvider)();
     final today = DateTime(now.year, now.month, now.day);
     final quickDates = [
-      ('Today', today),
-      ('Tomorrow', today.add(const Duration(days: 1))),
-      ('+2 days', today.add(const Duration(days: 2))),
+      (l10n.postToday, today),
+      (l10n.postTomorrow, today.add(const Duration(days: 1))),
+      (l10n.postPlus2Days, today.add(const Duration(days: 2))),
     ];
     final selectedDate = draft.pickupDate;
     final isCustomDate =
         selectedDate != null &&
         !quickDates.any((q) => DateUtils.isSameDay(q.$2, selectedDate));
 
-    const quickTimes = [
-      ('Morning', PickupTime(8, 0)),
-      ('Midday', PickupTime(12, 0)),
-      ('Afternoon', PickupTime(15, 0)),
-      ('Evening', PickupTime(18, 0)),
+    final quickTimes = [
+      (l10n.postMorning, PickupTime(8, 0)),
+      (l10n.postMidday, PickupTime(12, 0)),
+      (l10n.postAfternoon, PickupTime(15, 0)),
+      (l10n.postEvening, PickupTime(18, 0)),
     ];
     final selectedTime = draft.pickupTime;
     final isCustomTime =
@@ -508,7 +508,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                 children: [
                   _CityField(
                     controller: _pickup,
-                    hint: 'Pickup city',
+                    hint: l10n.postPickupCity,
                     errorText: errors[DraftField.pickup],
                     onChanged: (v) =>
                         _controller.edit((d) => d.copyWith(pickup: v)),
@@ -516,7 +516,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                   Space.v8,
                   _CityField(
                     controller: _destination,
-                    hint: 'Destination city',
+                    hint: l10n.postDestinationCity,
                     errorText: errors[DraftField.destination],
                     onChanged: (v) =>
                         _controller.edit((d) => d.copyWith(destination: v)),
@@ -528,7 +528,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
               padding: const EdgeInsets.only(left: 6, top: 30),
               child: CircleIconButton(
                 icon: Icons.swap_vert_rounded,
-                tooltip: 'Swap pickup and destination',
+                tooltip: l10n.postSwap,
                 size: 40,
                 onPressed: _swap,
               ),
@@ -548,7 +548,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                   child: Padding(
                     padding: EdgeInsets.only(right: 4),
                     child: Text(
-                      'RECENT',
+                      l10n.postRecent,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -574,7 +574,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
           ),
         ),
         Space.v20,
-        const FieldLabel('Pickup date'),
+        FieldLabel(l10n.sortPickupDate),
         Wrap(
           spacing: Gap.sm,
           runSpacing: Gap.sm,
@@ -590,7 +590,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
             ChoicePill(
               label: isCustomDate
                   ? Fmt.weekdayDayMonth(selectedDate)
-                  : 'Pick date',
+                  : l10n.postPickDate,
               icon: Icons.calendar_month_outlined,
               selected: isCustomDate,
               onTap: () => _pickDate(today, selectedDate),
@@ -607,7 +607,7 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
           ),
         FieldErrorText(errors[DraftField.pickupDate]),
         Space.v20,
-        const FieldLabel('Pickup time'),
+        FieldLabel(l10n.postPickupTime),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
@@ -627,8 +627,8 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
                 onTap: () => _controller.selectPickupTime(time),
               ),
             ChoicePill(
-              label: isCustomTime ? _hhmm(selectedTime) : 'Exact',
-              caption: isCustomTime ? 'custom' : 'pick time',
+              label: isCustomTime ? _hhmm(selectedTime) : l10n.postExact,
+              caption: isCustomTime ? 'custom' : l10n.postPickTime,
               selected: isCustomTime,
               onTap: () => _pickTime(selectedTime, isToday: isToday),
             ),
@@ -639,8 +639,8 @@ class _RouteStepState extends ConsumerState<_RouteStep> {
             padding: const EdgeInsets.only(top: 6, left: 4),
             child: Text(
               allSlotsPassed
-                  ? "Today's usual slots have passed. Pick an exact time or another day."
-                  : 'Earlier times today have passed. Pick a later slot or an exact time.',
+                  ? l10n.postSlotsPassedAll
+                  : l10n.postSlotsPassedSome,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
@@ -789,7 +789,7 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const FieldLabel('Material'),
+        FieldLabel(l10n.postMaterial),
         Wrap(
           spacing: Gap.sm,
           runSpacing: Gap.sm,
@@ -805,7 +805,7 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
         ),
         FieldErrorText(errors[DraftField.category]),
         Space.v20,
-        const FieldLabel('What are you shipping?'),
+        FieldLabel(l10n.postWhatShipping),
         TextField(
           controller: _description,
           textCapitalization: TextCapitalization.sentences,
@@ -813,7 +813,7 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
           maxLength: 80,
           onChanged: (v) => controller.edit((d) => d.copyWith(description: v)),
           decoration: InputDecoration(
-            hintText: 'e.g. 240 cement bags, steel pipes',
+            hintText: l10n.postWhatShippingHint,
             prefixIcon: const Icon(Icons.inventory_2_outlined, size: 20),
             errorText: errors[DraftField.description],
             counterText: '',
@@ -825,7 +825,7 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Expanded(child: FieldLabel('Total weight')),
+            Expanded(child: FieldLabel(l10n.postTotalWeight)),
             _UnitToggle(
               selected: draft.weightUnit,
               onChanged: (u) =>
@@ -847,7 +847,7 @@ class _CargoStepState extends ConsumerState<_CargoStep> {
           ],
           onChanged: (v) => controller.edit((d) => d.copyWith(weightText: v)),
           decoration: InputDecoration(
-            hintText: 'e.g. 12',
+            hintText: l10n.postWeightHint,
             prefixIcon: const Icon(Icons.scale_outlined, size: 20),
             suffixText: draft.weightUnit == WeightUnit.tonne ? 'tonnes' : 'kg',
             errorText: errors[DraftField.weight],
@@ -905,7 +905,7 @@ class _UnitToggle extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
             child: Text(
-              unit == WeightUnit.tonne ? 'Tonnes' : 'kg',
+              unit == WeightUnit.tonne ? l10n.unitTonnes : 'kg',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -966,7 +966,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const FieldLabel('Vehicle type'),
+        FieldLabel(l10n.postVehicleType),
         GridView.count(
           crossAxisCount: 4,
           shrinkWrap: true,
@@ -988,7 +988,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
         ),
         FieldErrorText(errors[DraftField.vehicle]),
         Space.v20,
-        const FieldLabel('Your budget', isRequired: false),
+        FieldLabel(l10n.detailsYourBudget, isRequired: false),
         TextField(
           controller: _fare,
           keyboardType: TextInputType.number,
@@ -1000,21 +1000,20 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           decoration: InputDecoration(
             hintText: 'e.g. 30000',
             prefixIcon: const FieldPrefix.rupees(),
-            helperText:
-                'Carriers see this as a guide and can bid above or below it.',
+            helperText: l10n.postBudgetHelper,
             helperMaxLines: 2,
             errorText: errors[DraftField.expectedFare],
           ),
         ),
         Space.v16,
-        const FieldLabel('Pickup contact', isRequired: false),
+        FieldLabel(l10n.postPickupContact, isRequired: false),
         TextField(
           controller: _contactName,
           textCapitalization: TextCapitalization.words,
           textInputAction: TextInputAction.next,
           onChanged: (v) => controller.edit((d) => d.copyWith(contactName: v)),
           decoration: InputDecoration(
-            hintText: 'Name at the pickup point',
+            hintText: l10n.postContactHint,
             prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
             errorText: errors[DraftField.contactName],
           ),
@@ -1036,7 +1035,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           ),
         ),
         Space.v16,
-        const FieldLabel('Notes for carriers', isRequired: false),
+        FieldLabel(l10n.postNotes, isRequired: false),
         TextField(
           controller: _notes,
           minLines: 2,
@@ -1045,7 +1044,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           textCapitalization: TextCapitalization.sentences,
           onChanged: (v) => controller.edit((d) => d.copyWith(notes: v)),
           decoration: InputDecoration(
-            hintText: 'Loading instructions, packaging, gate timings…',
+            hintText: l10n.postNotesHint,
             errorText: errors[DraftField.notes],
           ),
         ),

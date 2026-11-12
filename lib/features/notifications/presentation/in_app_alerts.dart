@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/l10n/strings.dart';
 import '../../../core/widgets/feedback.dart';
 import '../../../routing/routes.dart';
 import '../../auth/presentation/session.dart';
@@ -47,11 +48,18 @@ class _InAppAlertsState extends ConsumerState<InAppAlerts> {
     if (bids.isNotEmpty) {
       final shipmentId = bids.first.shipmentId;
       final count = bids.where((a) => a.shipmentId == shipmentId).length;
-      final reference = bids.first.title.replaceFirst('New bid on ', '');
+      final reference = ref
+          .read(shipmentsProvider)
+          .value
+          ?.where((s) => s.id == shipmentId)
+          .firstOrNull
+          ?.reference;
       showMessage(
         context,
-        count > 1 ? '$count new bids on $reference' : bids.first.title,
-        actionLabel: 'View',
+        reference == null
+            ? bids.first.title
+            : l10n.notifNewBidsOn(count, reference),
+        actionLabel: l10n.notifView,
         onAction: () => GoRouter.of(context).push(Routes.bids(shipmentId)),
       );
       return;
@@ -70,7 +78,7 @@ class _InAppAlertsState extends ConsumerState<InAppAlerts> {
       showMessage(
         context,
         latest.title,
-        actionLabel: 'View',
+        actionLabel: l10n.notifView,
         onAction: () =>
             GoRouter.of(context).push(Routes.shipment(latest.shipmentId)),
       );

@@ -1,14 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../shipments/domain/request_limit.dart';
 
-/// Home's "Ship something new" card, after the brief's reference screen:
+/// Home's l10n.homeShipNew card, after the brief's reference screen:
 /// title, "Mobile requests used: n of 3", the Post Load button, and a thin
-/// usage bar. At the limit the button becomes "Manage requests" and one
+/// usage bar. At the limit the button becomes l10n.actionManageRequests and one
 /// line says what to do about it.
 class RequestUsageCard extends StatefulWidget {
   const RequestUsageCard({
@@ -54,8 +55,8 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ship something new',
+                    Text(
+                      l10n.homeShipNew,
                       style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w700,
@@ -65,10 +66,10 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                     Space.v4,
                     Text.rich(
                       TextSpan(
-                        text: 'Mobile requests used: ',
+                        text: l10n.homeRequestsUsed,
                         children: [
                           TextSpan(
-                            text: '${usage.used} of ${usage.limit}',
+                            text: l10n.homeUsedOf(usage.used, usage.limit),
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
@@ -95,7 +96,7 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('Post Load', maxLines: 1),
+                    label: Text(l10n.navPostLoad, maxLines: 1),
                   ),
                 ),
               ],
@@ -103,7 +104,7 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
           ),
           Space.v12,
           Semantics(
-            label: '${usage.used} of ${usage.limit} mobile requests in use',
+            label: l10n.homeRequestsInUseA11y(usage.used, usage.limit),
             excludeSemantics: true,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -126,12 +127,10 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
             Space.v8,
             Text.rich(
               TextSpan(
-                text:
-                    'All ${usage.limit} are in use. Finish or cancel one to '
-                    'post a new load. ',
+                text: l10n.homeAllInUse(usage.limit),
                 children: [
                   TextSpan(
-                    text: 'How it works',
+                    text: l10n.actionHowItWorks,
                     recognizer: _learnMore,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
@@ -153,7 +152,7 @@ class _RequestUsageCardState extends State<RequestUsageCard> {
                 minimumSize: const Size.fromHeight(42),
                 visualDensity: VisualDensity.compact,
               ),
-              child: const Text('Manage requests'),
+              child: Text(l10n.actionManageRequests),
             ),
           ],
         ],
