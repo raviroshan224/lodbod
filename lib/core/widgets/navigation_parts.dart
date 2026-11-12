@@ -324,8 +324,8 @@ class ChoicePill extends StatelessWidget {
   }
 }
 
-/// Android 16 style segmented list: each row is its own rounded tile with
-/// a small gap; the group's outer corners are large, inner ones small.
+/// Grouped settings list after the reference Account screen: a small
+/// uppercase label, then one white card with hairline dividers.
 class ListGroup extends StatelessWidget {
   const ListGroup({super.key, this.title, required this.children});
   final String? title;
@@ -333,39 +333,40 @@ class ListGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const outer = Radius.circular(Radii.cardRadius);
-    const inner = Radius.circular(4);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, Gap.xl, 16, Gap.sm),
-            // Quiet grouping label: orange is reserved for actions.
+            padding: const EdgeInsets.fromLTRB(4, Gap.xl, 4, Gap.sm),
             child: Text(
-              title!,
+              title!.toUpperCase(),
               style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.2,
-                color: AppColors.textSecondary,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+                color: AppColors.textMuted,
               ),
             ),
           ),
-        for (var i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(height: 2),
-          Material(
-            color: AppColors.surface,
-            clipBehavior: Clip.antiAlias,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: i == 0 ? outer : inner,
-                bottom: i == children.length - 1 ? outer : inner,
-              ),
-            ),
-            child: children[i],
+        Material(
+          color: AppColors.surface,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(borderRadius: Radii.card),
+          child: Column(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0)
+                  const Divider(
+                    height: 1,
+                    indent: 48,
+                    color: AppColors.divider,
+                  ),
+                children[i],
+              ],
+            ],
           ),
-        ],
+        ),
       ],
     );
   }
@@ -377,6 +378,7 @@ class ListRow extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
+    this.value,
     this.trailing,
     this.onTap,
     this.iconColor = AppColors.primary,
@@ -386,6 +388,9 @@ class ListRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
+
+  /// Current setting shown at the trailing edge, e.g. "2 of 3".
+  final String? value;
   final Widget? trailing;
   final VoidCallback? onTap;
   final Color iconColor;
@@ -396,21 +401,11 @@ class ListRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(Gap.lg, 14, Gap.md, 14),
+        padding: const EdgeInsets.fromLTRB(Gap.lg, 11, Gap.md, 11),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconColor == AppColors.primary
-                    ? AppColors.primarySoft
-                    : iconColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 21, color: iconColor),
-            ),
-            Space.h16,
+            SizedBox(width: 20, child: Icon(icon, size: 20, color: iconColor)),
+            Space.h12,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +413,7 @@ class ListRow extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: titleColor,
                     ),
@@ -436,11 +431,27 @@ class ListRow extends StatelessWidget {
                 ],
               ),
             ),
+            if (value != null) ...[
+              Flexible(
+                child: Text(
+                  value!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              Space.h4,
+            ],
             if (trailing != null)
               trailing!
             else if (onTap != null)
               const Icon(
                 Icons.chevron_right_rounded,
+                size: 20,
                 color: AppColors.textMuted,
               ),
           ],

@@ -101,8 +101,8 @@ class ReviewShipmentScreen extends ConsumerWidget {
             StepHeader(
               current: DraftStep.values.length,
               titles: [
-                for (final s in DraftStep.values) s.title,
-                'Review & post',
+                for (final s in DraftStep.values) s.shortTitle,
+                'Review',
               ],
             ),
             Expanded(

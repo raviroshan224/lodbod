@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -5,13 +6,11 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/common.dart';
 import '../../../shipments/domain/request_limit.dart';
 
-/// Home's request-limit card: how many of the 3 mobile requests are in use,
-/// one meter segment per request, and the one action that makes sense now
-/// (post a load while a slot is free, otherwise manage the open requests).
-///
-/// Kept to a strip: Home's primary action is the + button in the tab bar,
-/// so this card only needs to report the quota, not compete with it.
-class RequestUsageCard extends StatelessWidget {
+/// Home's "Ship something new" card, after the brief's reference screen:
+/// title, "Mobile requests used: n of 3", the Post Load button, and a thin
+/// usage bar. At the limit the button becomes "Manage requests" and one
+/// line says what to do about it.
+class RequestUsageCard extends StatefulWidget {
   const RequestUsageCard({
     super.key,
     required this.usage,
@@ -25,119 +24,136 @@ class RequestUsageCard extends StatelessWidget {
   final VoidCallback onManage;
   final VoidCallback onLearnMore;
 
-  String get _message {
-    if (usage.isAtLimit) {
-      return 'All ${usage.limit} are in use. Finish or cancel one to post a new load.';
-    }
-    if (usage.used == 0) {
-      return 'You can have up to ${usage.limit} open requests from mobile.';
-    }
-    final n = usage.remaining;
-    return 'You can post $n more ${n == 1 ? 'load' : 'loads'} from mobile.';
+  @override
+  State<RequestUsageCard> createState() => _RequestUsageCardState();
+}
+
+class _RequestUsageCardState extends State<RequestUsageCard> {
+  late final _learnMore = TapGestureRecognizer()
+    ..onTap = () => widget.onLearnMore();
+
+  @override
+  void dispose() {
+    _learnMore.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final usage = widget.usage;
     final atLimit = usage.isAtLimit;
     return AppCard(
-      padding: const EdgeInsets.fromLTRB(Gap.lg, Gap.md, Gap.sm, Gap.sm),
+      borderColor: AppColors.primary.withValues(alpha: 0.55),
+      padding: const EdgeInsets.fromLTRB(Gap.lg, 14, Gap.md, 14),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text(
-                  'Mobile requests',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ship something new',
+                      style: TextStyle(
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    Space.v4,
+                    Text.rich(
+                      TextSpan(
+                        text: 'Mobile requests used: ',
+                        children: [
+                          TextSpan(
+                            text: '${usage.used} of ${usage.limit}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!atLimit) ...[
+                Space.h12,
+                Flexible(
+                  child: FilledButton.icon(
+                    onPressed: widget.onPostLoad,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.fromLTRB(12, 0, 16, 0),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Post Load', maxLines: 1),
                   ),
                 ),
-              ),
-              _SlotMeter(used: usage.used, limit: usage.limit),
-              Space.h4,
-              IconButton(
-                onPressed: onLearnMore,
-                tooltip: 'How the request limit works',
-                visualDensity: VisualDensity.compact,
-                iconSize: 20,
-                icon: const Icon(
-                  Icons.info_outline_rounded,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              ],
             ],
           ),
-          Text(
-            '${usage.used} of ${usage.limit} in use',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
-              height: 1.2,
-              color: AppColors.textPrimary,
+          Space.v12,
+          Semantics(
+            label: '${usage.used} of ${usage.limit} mobile requests in use',
+            excludeSemantics: true,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: usage.fraction),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOut,
+                builder: (_, f, _) => LinearProgressIndicator(
+                  value: f,
+                  minHeight: 6,
+                  // ignore: deprecated_member_use
+                  year2023: true,
+                  backgroundColor: AppColors.primaryContainer,
+                  color: AppColors.primary,
+                ),
+              ),
             ),
           ),
-          Space.v4,
-          Padding(
-            padding: const EdgeInsets.only(right: Gap.sm),
-            child: Text(
-              _message,
+          if (atLimit) ...[
+            Space.v8,
+            Text.rich(
+              TextSpan(
+                text:
+                    'All ${usage.limit} are in use. Finish or cancel one to '
+                    'post a new load. ',
+                children: [
+                  TextSpan(
+                    text: 'How it works',
+                    recognizer: _learnMore,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12.5,
                 height: 1.4,
                 color: AppColors.textSecondary,
               ),
             ),
-          ),
-          Space.v4,
-          // Text action rather than a full button: the + tab already posts,
-          // and the Shipments tab already lists, so this is a shortcut.
-          TextButton.icon(
-            onPressed: atLimit ? onManage : onPostLoad,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(48, 36),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            iconAlignment: IconAlignment.end,
-            icon: const Icon(Icons.chevron_right_rounded, size: 20),
-            label: Text(atLimit ? 'Manage requests' : 'Post a new load'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SlotMeter extends StatelessWidget {
-  const _SlotMeter({required this.used, required this.limit});
-  final int used;
-  final int limit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: '$used of $limit mobile requests in use',
-      excludeSemantics: true,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < limit; i++) ...[
-            if (i > 0) const SizedBox(width: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              width: 22,
-              height: 6,
-              decoration: BoxDecoration(
-                color: i < used
-                    ? AppColors.primary
-                    : AppColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(3),
+            Space.v12,
+            OutlinedButton(
+              onPressed: widget.onManage,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(42),
+                visualDensity: VisualDensity.compact,
               ),
+              child: const Text('Manage requests'),
             ),
           ],
         ],

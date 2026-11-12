@@ -175,13 +175,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ListRow(
                   icon: Icons.person_outline_rounded,
                   title: 'Profile & company',
-                  subtitle: '+977 ${user.phone}',
                   onTap: () => context.push(Routes.editProfile),
                 ),
                 ListRow(
                   icon: Icons.mail_outline_rounded,
                   title: 'Email',
-                  subtitle: user.email,
+                  value: verified ? null : user.email,
                   trailing: verified
                       ? const Pill(label: 'Verified', style: _verifiedStyle)
                       : TextButton(
@@ -194,19 +193,18 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ListRow(
                   icon: Icons.layers_outlined,
                   title: 'Mobile requests',
-                  subtitle: '${usage.used} of ${usage.limit} in use',
+                  value: '${usage.used} of ${usage.limit} in use',
                   onTap: () => showRequestLimitSheet(context, usage),
                 ),
               ],
             ),
             ListGroup(
-              title: 'Alerts',
+              title: 'Preferences',
               children: [
                 ListRow(
-                  icon: Icons.gavel_rounded,
-                  title: 'New bids',
-                  subtitle: 'Alert me when a carrier bids on my load',
-                  trailing: Switch(
+                  icon: Icons.notifications_none_rounded,
+                  title: 'New bid alerts',
+                  trailing: _CompactSwitch(
                     value: user.bidAlerts,
                     onChanged: (v) => _setAlerts(bids: v),
                   ),
@@ -214,8 +212,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ListRow(
                   icon: Icons.local_shipping_outlined,
                   title: 'Delivery updates',
-                  subtitle: 'Pickup, on the way and delivered',
-                  trailing: Switch(
+                  trailing: _CompactSwitch(
                     value: user.statusAlerts,
                     onChanged: (v) => _setAlerts(status: v),
                   ),
@@ -223,7 +220,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               ],
             ),
             ListGroup(
-              title: 'Support',
+              title: 'Support & feedback',
               children: [
                 ListRow(
                   icon: Icons.help_outline_rounded,
@@ -233,7 +230,6 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ListRow(
                   icon: Icons.chat_bubble_outline_rounded,
                   title: 'Send feedback',
-                  subtitle: 'Report a problem or suggest an idea',
                   onTap: () => showFeedbackSheet(context),
                 ),
               ],
@@ -254,12 +250,11 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               ],
             ),
             ListGroup(
-              title: 'Try it out',
+              title: 'Demo',
               children: [
                 ListRow(
                   icon: Icons.auto_awesome_outlined,
                   title: 'Load sample shipments',
-                  subtitle: 'Explore with example loads, bids and deliveries',
                   trailing: _loadingSamples
                       ? const SizedBox(
                           width: 20,
@@ -297,3 +292,24 @@ const _verifiedStyle = StatusStyle(
   AppColors.successSoft,
   Icons.verified_rounded,
 );
+
+/// Switch sized to a single-line settings row.
+class _CompactSwitch extends StatelessWidget {
+  const _CompactSwitch({required this.value, required this.onChanged});
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 28,
+      child: FittedBox(
+        child: Switch(
+          value: value,
+          onChanged: onChanged,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
+    );
+  }
+}

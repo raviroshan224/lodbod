@@ -55,7 +55,7 @@ class AppShell extends ConsumerWidget {
             HapticFeedback.selectionClick();
             _goBranch(branch);
           },
-          actionLabel: 'Post load',
+          actionLabel: 'Post Load',
           actionSemanticLabel: 'Post a new load',
           onAction: () {
             HapticFeedback.mediumImpact();

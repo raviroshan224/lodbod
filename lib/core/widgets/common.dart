@@ -572,8 +572,7 @@ class BrandMark extends StatelessWidget {
   }
 }
 
-/// "lodbod" in lowercase italic, "bod" in orange, like the lodbod.com
-/// wordmark.
+/// "LODBOD" with "BOD" in orange, as on the reference splash screen.
 class BrandWordmark extends StatelessWidget {
   const BrandWordmark({super.key, this.size = 32});
 
@@ -581,29 +580,23 @@ class BrandWordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Inter ships upright only here, so the slant is a skew rather than a
-    // faux-italic face.
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.skewX(-BrandGlyph.slant),
-      child: Text.rich(
-        const TextSpan(
-          children: [
-            TextSpan(text: 'lod'),
-            TextSpan(
-              text: 'bod',
-              style: TextStyle(color: AppColors.primary),
-            ),
-          ],
-        ),
-        semanticsLabel: 'LODBOD',
-        style: TextStyle(
-          fontSize: size,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -size * 0.025,
-          height: 1,
-          color: AppColors.textPrimary,
-        ),
+    return Text.rich(
+      const TextSpan(
+        children: [
+          TextSpan(text: 'LOD'),
+          TextSpan(
+            text: 'BOD',
+            style: TextStyle(color: AppColors.primary),
+          ),
+        ],
+      ),
+      semanticsLabel: 'LODBOD',
+      style: TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w800,
+        letterSpacing: size * 0.12,
+        height: 1,
+        color: AppColors.textPrimary,
       ),
     );
   }

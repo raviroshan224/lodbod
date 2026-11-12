@@ -29,12 +29,9 @@ void main() {
     await app.tapText('Sign out'); // The account screen's button.
     expect(find.text('Sign out?'), findsOneWidget);
 
-    // The sheet and its backdrop cover the tab bar: tapping a tab underneath
-    // doesn't switch tabs, and tapping the backdrop closes the sheet.
+    // The sheet's backdrop covers the tab bar: tapping a tab underneath
+    // dismisses the sheet instead of switching tabs.
     await tester.tap(find.byTooltip('Shipments'), warnIfMissed: false);
-    await app.settle();
-    expect(app.router.routerDelegate.currentConfiguration.uri.path, '/account');
-    await tester.tapAt(const Offset(200, 60)); // The backdrop.
     await app.settle();
     expect(find.text('Sign out?'), findsNothing);
     expect(app.router.routerDelegate.currentConfiguration.uri.path, '/account');

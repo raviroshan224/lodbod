@@ -158,8 +158,8 @@ class _CreateShipmentScreenState extends ConsumerState<CreateShipmentScreen> {
             StepHeader(
               current: state.step.index,
               titles: [
-                for (final s in DraftStep.values) s.title,
-                'Review & post',
+                for (final s in DraftStep.values) s.shortTitle,
+                'Review',
               ],
               onTapStep: (i) => controller.goTo(DraftStep.values[i]),
             ),

@@ -4,12 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-/// Step header for the posting flow: the step's name with "Step 2 of 4"
-/// beside it, over a segmented progress bar. Completed segments can be
-/// tapped to go back to that step.
-///
-/// Kept to one text line so the first input stays above the fold on small
-/// phones (the app bar already says "Post a load").
+/// Step chips for the posting flow, after the brief's reference screens:
+/// "✓ Route · 2 Cargo · 3 Vehicle · 4 Review". The current step is filled,
+/// completed steps are outlined in orange and can be tapped to go back.
 class StepHeader extends StatelessWidget {
   const StepHeader({
     super.key,
@@ -24,90 +21,82 @@ class StepHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final count = titles.length;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(Gap.page + 4, 0, Gap.page + 4, Gap.sm),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  layoutBuilder: (current, previous) => Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [...previous, ?current],
-                  ),
-                  child: Text(
-                    titles[current],
-                    key: ValueKey(current),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ),
-              ),
-              Space.h12,
-              Text(
-                'Step ${current + 1} of $count',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+    return Semantics(
+      label: 'Step ${current + 1} of ${titles.length}: ${titles[current]}',
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(Gap.page, 2, Gap.page, Gap.md),
+        child: Row(
+          children: [
+            for (var i = 0; i < titles.length; i++) ...[
+              if (i > 0) Space.h8,
+              _chip(i),
             ],
-          ),
-          Space.v4,
-          Row(
-            children: [
-              for (var i = 0; i < count; i++) ...[
-                if (i > 0) const SizedBox(width: 4),
-                Expanded(child: _segment(i)),
-              ],
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _segment(int i) {
+  Widget _chip(int i) {
     final done = i < current;
-    final reached = i <= current;
+    final active = i == current;
     final tappable = done && onTapStep != null;
+    final fg = active
+        ? Colors.white
+        : done
+        ? AppColors.primary
+        : AppColors.textSecondary;
     return Semantics(
       button: tappable,
-      label:
-          '${titles[i]}${done
-              ? ', completed'
-              : i == current
-              ? ', current step'
-              : ''}',
+      selected: active,
+      label: '${titles[i]}${done ? ', completed' : ''}',
       excludeSemantics: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: tappable
-            ? () {
-                HapticFeedback.selectionClick();
-                onTapStep!(i);
-              }
-            : null,
-        // A taller hit area than the visible bar.
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeOutCubic,
-            height: 4,
-            decoration: BoxDecoration(
-              color: reached ? AppColors.primary : AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(2),
+      child: Material(
+        color: active ? AppColors.primary : AppColors.surface,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: active
+                ? AppColors.primary
+                : done
+                ? AppColors.primary.withValues(alpha: 0.6)
+                : AppColors.border,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: tappable
+              ? () {
+                  HapticFeedback.selectionClick();
+                  onTapStep!(i);
+                }
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (done)
+                  Icon(Icons.check_rounded, size: 14, color: fg)
+                else
+                  Text(
+                    '${i + 1}',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: fg,
+                    ),
+                  ),
+                const SizedBox(width: 5),
+                Text(
+                  titles[i],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: fg,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

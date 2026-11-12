@@ -12,17 +12,15 @@ class DockItem {
 
   final IconData icon;
   final IconData selectedIcon;
-
-  /// Shown as a tooltip and read by screen readers (the bar shows icons).
   final String label;
 
   /// Items needing attention on that tab (shown as a small count badge).
   final int badgeCount;
 }
 
-/// Bottom navigation: a soft white bar with rounded top corners, icon-only
-/// tabs (the active one filled in the brand colour), and a large round
-/// gradient action sitting half above the bar's top edge.
+/// Bottom navigation after the brief's reference screens: labelled tabs,
+/// the active one on a soft orange tile, and a round "Post Load" action
+/// raised half above the bar with its label beneath it.
 class DockNavBar extends StatelessWidget {
   const DockNavBar({
     super.key,
@@ -44,14 +42,15 @@ class DockNavBar extends StatelessWidget {
   /// Stable handle on the centre action (for tests and automation).
   static const actionKey = ValueKey('dock-nav-action');
 
-  /// Height of the icon row.
-  static const _rowHeight = 60.0;
+  static const _rowHeight = 66.0;
+  static const _buttonSize = 56.0;
+  static const _iconTileHeight = 30.0;
+  static const _labelGap = 4.0;
+  static const _inactive = Color(0xFF6F6966);
 
-  static const _buttonSize = 64.0;
-
-  /// How far the action rises above the bar's straight top edge (half its
-  /// height). The strip above the bar is transparent, so the page shows
-  /// through it; [AppShell] lets content scroll under that strip.
+  /// How far the action rises above the bar's top edge. The strip above the
+  /// bar is transparent, so the page shows through it; [AppShell] lets
+  /// content scroll under that strip.
   static const overhang = _buttonSize / 2;
 
   @override
@@ -68,15 +67,18 @@ class DockNavBar extends StatelessWidget {
             right: 0,
             bottom: 0,
             height: barHeight,
-            child: CustomPaint(
-              painter: const _BarPainter(corner: 24),
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
               child: Padding(
                 padding: EdgeInsets.only(bottom: bottomInset),
                 child: Row(
                   children: [
-                    for (var i = 0; i < 2; i++) _tab(i),
-                    const Spacer(),
-                    for (var i = 2; i < 4; i++) _tab(i),
+                    for (var i = 0; i < 2; i++) _tab(context, i),
+                    _actionSlot(context),
+                    for (var i = 2; i < 4; i++) _tab(context, i),
                   ],
                 ),
               ),
@@ -93,9 +95,22 @@ class DockNavBar extends StatelessWidget {
     );
   }
 
-  Widget _tab(int i) {
+  static TextStyle _labelStyle(Color color) => TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    height: 1.2,
+    color: color,
+  );
+
+  /// Tab labels scale a little, never enough to push five of them off the
+  /// bar (the icons and semantics carry the meaning at large sizes).
+  static TextScaler _labelScaler(BuildContext context) =>
+      MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.2);
+
+  Widget _tab(BuildContext context, int i) {
     final item = items[i];
     final active = i == selectedIndex;
+    final color = active ? AppColors.primary : _inactive;
     return Expanded(
       child: Tooltip(
         message: item.label,
@@ -106,23 +121,59 @@ class DockNavBar extends StatelessWidget {
               ? '${item.label}, ${item.badgeCount} need attention'
               : item.label,
           excludeSemantics: true,
-          child: InkResponse(
+          child: InkWell(
             onTap: () => onSelect(i),
-            radius: 28,
-            highlightShape: BoxShape.circle,
-            child: Center(
-              child: AnimatedScale(
-                scale: active ? 1.06 : 1,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOutCubic,
-                child: _BadgedIcon(
-                  icon: active ? item.selectedIcon : item.icon,
-                  color: active ? AppColors.primary : const Color(0xFF8E8A88),
-                  count: item.badgeCount,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  width: 48,
+                  height: _iconTileHeight,
+                  decoration: BoxDecoration(
+                    color: active ? AppColors.primarySoft : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _BadgedIcon(
+                    icon: active ? item.selectedIcon : item.icon,
+                    color: color,
+                    count: item.badgeCount,
+                  ),
                 ),
-              ),
+                const SizedBox(height: _labelGap),
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textScaler: _labelScaler(context),
+                  style: _labelStyle(color),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// The gap under the raised button, carrying its label at the same
+  /// baseline as the tab labels.
+  Widget _actionSlot(BuildContext context) {
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 88,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: _iconTileHeight + _labelGap),
+            Text(
+              actionLabel,
+              maxLines: 1,
+              textScaler: _labelScaler(context),
+              style: _labelStyle(AppColors.primary),
+            ),
+          ],
         ),
       ),
     );
@@ -135,84 +186,32 @@ class DockNavBar extends StatelessWidget {
         button: true,
         label: actionSemanticLabel,
         excludeSemantics: true,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              left: -18,
-              right: -18,
-              top: -8,
-              bottom: -28,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      AppColors.primary.withValues(alpha: 0.30),
-                      AppColors.primary.withValues(alpha: 0),
-                    ],
-                    stops: const [0.42, 1],
-                  ),
-                ),
+        child: Material(
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          elevation: 6,
+          shadowColor: AppColors.primary.withValues(alpha: 0.45),
+          child: Ink(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFF2834F), AppColors.primary],
               ),
             ),
-            Material(
-              shape: const CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: Ink(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFFF2834F), AppColors.primary],
-                  ),
-                ),
-                child: InkWell(
-                  key: actionKey,
-                  onTap: onAction,
-                  child: const SizedBox.square(
-                    dimension: _buttonSize,
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                ),
+            child: InkWell(
+              key: actionKey,
+              onTap: onAction,
+              child: const SizedBox.square(
+                dimension: _buttonSize,
+                child: Icon(Icons.add_rounded, color: Colors.white, size: 30),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
-}
-
-/// The bar's surface: a white rectangle with a straight top edge and rounded
-/// top corners, over a soft upward shadow.
-class _BarPainter extends CustomPainter {
-  const _BarPainter({required this.corner});
-  final double corner;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = RRect.fromRectAndCorners(
-      Offset.zero & size,
-      topLeft: Radius.circular(corner),
-      topRight: Radius.circular(corner),
-    );
-    canvas
-      ..drawRRect(
-        rect.shift(const Offset(0, -2)),
-        Paint()
-          ..color = const Color(0x1F5A3A2E)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
-      )
-      ..drawRRect(rect, Paint()..color = AppColors.surface);
-  }
-
-  @override
-  bool shouldRepaint(_BarPainter old) => old.corner != corner;
 }
 
 class _BadgedIcon extends StatelessWidget {
@@ -227,18 +226,19 @@ class _BadgedIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconWidget = Icon(icon, size: 27, color: color);
+    final iconWidget = Icon(icon, size: 23, color: color);
     if (count <= 0) return iconWidget;
     return Stack(
       clipBehavior: Clip.none,
+      alignment: Alignment.center,
       children: [
         iconWidget,
         Positioned(
-          right: -7,
-          top: -4,
+          right: 6,
+          top: 1,
           child: Container(
-            constraints: const BoxConstraints(minWidth: 16),
-            height: 16,
+            constraints: const BoxConstraints(minWidth: 15),
+            height: 15,
             padding: const EdgeInsets.symmetric(horizontal: 4),
             alignment: Alignment.center,
             decoration: BoxDecoration(
@@ -250,7 +250,7 @@ class _BadgedIcon extends StatelessWidget {
               count > 9 ? '9+' : '$count',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 9.5,
+                fontSize: 9,
                 fontWeight: FontWeight.w700,
                 height: 1,
               ),
