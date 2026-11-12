@@ -13,7 +13,7 @@ and every screen updates live.
 | Navigation | go_router 18: session-driven redirects, stateful tab shell |
 | Backend | Firebase Auth (email + password) and Cloud Firestore, project `lodbod-ravi` |
 | Design | Material 3 Expressive (Google's 2025–26 design language): tonal palette generated from LODBOD orange, rounded cards, pill buttons and segmented buttons, Android 16-style grouped lists, an icon-only bottom bar with a raised **Post load** button; Inter typeface |
-| Tests | 154: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
+| Tests | 161: business rules, Firestore repositories, live tracking, auth and account flows, end-to-end journeys through the real UI, small-screen layout checks |
 
 Technical note (data flow, repositories, trade-offs, production notes):
 [docs/TECHNICAL_NOTE.md](docs/TECHNICAL_NOTE.md). Screenshots are
@@ -78,6 +78,7 @@ brief's sample data: LOD-1001 to LOD-1004 and three bids on LOD-1002.
 | **Three-request limit** | Enforced in the Firestore create transaction and in the security rules. The prescribed message appears in a sheet on refusal, and the form data is preserved. Usage appears on Home, Post Load, Review, Analytics and Account. |
 | **Analytics** | Period switch (30 days / 90 days / all time), booked spend, loads posted / open / delivered (tonnes), bids, top routes, status breakdown. |
 | **Account** | Profile & company (edit; phone change re-indexes sign-in), email verification status, request usage, alert switches, help center (FAQ), send feedback (stored in Firestore), Terms and Privacy pages, sample data, sign out (keeps your draft). |
+| **Preferences** | **Language**: English or नेपाली, every screen and message translated (`lib/l10n/*.arb`, `flutter gen-l10n`). **Appearance**: System / Light / Dark with a full dark palette. **Notifications**: one master switch over bid and delivery alerts. Language and appearance are stored on the device; alerts on the account. |
 
 Design: one component set used everywhere (cards, pills, pill tabs, choice
 chips, list groups, bottom sheets, toasts, skeletons). The bottom bar shows
@@ -135,7 +136,7 @@ flutter run --dart-define=USE_FIREBASE_EMULATORS=true   # Android emulator → 1
 
 ```bash
 flutter analyze                 # no issues
-flutter test                    # 154 tests
+flutter test                    # 161 tests
 flutter build apk --release     # build/app/outputs/flutter-apk/app-release.apk
 ```
 

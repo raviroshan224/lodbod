@@ -187,3 +187,28 @@ and the architecture test guarantees no screen imports Firebase.
   and a layout sweep of every screen at 320×568 with ×1.3 text and 360×640
   with ×1.6 text. **Next:** emulator-backed tests of the security rules and
   golden tests for key screens.
+
+## 7. Appearance and language
+
+Both are device settings (`shared_preferences`, `core/settings/app_settings.dart`),
+not account data: they describe the phone in hand.
+
+**Dark mode.** Screens read colours from `AppColors` statically, which kept
+hundreds of call sites untouched. `AppColors` is now a set of getters over a
+light and a dark palette, selected by `AppColors.brightness`. Because a
+static read creates no inherited-widget dependency, changing it would leave
+widgets showing their old colours; the app therefore marks the whole element
+tree dirty once when the setting changes (`_applyPalette` in `app.dart`).
+That is one full rebuild per switch, which is acceptable for a settings
+change, and it is covered by `test/features/appearance_test.dart`.
+
+**Nepali.** Strings live in `lib/l10n/app_en.arb` and `app_ne.arb`; `flutter
+gen-l10n` generates `AppLocalizations`. Widgets and domain code alike read
+`l10n` from `core/l10n/strings.dart`, a context-free accessor keyed on
+`AppLanguage.current`, so validators, enum labels and repository messages are
+translated too. The same forced rebuild applies on a language change. Material
+widgets get Nepali from `material_ui`'s own `GlobalMaterialLocalizations`
+(this project uses `package:material_ui`, whose `MaterialLocalizations` type
+differs from `flutter/material`'s). Text written to Firestore (timeline
+notes) stays English because it is data, not UI.
+
